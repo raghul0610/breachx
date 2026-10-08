@@ -192,12 +192,18 @@ for existing; reward whether they solve a stated requirement. Avoid generic advi
 
   const validFindings = (Array.isArray(review.findings) ? review.findings : [])
     .filter((finding: any) => {
-      const validNodes = Array.isArray(finding.evidenceNodeIds)
-        ? finding.evidenceNodeIds.every((id: string) => nodeIds.has(id))
-        : false;
-      const validEdges = Array.isArray(finding.evidenceEdgeIds)
-        ? finding.evidenceEdgeIds.every((id: string) => edgeIds.has(id))
-        : false;
+      const evidenceNodeIds = Array.isArray(finding.evidenceNodeIds)
+        ? finding.evidenceNodeIds
+        : [];
+      const evidenceEdgeIds = Array.isArray(finding.evidenceEdgeIds)
+        ? finding.evidenceEdgeIds
+        : [];
+      const validNodes =
+        evidenceNodeIds.length > 0 &&
+        evidenceNodeIds.every((id: string) => nodeIds.has(id));
+      const validEdges =
+        evidenceEdgeIds.length > 0 &&
+        evidenceEdgeIds.every((id: string) => edgeIds.has(id));
 
       return (
         typeof finding.title === "string" &&
