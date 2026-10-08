@@ -13,6 +13,37 @@ export type RequirementProfile = { persistenceRequired: boolean; highScale: bool
 export type EvaluationResult = { score: number; maxScore: 100; scores: EvaluationScore[]; findings: EvaluationFinding[]; strengths: string[]; summary: string; generatedAt: string; evaluationMode?: "deterministic" | "hybrid"; aiModel?: string; reviewBasis: { requirements: RequirementProfile; principles: string[]; methodology: string } };
 
 const key = (n: EvaluationNode) => (n.data?.typeKey ?? "").toLowerCase();
+const COMPONENT_CAPABILITY_MAP: Record<string, { capabilities: string[]; complexity: "low" | "medium" | "high"; cost: "low" | "medium" | "high" | "very_high" }> = {
+  load_balancer:{capabilities:["traffic distribution","health-based routing"],complexity:"medium",cost:"medium"},
+  service_discovery:{capabilities:["service discovery","traffic distribution"],complexity:"medium",cost:"medium"},
+  service_mesh:{capabilities:["service-to-service routing","traffic distribution","mTLS"],complexity:"high",cost:"high"},
+  autoscaler:{capabilities:["elastic capacity","horizontal scaling"],complexity:"medium",cost:"medium"},
+  microservice:{capabilities:["independent service ownership","independent scaling"],complexity:"high",cost:"high"},
+  container_orchestrator:{capabilities:["container scheduling","service recovery","horizontal scaling"],complexity:"high",cost:"high"},
+  cache:{capabilities:["low-latency reads","read offload"],complexity:"medium",cost:"medium"},
+  database:{capabilities:["durable transactional state","strong consistency"],complexity:"medium",cost:"medium"},
+  nosql_database:{capabilities:["horizontally scalable data","high throughput"],complexity:"medium",cost:"medium"},
+  database_replica:{capabilities:["read scaling","replication"],complexity:"high",cost:"high"},
+  database_shard:{capabilities:["write/storage scale-out","partitioned data"],complexity:"high",cost:"very_high"},
+  queue:{capabilities:["asynchronous work","burst buffering","producer-consumer decoupling"],complexity:"medium",cost:"medium"},
+  kafka:{capabilities:["durable event streaming","high-throughput asynchronous processing","replay"],complexity:"high",cost:"high"},
+  event_bus:{capabilities:["event routing","producer-consumer decoupling"],complexity:"medium",cost:"medium"},
+  workflow_engine:{capabilities:["workflow orchestration","asynchronous work"],complexity:"high",cost:"high"},
+  cdn:{capabilities:["edge caching","global content delivery"],complexity:"low",cost:"medium"},
+  search_engine:{capabilities:["full-text search","faceted retrieval"],complexity:"high",cost:"high"},
+  api_gateway:{capabilities:["API routing","authentication integration","rate limiting"],complexity:"medium",cost:"medium"},
+  identity_provider:{capabilities:["identity management","authentication"],complexity:"medium",cost:"medium"},
+  iam:{capabilities:["authorization","least privilege"],complexity:"medium",cost:"medium"},
+  circuit_breaker:{capabilities:["dependency failure isolation"],complexity:"medium",cost:"low"},
+  retry_policy:{capabilities:["transient-failure recovery","bounded retries"],complexity:"low",cost:"low"},
+  failover:{capabilities:["recovery routing","failure-domain resilience"],complexity:"high",cost:"high"},
+  multi_region:{capabilities:["regional failure resilience"],complexity:"high",cost:"very_high"},
+  metrics:{capabilities:["health and performance measurement"],complexity:"medium",cost:"medium"},
+  tracing:{capabilities:["distributed request tracing"],complexity:"medium",cost:"medium"},
+  alerting:{capabilities:["incident detection","SLO-based alerting"],complexity:"medium",cost:"low"},
+};
+const componentCapability = (node: EvaluationNode) => COMPONENT_CAPABILITY_MAP[key(node)];
+
 const label = (n: EvaluationNode) => (n.data?.label ?? key(n)) || n.id;
 const textOf = (input: EvaluationInput) => [input.application.name, input.application.description, input.notes ?? "", ...input.nodes.map((n) => (label(n) + " " + (n.data?.notes ?? "")))].join(" ").toLowerCase();
 const hasAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
@@ -92,6 +123,34 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     ["firewall", "api_gateway", "ddos_protection", "rate_limiter", "identity_provider", "auth_service", "iam"].includes(key(node)),
   );
   const reachableFromIngress = reachFrom(ingress.map((node) => node.id));
+  const CAPABILITY_REQUIREMENT_ANALYSIS = true;
+  const presentCapabilities = new Set(nodes.flatMap((node) => componentCapability(node)?.capabilities ?? []));
+  const addCapabilityFinding = (id: string, category: string, title: string, requirement: string, missing: string, alternatives: string[], recommendation: string, penalty: number, principleId: string) => {
+    if (presentCapabilities.has(missing)) return;
+    add(id, category, "medium", title,
+      "The requirement calls for the capability \"" + missing + "\" but the submitted graph does not represent it.",
+      ["Requirement: " + requirement, "Missing capability: " + missing],
+      recommendation + " Available alternatives: " + alternatives.join(", ") + ".",
+      penalty, principleId);
+    const finding = findings[findings.length - 1];
+    if (finding?.id === id) {
+      finding.requirement = requirement;
+      finding.alternatives = alternatives;
+    }
+  };
+  if (requirements.highScale && compute.length > 1 && !presentCapabilities.has("traffic distribution"))
+    addCapabilityFinding("CAP_TRAFFIC_DISTRIBUTION","Scalability","Multiple compute components lack a routing capability","Multiple processing components require a defined request-distribution mechanism.","traffic distribution",["load_balancer","service_discovery","service_mesh"],"Add the simplest traffic-distribution capability that matches the deployment model.",4,"SD-21");
+  if (requirements.asyncWork && !presentCapabilities.has("asynchronous work") && !presentCapabilities.has("durable event streaming"))
+    addCapabilityFinding("CAP_ASYNC_PROCESSING","Performance","Background workload lacks an asynchronous capability","The requirements include background, bursty, or long-running work.","asynchronous work",["queue","kafka","event_bus","workflow_engine"],"Use the simplest sufficient asynchronous boundary and define retry/consumer behavior.",4,"SD-28");
+  if (requirements.highScale && requirements.readHeavy && !presentCapabilities.has("low-latency reads") && !presentCapabilities.has("read scaling") && !presentCapabilities.has("edge caching"))
+    addCapabilityFinding("CAP_READ_SCALE","Performance","Read-heavy workload lacks a read-acceleration capability","The workload is explicitly read-heavy at meaningful scale.","low-latency reads",["cache","database_replica","cdn","search_engine"],"Accelerate only the hot access paths and define freshness or invalidation semantics.",3,"SD-16");
+  if (requirements.highAvailability && stores.length > 0 && !presentCapabilities.has("replication") && !presentCapabilities.has("failure-domain resilience"))
+    addCapabilityFinding("CAP_STATE_RESILIENCE","Reliability","Persistent state lacks a resilience capability","High availability is explicitly required for a persistent workload.","replication",["database_replica","backup","failover","multi_region"],"Choose the smallest redundancy or recovery mechanism that satisfies the required failure domain.",5,"REL-001");
+  if (requirements.externalDependencies && external.length > 0 && !presentCapabilities.has("dependency failure isolation") && !presentCapabilities.has("transient-failure recovery"))
+    addCapabilityFinding("CAP_DEPENDENCY_RESILIENCE","Fault Tolerance","External dependency lacks failure isolation","An external dependency requires bounded behavior during timeout or outage.","dependency failure isolation",["circuit_breaker","retry_policy","rate_limiter"],"Add bounded retry/backoff and/or circuit breaking where justified.",4,"REL-002");
+  if (requirements.sensitiveData && !presentCapabilities.has("least privilege") && !presentCapabilities.has("identity management"))
+    addCapabilityFinding("CAP_ACCESS_CONTROL","Security","Sensitive workload lacks an authorization capability","Sensitive data requires explicit identity and access control.","least privilege",["identity_provider","iam","auth_service","api_gateway"],"Represent identity and authorization and document least-privilege access.",4,"SEC-002");
+
   const presentCapabilities = new Set(nodes.flatMap((node) => COMPONENT_CAPABILITIES[key(node)]?.capabilities ?? []));
   const addCapabilityGap = (id: string, category: string, title: string, requirement: string, capability: string, alternatives: string[], description: string, recommendation: string, penalty: number, principleId: string) => {
     if (presentCapabilities.has(capability) || findings.some((finding) => finding.id === id)) return;
