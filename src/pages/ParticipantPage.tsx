@@ -161,15 +161,6 @@ function ParticipantEditor({
       "Describe the application, expected users, traffic and important requirements.",
   );
   const [notes, setNotes] = useState(saved?.notes ?? "");
-  const [expectedUsers, setExpectedUsers] = useState(saved?.workload?.expectedUsers?.toString() ?? "");
-  const [concurrentUsers, setConcurrentUsers] = useState(saved?.workload?.concurrentUsers?.toString() ?? "");
-  const [peakRps, setPeakRps] = useState(saved?.workload?.peakRps?.toString() ?? "");
-  const [growthPercent, setGrowthPercent] = useState(saved?.workload?.growthPercent?.toString() ?? "");
-  const [availabilityTarget, setAvailabilityTarget] = useState(saved?.workload?.availabilityTarget?.toString() ?? "");
-  const [latencyMs, setLatencyMs] = useState(saved?.workload?.latencyMs?.toString() ?? "");
-  const [geography, setGeography] = useState<"single_region" | "multi_region" | "global">(saved?.workload?.geography ?? "single_region");
-  const [budget, setBudget] = useState<"low" | "moderate" | "high">(saved?.workload?.budget ?? "moderate");
-  const [features, setFeatures] = useState(saved?.workload?.features?.join("\n") ?? "");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(saved?.status === "submitted");
   const [persisting, setPersisting] = useState(false);
@@ -284,17 +275,6 @@ function ParticipantEditor({
         nodes,
         edges,
         notes,
-        workload: {
-          expectedUsers: Number(expectedUsers) || undefined,
-          concurrentUsers: Number(concurrentUsers) || undefined,
-          peakRps: Number(peakRps) || undefined,
-          growthPercent: Number(growthPercent) || undefined,
-          availabilityTarget: Number(availabilityTarget) || undefined,
-          latencyMs: Number(latencyMs) || undefined,
-          geography,
-          budget,
-          features: features.split("\n").map((item) => item.trim()).filter(Boolean),
-        },
         status: submissionStatus,
         updatedAt: new Date().toISOString(),
       };
@@ -320,17 +300,6 @@ function ParticipantEditor({
             target: string;
           }[],
           notes,
-          workload: {
-            expectedUsers: Number(expectedUsers) || undefined,
-            concurrentUsers: Number(concurrentUsers) || undefined,
-            peakRps: Number(peakRps) || undefined,
-            growthPercent: Number(growthPercent) || undefined,
-            availabilityTarget: Number(availabilityTarget) || undefined,
-            latencyMs: Number(latencyMs) || undefined,
-            geography,
-            budget,
-            features: features.split("\n").map((item) => item.trim()).filter(Boolean),
-          },
         });
 
         writeEvaluation(result);
@@ -406,29 +375,11 @@ function ParticipantEditor({
         <div className="field">
           <label>APPLICATION REQUIREMENTS</label>
           <textarea
-            rows={4}
+            rows={3}
             value={applicationDescription}
             onChange={(event) => setApplicationDescription(event.target.value)}
             disabled={submitted}
           />
-        </div>
-        <div className="workload-section">
-          <div className="section-kicker">WORKLOAD & CONSTRAINTS</div>
-          <div className="workload-grid">
-            <div className="field"><label>EXPECTED USERS</label><input type="number" min="0" value={expectedUsers} onChange={(e) => setExpectedUsers(e.target.value)} placeholder="e.g. 100000" disabled={submitted} /></div>
-            <div className="field"><label>PEAK CONCURRENT USERS</label><input type="number" min="0" value={concurrentUsers} onChange={(e) => setConcurrentUsers(e.target.value)} placeholder="e.g. 5000" disabled={submitted} /></div>
-            <div className="field"><label>PEAK RPS</label><input type="number" min="0" value={peakRps} onChange={(e) => setPeakRps(e.target.value)} placeholder="e.g. 500" disabled={submitted} /></div>
-            <div className="field"><label>ANNUAL GROWTH %</label><input type="number" min="0" value={growthPercent} onChange={(e) => setGrowthPercent(e.target.value)} placeholder="e.g. 30" disabled={submitted} /></div>
-            <div className="field"><label>AVAILABILITY %</label><input type="number" min="0" max="100" step="0.01" value={availabilityTarget} onChange={(e) => setAvailabilityTarget(e.target.value)} placeholder="e.g. 99.9" disabled={submitted} /></div>
-            <div className="field"><label>LATENCY TARGET (MS)</label><input type="number" min="0" value={latencyMs} onChange={(e) => setLatencyMs(e.target.value)} placeholder="e.g. 200" disabled={submitted} /></div>
-            <div className="field"><label>GEOGRAPHIC SCOPE</label><select value={geography} onChange={(e) => setGeography(e.target.value as typeof geography)} disabled={submitted}><option value="single_region">Single region</option><option value="multi_region">Multi-region</option><option value="global">Global</option></select></div>
-            <div className="field"><label>COMPLEXITY / BUDGET</label><select value={budget} onChange={(e) => setBudget(e.target.value as typeof budget)} disabled={submitted}><option value="low">Keep infrastructure simple / low cost</option><option value="moderate">Moderate</option><option value="high">High budget / complexity acceptable</option></select></div>
-          </div>
-          <div className="field">
-            <label>MAJOR FEATURES / WORKFLOWS</label>
-            <textarea rows={3} value={features} onChange={(e) => setFeatures(e.target.value)} placeholder={"One feature per line, e.g.\nreal-time driver tracking\npayments\npush notifications\norder history"} disabled={submitted} />
-          </div>
-          <div className="tiny">These constraints are evaluated before component choice. Advanced infrastructure is not rewarded unless the workload or requirements justify it.</div>
         </div>
       </section>
 
