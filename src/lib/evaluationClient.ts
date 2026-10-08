@@ -26,6 +26,7 @@ export async function evaluateSystemDesignWithAI(
         })),
         edges: input.edges,
         notes: input.notes ?? "",
+        workload: input.workload,
       }),
     });
 
