@@ -1,4 +1,5 @@
 import { ARCHITECTURE_PRINCIPLES, SYSTEM_DESIGN_FUNDAMENTALS } from "../src/lib/architecturePrinciples.js";
+import { CATALOG } from "../src/lib/catalog.js";
 
 declare const process: { env: Record<string, string | undefined> };
 
@@ -140,6 +141,20 @@ low = improvement, documentation, or non-blocking concern
 
 Architecture principles:
 ${JSON.stringify(ARCHITECTURE_PRINCIPLES)}
+
+System design fundamentals:
+${JSON.stringify(SYSTEM_DESIGN_FUNDAMENTALS)}
+
+Available Breach X component vocabulary:
+${JSON.stringify(CATALOG)}
+
+Component-vocabulary rules:
+- The catalog is the set of capabilities the designer can explicitly place in the architecture.
+- Treat catalog components as available architectural building blocks, not mandatory components.
+- Evaluate whether the submitted architecture uses an appropriate capability when the stated requirements justify it.
+- If a useful catalog capability is absent, report it only when the requirement makes that capability relevant.
+- Compare the chosen design against the capabilities represented by the catalog, but do not penalize the design for merely omitting optional components.
+- Prefer capability-level reasoning over vendor-name recommendations. For example, reason about durable event streaming before recommending Kafka specifically.
 `;
 
   const user = JSON.stringify({ application, nodes, edges, notes });
@@ -193,7 +208,7 @@ ${JSON.stringify(ARCHITECTURE_PRINCIPLES)}
     return json(res, 502, { error: "Provider returned invalid structured output." });
   }
 
-  const validPrincipleIds = new Set(SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id).concat(ARCHITECTURE_PRINCIPLES.map((p) => p.id)));\n\n  const validFindings = (Array.isArray(review.findings) ? review.findings : [])
+  const validPrincipleIds = new Set<string>([\n    ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),\n    ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),\n  ]);\n\n  const validFindings = (Array.isArray(review.findings) ? review.findings : [])
     .filter((finding: any) => {
       const nodeEvidence = Array.isArray(finding.evidenceNodeIds) ? finding.evidenceNodeIds : [];
       const edgeEvidence = Array.isArray(finding.evidenceEdgeIds) ? finding.evidenceEdgeIds : [];
