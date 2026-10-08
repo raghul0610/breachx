@@ -312,11 +312,23 @@ export type AIReviewAssessment = {
   rationale: string;
 };
 
+export type TopicReview = {
+  category: string;
+  heading: string;
+  explanation: string;
+  tradeoff: string;
+  cost: string;
+  industryComparison: string;
+  industryFit: "fits" | "partially_fits" | "does_not_fit" | "not_relevant";
+  references: string[];
+};
+
 export type AIReview = {
   summary: string;
   strengths: string[];
   findings: AIReviewFinding[];
   assessments: AIReviewAssessment[];
+  topicReviews: TopicReview[];
 };
 
 export function mergeAIReview(
@@ -412,6 +424,7 @@ export function mergeAIReview(
     findings: mergedFindings,
     strengths: Array.from(new Set([...base.strengths, ...(review.strengths ?? [])])).slice(0, 8),
     summary: review.summary || base.summary,
+    topicReviews: review.topicReviews ?? [],
     evaluationMode: "hybrid",
     aiModel: model,
     generatedAt: new Date().toISOString(),
