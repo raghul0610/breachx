@@ -27,8 +27,8 @@ const isComputeNode = (node: EvaluationNode) => {
   const type = key(node);
   if (COMPUTE_TYPES.has(type)) return true;
   const descriptor = (label(node) + " " + (node.data?.notes ?? "")).toLowerCase();
-  return /\\b(api|backend|application|app|service|worker|function|lambda|compute|serverless|container)\\b/.test(descriptor)
-    && !/\\b(database|cache|queue|storage|gateway|firewall|load balancer)\\b/.test(descriptor);
+  return /\b(api|backend|application|app|service|worker|function|lambda|compute|serverless|container)\b/.test(descriptor)
+    && !/\b(database|cache|queue|storage|gateway|firewall|load balancer)\b/.test(descriptor);
 };
 
 const isIngressNode = (node: EvaluationNode) =>
@@ -37,7 +37,7 @@ const isIngressNode = (node: EvaluationNode) =>
 const isConsumerNode = (node: EvaluationNode) => {
   if (isComputeNode(node)) return true;
   const descriptor = (label(node) + " " + (node.data?.notes ?? "")).toLowerCase();
-  return /\\b(consumer|processor|handler)\\b/.test(descriptor);
+  return /\b(consumer|processor|handler)\b/.test(descriptor);
 };
 
 function inferRequirements(input: EvaluationInput): RequirementProfile {
