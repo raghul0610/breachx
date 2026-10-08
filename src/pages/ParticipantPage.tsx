@@ -3,7 +3,7 @@ import { addEdge,Background,BackgroundVariant,Controls,MiniMap,ReactFlow,ReactFl
 import { ArrowLeft,FileText,Layers,Save,Send,Trash2 } from "lucide-react";
 import { BlueprintNode,type BlueprintNodeData } from "../components/BlueprintNode";
 import { CATALOG,type CatalogItem } from "../lib/catalog";
-import { getActiveProblems,getMyBlueprint,getMyProblemAssignment,getMyTeam,logBlueprintActivity,saveBlueprintDraft,submitBlueprint } from "../lib/db";
+import { getActiveProblems,getBreachXEvent,getMyBlueprint,getMyProblemAssignment,getMyTeam,logBlueprintActivity,saveBlueprintDraft,submitBlueprint } from "../lib/db";
 import { supabase } from "../lib/supabase";
 import { readStatus,readSubmission,writeSubmission,logActivity,type EventStatus } from "../lib/storage";
 
@@ -53,7 +53,7 @@ function ParticipantEditor({onBack}:{onBack:()=>void}){
        setAuthenticated(!!user);
 
        if(user){
-         const event=await (await import("../lib/db")).getBreachXEvent();
+         const event=await getBreachXEvent();
          if(cancelled)return;
          if(!event){setProblemError("Breach X event was not found.");return;}
          setEventId(event.id);
