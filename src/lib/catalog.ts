@@ -160,7 +160,7 @@ export const COMPONENT_CAPABILITIES: Record<string, ComponentCapability> = {
   hsm:{capabilities:["protected cryptographic key operations","hardware-backed key isolation"],operationalComplexity:"high",costProfile:"high"},
   llm_gateway:{capabilities:["model routing","provider abstraction","token and spend controls"],operationalComplexity:"medium",costProfile:"medium"},
   model_inference:{capabilities:["LLM inference","model-generated responses"],operationalComplexity:"high",costProfile:"very_high"},
-  gpu_inference_pool:{capabilities:["GPU-backed inference","inference capacity scaling"],operationalComplexity:"very_high",costProfile:"very_high"},
+  gpu_inference_pool:{capabilities:["GPU-backed inference","inference capacity scaling"],operationalComplexity:"high",costProfile:"very_high"},
   embedding_service:{capabilities:["text embeddings","semantic retrieval preparation"],operationalComplexity:"medium",costProfile:"medium"},
   vector_database:{capabilities:["vector similarity search","semantic retrieval"],operationalComplexity:"high",costProfile:"high"},
   reranker:{capabilities:["retrieval relevance ranking","context selection"],operationalComplexity:"medium",costProfile:"medium"},
