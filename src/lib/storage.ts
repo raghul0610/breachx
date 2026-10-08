@@ -1,9 +1,12 @@
+import type { WorkloadProfile } from "./evaluationEngine";
+
 export type DesignSubmission = {
   applicationName: string;
   applicationDescription: string;
   nodes: unknown[];
   edges: unknown[];
   notes: string;
+  workload?: WorkloadProfile;
   status: "draft" | "submitted";
   updatedAt: string;
 };
