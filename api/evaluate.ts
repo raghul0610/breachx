@@ -1,3 +1,5 @@
+import { ARCHITECTURE_PRINCIPLES } from "../src/lib/architecturePrinciples";
+
 type NodeSummary = {
   id: string;
   typeKey: string;
@@ -45,21 +47,21 @@ const schema = {
         ],
       },
     },
-    scores: {
+    assessments: {
       type: "array",
       items: {
         type: "object",
         additionalProperties: false,
         properties: {
           category: { type: "string" },
-          score: { type: "number" },
-          summary: { type: "string" },
+          rating: { type: "string", enum: ["strong", "adequate", "weak", "critical"] },
+          rationale: { type: "string" },
         },
-        required: ["category", "score", "summary"],
+        required: ["category", "rating", "rationale"],
       },
     },
   },
-  required: ["summary", "strengths", "findings", "scores"],
+  required: ["summary", "strengths", "findings", "assessments"],
 } as const;
 
 function json(res: any, status: number, body: unknown) {
@@ -73,9 +75,7 @@ export default async function handler(req: any, res: any) {
 
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    return json(res, 503, {
-      error: "OPENROUTER_API_KEY is not configured on the server.",
-    });
+    return json(res, 503, { error: "OPENROUTER_API_KEY is not configured on the server." });
   }
 
   const body = req.body ?? {};
@@ -96,62 +96,59 @@ export default async function handler(req: any, res: any) {
   const nodeIds = new Set(nodes.map((node) => node.id));
   const edgeIds = new Set(edges.map((edge) => edge.id).filter(Boolean));
 
-  const architecture = {
-    application,
-    nodes,
-    edges,
-    notes,
-  };
-
   const system = `
-You are a principal/staff software architect conducting a rigorous system-design review.
+You are the architecture reviewer inside Breach X.
 
-Evaluate ONLY the architecture supplied in the user payload. Do not invent components,
-traffic numbers, requirements, SLAs, or implementation details.
+This is a serious architecture evaluation, not a component-counting exercise.
 
-Review these dimensions:
-Architecture, Scalability, Reliability, Security, Data Design, Performance,
-Fault Tolerance, Trade-offs, and Completeness.
+Evaluate the submitted system against its stated application purpose and requirements.
+The architecture evaluation should determine whether the architecture addresses its
+intended purpose, identify risks and opportunities, and make the reasoning useful for
+an engineering decision.
 
-Think through:
-- request/data flow and bottlenecks
-- single points of failure and blast radius
-- horizontal scaling and state management
-- database consistency, replication, partitioning and durability
-- cache correctness and invalidation
-- queues, workers, retries, idempotency and backpressure
-- security boundaries and least-privilege exposure
-- observability, deployment, recovery and operability
-- unnecessary complexity and cost
-- whether the design actually satisfies the stated application requirements
+Rules:
+- Do not invent traffic, users, SLAs, compliance obligations, business rules, or technology.
+- Do not reward a component merely because it exists.
+- Do not require a database, queue, cache, load balancer, microservices, multi-region
+  deployment, or other pattern unless the requirements or architecture context justify it.
+- Analyze the directed graph: request reachability, broken paths, dead ends, dependencies,
+  bottlenecks, failure boundaries and data flow.
+- Distinguish a missing capability from an optional best practice.
+- Evaluate scalability, reliability, security, data correctness, performance, fault
+  tolerance, operability, maintainability and trade-offs.
+- Prefer a few high-confidence findings over generic advice.
+- Every represented-component finding MUST cite valid node IDs and/or edge IDs.
+- A missing capability MUST use omission=true and explain the requirement that makes it
+  relevant.
+- Do not duplicate an obvious rule-based finding unless you add materially different
+  reasoning.
+- confidence must be between 0 and 1. Only return findings at confidence >= 0.65.
+- Do not return a numeric overall score. The application computes the score deterministically.
+- Dimension assessments are qualitative: strong, adequate, weak, or critical.
 
-Ground every finding. For findings about represented components, provide valid node IDs
-and/or edge IDs from the supplied architecture. For missing capabilities, set omission=true
-and explain exactly what important capability is absent. Never cite an ID that was not supplied.
+Severity:
+critical = the design cannot safely/meaningfully satisfy a stated critical need
+high = major production risk or broken core requirement
+medium = meaningful weakness under plausible operation
+low = improvement, documentation, or non-blocking concern
 
-Severity must be calibrated:
-critical = likely catastrophic correctness/security/availability problem
-high = major production risk
-medium = meaningful weakness or scaling/reliability concern
-low = improvement or polish
-
-Scores are 0-100 for each dimension. Be conservative and do not reward components merely
-for existing; reward whether they solve a stated requirement. Avoid generic advice.
+Architecture principles:
+${JSON.stringify(ARCHITECTURE_PRINCIPLES)}
 `;
 
-  const user = JSON.stringify(architecture);
+  const user = JSON.stringify({ application, nodes, edges, notes });
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": process.env.APP_URL ?? "https://breachx.vercel.app",
-      "X-Title": "Breach X System Design Evaluator",
+      "HTTP-Referer": process.env.APP_URL ?? "https://breachx-ashy.vercel.app",
+      "X-Title": "Breach X System Architecture Evaluator",
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL ?? "qwen/qwen3.8-27b:free",
-      temperature: 0.1,
+      model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
+      temperature: 0.05,
       messages: [
         { role: "system", content: system },
         { role: "user", content: user },
@@ -192,45 +189,35 @@ for existing; reward whether they solve a stated requirement. Avoid generic advi
 
   const validFindings = (Array.isArray(review.findings) ? review.findings : [])
     .filter((finding: any) => {
-      const evidenceNodeIds = Array.isArray(finding.evidenceNodeIds)
-        ? finding.evidenceNodeIds
-        : [];
-      const evidenceEdgeIds = Array.isArray(finding.evidenceEdgeIds)
-        ? finding.evidenceEdgeIds
-        : [];
-      const validNodes =
-        evidenceNodeIds.length > 0 &&
-        evidenceNodeIds.every((id: string) => nodeIds.has(id));
-      const validEdges =
-        evidenceEdgeIds.length > 0 &&
-        evidenceEdgeIds.every((id: string) => edgeIds.has(id));
+      const nodeEvidence = Array.isArray(finding.evidenceNodeIds) ? finding.evidenceNodeIds : [];
+      const edgeEvidence = Array.isArray(finding.evidenceEdgeIds) ? finding.evidenceEdgeIds : [];
+      const validNodes = nodeEvidence.length > 0 && nodeEvidence.every((id: string) => nodeIds.has(id));
+      const validEdges = edgeEvidence.length > 0 && edgeEvidence.every((id: string) => edgeIds.has(id));
 
       return (
         typeof finding.title === "string" &&
         typeof finding.description === "string" &&
+        typeof finding.confidence === "number" &&
+        finding.confidence >= 0.65 &&
         (finding.omission === true || validNodes || validEdges)
       );
     })
-    .slice(0, 20);
+    .slice(0, 15);
 
   return json(res, 200, {
     summary: typeof review.summary === "string" ? review.summary : "",
     strengths: Array.isArray(review.strengths) ? review.strengths.slice(0, 8) : [],
     findings: validFindings,
-    scores: Array.isArray(review.scores)
-      ? review.scores
+    assessments: Array.isArray(review.assessments)
+      ? review.assessments
           .filter(
-            (score: any) =>
-              typeof score.category === "string" &&
-              typeof score.score === "number",
+            (assessment: any) =>
+              typeof assessment.category === "string" &&
+              ["strong", "adequate", "weak", "critical"].includes(assessment.rating) &&
+              typeof assessment.rationale === "string",
           )
-          .map((score: any) => ({
-            category: score.category,
-            score: Math.max(0, Math.min(100, score.score)),
-            summary: typeof score.summary === "string" ? score.summary : "",
-          }))
-          .slice(0, 9)
+          .slice(0, 10)
       : [],
-    model: process.env.OPENROUTER_MODEL ?? "qwen/qwen3.8-27b:free",
+    model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
   });
 }
