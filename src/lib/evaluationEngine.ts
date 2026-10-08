@@ -42,10 +42,18 @@ const COMPUTE_TYPES = new Set([
 
 const isComputeNode = (node: EvaluationNode) => {
   const type = key(node);
-  if (COMPUTE_TYPES.has(type)) return true;
   const descriptor = (label(node) + " " + (node.data?.notes ?? "")).toLowerCase();
-  return /\b(api|backend|application|app|service|worker|function|lambda|compute|serverless|container)\b/.test(descriptor)
-    && !/\b(database|cache|queue|storage|gateway|firewall|load balancer)\b/.test(descriptor);
+
+  // Client/ingress nodes must not count as deployed processing instances.
+  // In particular, "Client / User App" contains "app" but is not an app server.
+  if (
+    ["client", "client_app", "user_app", "frontend", "web_client", "mobile_app", "browser", "reverse_proxy", "api_gateway", "load_balancer", "firewall", "internet", "cdn", "dns"].includes(type) ||
+    /\\b(client|user app|frontend|browser|mobile app|web client|reverse proxy|reverse proxy)\\b/.test(descriptor)
+  ) return false;
+
+  if (COMPUTE_TYPES.has(type)) return true;
+  return /\\b(api|backend|application|app|service|worker|function|lambda|compute|serverless|container)\\b/.test(descriptor)
+    && !/\\b(database|cache|queue|storage|gateway|firewall|load balancer|reverse proxy)\\b/.test(descriptor);
 };
 
 const isIngressNode = (node: EvaluationNode) =>
@@ -158,7 +166,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   if (requirements.sensitiveData && !hasAny(notesAndLabels, ["authentication","authorization","oauth","iam","rbac","least privilege","access control"])) add("SEC_MISSING_ACCESS_MODEL","Security","medium","Access-control model is not explained","The workload contains sensitive data, but the submission does not explain how callers are authenticated or authorized.",["Sensitive data requirement","No authentication/authorization rationale found"],"Document the identity boundary, authorization model, and least-privilege access to sensitive resources.",4,"SEC-002");
   if (requirements.highScale && compute.length === 1 && !types.has("load_balancer") && !types.has("autoscaler")) add("SCALE_SINGLE_COMPUTE","Scalability","high","Single compute capacity at stated scale","The workload states meaningful scale, but the architecture shows one application-processing instance with no traffic-distribution mechanism.",[label(compute[0]),"No load balancer"],"Introduce horizontal capacity and a mechanism that distributes traffic across healthy instances.",7,"SD-21");
   if (
-    compute.length > 1 &&
+    compute.length > 1 && !findings.some((finding) => finding.id === "CAP_SCALE_DISTRIBUTION") &&
     !types.has("load_balancer") &&
     !types.has("service_discovery") &&
     !types.has("service_mesh") &&
@@ -173,9 +181,14 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   if (requirements.externalDependencies && external.length > 0 && !hasAny(notesAndLabels, ["timeout","retry","backoff","circuit breaker","fallback","rate limit"])) add("EXT_NO_FAILURE_POLICY","Reliability","medium","External dependency failure policy is missing","The design depends on an external service but does not explain timeout, retry, backoff, circuit-breaking, rate limiting, or fallback behavior.",external.map(label),"Define bounded timeouts and an appropriate failure policy. Avoid unbounded retries and explain how user-facing behavior degrades when the dependency is unavailable.",4,"REL-002");
   if (requirements.highScale && requirements.readHeavy && caches.length === 0) add("PERF_READ_HEAVY_NO_CACHE","Performance","medium","Read-heavy workload has no acceleration strategy","The workload is explicitly read-heavy at meaningful scale, but the architecture shows no cache or equivalent read-optimization strategy.",["High-scale read-heavy requirement","No cache node"],"Consider caching frequently read, relatively stable data or explain why the primary store and query path are sufficient.",3,"SD-16");
   if (caches.length > 0 && stores.length === 0 && requirements.persistenceRequired) add("DATA_CACHE_WITHOUT_SOURCE","Data Design","high","Cache is being used without a source of truth","A cache is present for a workload that requires durable state, but no authoritative persistent store is shown.",caches.map(label),"Keep durable state in an authoritative store and use the cache only as an acceleration layer.",6,"SD-16");
-  if (requirements.rationaleRequired && (input.notes ?? "").trim().length < 80 && !nodes.some((node) => (node.data?.notes ?? "").trim().length >= 40)) add("TRADEOFFS_MISSING","Trade-offs","medium","Major architectural decisions are not justified","The design has requirements or complexity that warrant explanation, but the rationale is too short to evaluate key trade-offs.",["Architecture notes are under 80 characters"],"Explain the request path, state ownership, scaling choice, failure handling, security boundaries, and the most important trade-off.",3,"REQ-001");
+  if (
+    requirements.rationaleRequired &&
+    (requirements.highScale || requirements.highAvailability || requirements.complexWorkflow || requirements.externalDependencies) &&
+    (input.notes ?? "").trim().length === 0 &&
+    !nodes.some((node) => (node.data?.notes ?? "").trim().length > 0)
+  ) add("TRADEOFFS_MISSING","Trade-offs","low","Key architectural rationale is not provided","The stated requirements involve architectural trade-offs, but no design rationale was supplied. This is a documentation gap, not proof that the architecture is incorrect.",["No architecture-level or component-level rationale supplied"],"Document the most consequential choice and its trade-off, such as scaling, state ownership, failure handling, or security boundaries.",1,"REQ-001");
   const observabilityMentioned = hasAny(notesAndLabels, ["observability","monitoring","metrics","logging","logs","tracing","traces","alerting","slo","sla"]);
-  if ((requirements.highAvailability || requirements.highScale || requirements.complexWorkflow) && !observabilityMentioned) add("OPS_NO_OBSERVABILITY","Operability","medium","Production observability is not addressed","The workload has production-oriented scale, availability, or workflow complexity, but no monitoring, logging, tracing, alerting, or SLO strategy is described.",["No observability evidence in labels or rationale"],"Define actionable metrics, logs, traces, alerts, and service-level objectives appropriate to the workload.",4,"OPS-001");
+  if ((requirements.highAvailability || requirements.highScale || requirements.complexWorkflow) && !observabilityMentioned) add("OPS_NO_OBSERVABILITY","Operability","low","Observability is not represented in the design","The stated workload may benefit from operational visibility, but the submitted graph and notes do not establish whether observability is implemented elsewhere. This is an unverified capability, not proof of a production defect.",["No observability component or observability rationale represented in the submitted design"],"If operational visibility is required, document or represent the metrics, logs, traces, alerts, and service-level objectives relevant to this workload.",1,"OPS-001");
   const highComplexityNodes = nodes.filter((node) => COMPONENT_CAPABILITIES[key(node)]?.operationalComplexity === "high");
   if (!requirements.highScale && !requirements.highAvailability && !requirements.complexWorkflow && !requirements.asyncWork && !requirements.externalDependencies && highComplexityNodes.length >= 2) {
     add("ARCH_COMPLEXITY_BUDGET","Trade-offs","medium","Architecture complexity is not proportional to the stated workload","Several high-complexity components are present, but the stated workload does not currently establish a requirement that pays for that distributed-system complexity.",highComplexityNodes.map(label),"Keep the simpler architecture unless the missing requirement is real. If these components are intentional, document the concrete scale, ownership, isolation, or reliability requirement that justifies them.",3,"ARCH-001");
