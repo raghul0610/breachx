@@ -25,7 +25,7 @@ export type EvaluationResult = { score: number; maxScore: 100; scores: Evaluatio
 
 const key = (n: EvaluationNode) => (n.data?.typeKey ?? "").toLowerCase();
 const label = (n: EvaluationNode) => (n.data?.label ?? key(n)) || n.id;
-const textOf = (input: EvaluationInput) => [input.application.name, input.application.description, input.notes ?? "", ...input.nodes.map((n) => (label(n) + " " + (n.data?.notes ?? "")))].join(" ").toLowerCase();
+const textOf = (input: EvaluationInput) => [input.application.name, input.application.description, input.notes ?? "", ...(input.workload?.features ?? []), ...input.nodes.map((n) => (label(n) + " " + (n.data?.notes ?? "")))].join(" ").toLowerCase();
 const hasAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
 const hasPattern = (text: string, pattern: RegExp) => pattern.test(text);
 
@@ -220,7 +220,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     ["kafka","database_shard","multi_region","service_mesh","container_orchestrator","search_engine","microservice"].includes(key(node))
   );
   if (
-    workloadScale === "small" &&
+    (workloadScale === "small" || workload.budget === "low") &&
     advancedComponents.length >= 3 &&
     !requirements.highAvailability &&
     !requirements.complexWorkflow &&
@@ -327,6 +327,9 @@ export type AIReviewFinding = {
   confidence?: number;
   requirement?: string;
   principleIds?: string[];
+  alternatives?: string[];
+  costImpact?: string;
+  complexityImpact?: string;
 };
 
 export type AIReviewAssessment = {
