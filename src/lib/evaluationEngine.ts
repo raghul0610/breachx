@@ -365,7 +365,14 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
 
   const critical = findings.filter((f) => f.severity === "critical").length;
   const high = findings.filter((f) => f.severity === "high").length;
-  const score = Math.round(scores.reduce((sum, s) => sum + s.score, 0));
+  let score = Math.round(scores.reduce((sum, s) => sum + s.score, 0));
+
+  // A catastrophic architectural defect must affect the overall judgment, not just one
+  // dimension. This prevents a broken request path from receiving a misleadingly high score
+  // because unrelated dimensions happen to be represented.
+  if (critical > 0) score = Math.min(score, 49);
+  else if (high >= 3) score = Math.min(score, 64);
+  else if (high >= 1) score = Math.min(score, 79);
 
   const strengths: string[] = [];
   if (apps.length && ingress.some((n) => reachable.has(n.id))) strengths.push("The graph contains a request ingress path.");
@@ -458,7 +465,12 @@ export function mergeAIReview(
     };
   });
 
-  const score = Math.round(scores.reduce((sum, item) => sum + item.score, 0));
+  let score = Math.round(scores.reduce((sum, item) => sum + item.score, 0));
+  const critical = mergedFindings.filter((finding) => finding.severity === "critical").length;
+  const high = mergedFindings.filter((finding) => finding.severity === "high").length;
+  if (critical > 0) score = Math.min(score, 49);
+  else if (high >= 3) score = Math.min(score, 64);
+  else if (high >= 1) score = Math.min(score, 79);
 
   return {
     ...base,
