@@ -1,4 +1,6 @@
-import { ARCHITECTURE_PRINCIPLES } from "../src/lib/architecturePrinciples";
+import { ARCHITECTURE_PRINCIPLES } from "../src/lib/architecturePrinciples.js";
+
+declare const process: { env: Record<string, string | undefined> };
 
 type NodeSummary = {
   id: string;
