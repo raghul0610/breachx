@@ -204,7 +204,10 @@ export function mergeAIReview(
   const aiFindings: EvaluationFinding[] = review.findings
     .filter((finding) => {
       const nodeEvidence = finding.evidenceNodeIds ?? [];
-      const validPrinciples = new Set(SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id).concat(ARCHITECTURE_PRINCIPLES.map((p) => p.id)));
+      const validPrinciples = new Set<string>([
+        ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),
+        ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),
+      ]);
       const edgeEvidence = finding.evidenceEdgeIds ?? [];
       const grounded =
         finding.omission === true ||
