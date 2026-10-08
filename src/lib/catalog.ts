@@ -1,14 +1,91 @@
 export const CATALOG = [
+  // Edge / delivery
   { typeKey: "client", label: "Client / User App", category: "Edge" },
-  { typeKey: "internet", label: "Internet / CDN", category: "Edge" },
+  { typeKey: "internet", label: "Internet", category: "Edge" },
+  { typeKey: "dns", label: "DNS", category: "Edge" },
+  { typeKey: "cdn", label: "CDN", category: "Edge" },
+  { typeKey: "reverse_proxy", label: "Reverse Proxy", category: "Edge" },
+  { typeKey: "bff", label: "Backend for Frontend", category: "Edge" },
+
+  // Network / routing
   { typeKey: "firewall", label: "WAF / Firewall", category: "Security" },
+  { typeKey: "ddos_protection", label: "DDoS Protection", category: "Security" },
   { typeKey: "load_balancer", label: "Load Balancer", category: "Network" },
   { typeKey: "api_gateway", label: "API Gateway", category: "Routing" },
+  { typeKey: "service_discovery", label: "Service Discovery", category: "Network" },
+  { typeKey: "service_mesh", label: "Service Mesh", category: "Network" },
+  { typeKey: "nat_gateway", label: "NAT Gateway", category: "Network" },
+  { typeKey: "vpc", label: "VPC / Private Network", category: "Network" },
+  { typeKey: "rate_limiter", label: "Rate Limiter", category: "Security" },
+
+  // Compute
   { typeKey: "app_server", label: "App Server", category: "Compute" },
-  { typeKey: "cache", label: "Cache (Redis/Mem)", category: "Storage" },
-  { typeKey: "database", label: "Database (Primary/Replica)", category: "Storage" },
+  { typeKey: "microservice", label: "Microservice", category: "Compute" },
+  { typeKey: "container", label: "Container", category: "Compute" },
+  { typeKey: "container_orchestrator", label: "Container Orchestrator", category: "Compute" },
+  { typeKey: "serverless", label: "Serverless Function", category: "Compute" },
+  { typeKey: "worker", label: "Worker", category: "Compute" },
+  { typeKey: "batch_job", label: "Batch Job", category: "Compute" },
+  { typeKey: "autoscaler", label: "Autoscaler", category: "Compute" },
+
+  // API / realtime
+  { typeKey: "rest_api", label: "REST API", category: "API" },
+  { typeKey: "graphql", label: "GraphQL API", category: "API" },
+  { typeKey: "websocket", label: "WebSocket", category: "Realtime" },
+  { typeKey: "webhook", label: "Webhook", category: "Integration" },
+
+  // Caching / data
+  { typeKey: "cache", label: "Cache (Redis / Memcached)", category: "Data" },
+  { typeKey: "database", label: "SQL Database", category: "Data" },
+  { typeKey: "nosql_database", label: "NoSQL Database", category: "Data" },
+  { typeKey: "search_engine", label: "Search Engine", category: "Data" },
+  { typeKey: "graph_database", label: "Graph Database", category: "Data" },
+  { typeKey: "time_series_db", label: "Time-Series Database", category: "Data" },
+  { typeKey: "data_warehouse", label: "Data Warehouse", category: "Analytics" },
+  { typeKey: "data_lake", label: "Data Lake", category: "Analytics" },
+  { typeKey: "object_storage", label: "Object Storage", category: "Storage" },
+  { typeKey: "blob_storage", label: "Blob Storage", category: "Storage" },
+  { typeKey: "database_replica", label: "Read Replica", category: "Data" },
+  { typeKey: "database_shard", label: "Database Shard", category: "Data" },
+  { typeKey: "backup", label: "Backup / Snapshot", category: "Reliability" },
+
+  // Messaging / distributed systems
+  { typeKey: "kafka", label: "Kafka / Event Stream", category: "Messaging" },
   { typeKey: "queue", label: "Message Queue", category: "Messaging" },
-  { typeKey: "storage", label: "Object Storage", category: "Storage" },
-  { typeKey: "external_api", label: "External Service", category: "Third Party" }
+  { typeKey: "event_bus", label: "Event Bus", category: "Messaging" },
+  { typeKey: "stream_processor", label: "Stream Processor", category: "Messaging" },
+  { typeKey: "dead_letter_queue", label: "Dead Letter Queue", category: "Messaging" },
+  { typeKey: "workflow_engine", label: "Workflow Engine", category: "Orchestration" },
+  { typeKey: "scheduler", label: "Scheduler / Cron", category: "Orchestration" },
+
+  // Security / identity
+  { typeKey: "identity_provider", label: "Identity Provider", category: "Security" },
+  { typeKey: "auth_service", label: "Authentication Service", category: "Security" },
+  { typeKey: "iam", label: "IAM / Authorization", category: "Security" },
+  { typeKey: "secrets_manager", label: "Secrets Manager", category: "Security" },
+  { typeKey: "kms", label: "Key Management / KMS", category: "Security" },
+  { typeKey: "token_service", label: "Token / Session Service", category: "Security" },
+  { typeKey: "audit_log", label: "Audit Log", category: "Security" },
+
+  // Reliability / resilience
+  { typeKey: "circuit_breaker", label: "Circuit Breaker", category: "Reliability" },
+  { typeKey: "retry_policy", label: "Retry / Backoff", category: "Reliability" },
+  { typeKey: "health_checker", label: "Health Checker", category: "Reliability" },
+  { typeKey: "failover", label: "Failover / Recovery", category: "Reliability" },
+  { typeKey: "multi_region", label: "Multi-Region", category: "Reliability" },
+
+  // Operations / platform
+  { typeKey: "logger", label: "Centralized Logging", category: "Observability" },
+  { typeKey: "metrics", label: "Metrics / Monitoring", category: "Observability" },
+  { typeKey: "tracing", label: "Distributed Tracing", category: "Observability" },
+  { typeKey: "alerting", label: "Alerting / SLOs", category: "Observability" },
+  { typeKey: "config_service", label: "Configuration Service", category: "Platform" },
+  { typeKey: "feature_flags", label: "Feature Flags", category: "Platform" },
+
+  // External / business dependencies
+  { typeKey: "payment_service", label: "Payment Service", category: "External" },
+  { typeKey: "notification_service", label: "Notification Service", category: "External" },
+  { typeKey: "external_api", label: "External Service / API", category: "External" },
 ] as const;
+
 export type CatalogItem = typeof CATALOG[number];
