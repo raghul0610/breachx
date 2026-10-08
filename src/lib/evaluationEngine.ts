@@ -106,3 +106,118 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   const summary = criticalCount > 0 ? "The architecture scored " + score + "/100. " + criticalCount + " critical architectural risk" + (criticalCount === 1 ? "" : "s") + " require attention before the design should be considered production-ready." : findings.length ? "The architecture scored " + score + "/100 against stated requirements and a multi-source architecture-principles corpus. " + findings.length + " improvement finding" + (findings.length === 1 ? "" : "s") + " were identified." : "The architecture scored " + score + "/100 with no material rule-based findings against the stated requirements.";
   return { score, maxScore:100, scores, findings, strengths, summary, generatedAt:new Date().toISOString(), reviewBasis:{ requirements, principles:ARCHITECTURE_PRINCIPLES.map((principle) => principle.id), methodology:"Requirement-first graph review using " + sourceCount + " public architecture guidance sources (AWS, Google Cloud, Microsoft Azure). Components are evidence, not automatic requirements." } };
 }
+
+export type FindingSource = "rule" | "ai";
+
+export type AIReviewFinding = {
+  id: string;
+  category: string;
+  severity: FindingSeverity;
+  title: string;
+  description: string;
+  recommendation: string;
+  evidenceNodeIds?: string[];
+  evidenceEdgeIds?: string[];
+  omission?: boolean;
+  confidence?: number;
+};
+
+export type AIReviewAssessment = {
+  category: string;
+  rating: "strong" | "adequate" | "weak" | "critical";
+  rationale: string;
+};
+
+export type AIReview = {
+  summary: string;
+  strengths: string[];
+  findings: AIReviewFinding[];
+  assessments: AIReviewAssessment[];
+};
+
+export function mergeAIReview(
+  base: EvaluationResult,
+  review: AIReview,
+  model = "openrouter/free",
+  input?: EvaluationInput,
+): EvaluationResult {
+  const validNodeIds = new Set((input?.nodes ?? []).map((node) => node.id));
+  const validEdgeIds = new Set((input?.edges ?? []).map((edge) => edge.id).filter(Boolean));
+
+  const aiFindings: EvaluationFinding[] = review.findings
+    .filter((finding) => {
+      const nodeEvidence = finding.evidenceNodeIds ?? [];
+      const edgeEvidence = finding.evidenceEdgeIds ?? [];
+      const grounded =
+        finding.omission === true ||
+        (nodeEvidence.length > 0 && nodeEvidence.every((id) => validNodeIds.has(id))) ||
+        (edgeEvidence.length > 0 && edgeEvidence.every((id) => validEdgeIds.has(id)));
+      return grounded &&
+        finding.title.trim() &&
+        finding.description.trim() &&
+        (finding.confidence ?? 0.8) >= 0.65;
+    })
+    .map((finding) => ({
+      id: `AI_${finding.id}`,
+      category: finding.category,
+      severity: finding.severity,
+      title: finding.title,
+      description: finding.description,
+      evidence: [
+        ...(finding.evidenceNodeIds ?? []).map((id) => `Node: ${id}`),
+        ...(finding.evidenceEdgeIds ?? []).map((id) => `Edge: ${id}`),
+        ...(finding.omission ? ["Omission: not represented in the design"] : []),
+      ],
+      recommendation: finding.recommendation,
+      source: "ai" as const,
+      penalty: finding.severity === "critical" ? 12 : finding.severity === "high" ? 7 : finding.severity === "medium" ? 3 : 1,
+    }));
+
+  const mergedFindings = [
+    ...base.findings.map((finding) => ({ ...finding, source: "rule" as const })),
+    ...aiFindings.filter((ai) =>
+      !base.findings.some((rule) =>
+        rule.category === ai.category &&
+        rule.title.toLowerCase() === ai.title.toLowerCase(),
+      ),
+    ),
+  ];
+
+  const aiDimensionPenalty: Record<AIReviewAssessment["rating"], number> = {
+    strong: 0,
+    adequate: 0.03,
+    weak: 0.12,
+    critical: 0.28,
+  };
+
+  const scores = base.scores.map((baseScore) => {
+    const assessment = review.assessments.find((a) => a.category === baseScore.category);
+    if (!assessment) return baseScore;
+
+    const penalty = aiDimensionPenalty[assessment.rating] ?? 0;
+    return {
+      ...baseScore,
+      score: Math.round(Math.max(0, baseScore.score * (1 - penalty)) * 10) / 10,
+      summary: assessment.rationale || baseScore.summary,
+    };
+  });
+
+  let score = Math.round(scores.reduce((sum, item) => sum + item.score, 0));
+  const critical = mergedFindings.filter((finding) => finding.severity === "critical").length;
+  const high = mergedFindings.filter((finding) => finding.severity === "high").length;
+  if (critical > 0) score = Math.min(score, 49);
+  else if (high >= 3) score = Math.min(score, 64);
+  else if (high >= 1) score = Math.min(score, 79);
+
+  return {
+    ...base,
+    score,
+    scores,
+    findings: mergedFindings,
+    strengths: Array.from(new Set([...base.strengths, ...(review.strengths ?? [])])).slice(0, 8),
+    summary: review.summary || base.summary,
+    evaluationMode: "hybrid",
+    aiModel: model,
+    generatedAt: new Date().toISOString(),
+  };
+}
