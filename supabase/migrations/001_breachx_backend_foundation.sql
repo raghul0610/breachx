@@ -313,3 +313,23 @@ create policy "judge_scores_self_update" on public.judging_scores
   with check ((select auth.uid()) = judge_id);
 
 -- Audit logs are intentionally not client-writable. Sensitive writes belong in trusted backend operations.
+
+
+-- Prototype phase: public read-only event catalog.
+-- Event mutation and participant-owned data remain authenticated-only.
+grant select on public.events to anon;
+grant select on public.event_config to anon;
+grant select on public.tracks to anon;
+grant select on public.problem_statements to anon;
+
+create policy "events_anon_select" on public.events
+  for select to anon using (true);
+
+create policy "event_config_anon_select" on public.event_config
+  for select to anon using (true);
+
+create policy "tracks_anon_select" on public.tracks
+  for select to anon using (true);
+
+create policy "problems_anon_select" on public.problem_statements
+  for select to anon using (is_active = true);
