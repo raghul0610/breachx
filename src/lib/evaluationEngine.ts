@@ -48,12 +48,12 @@ const isComputeNode = (node: EvaluationNode) => {
   // In particular, "Client / User App" contains "app" but is not an app server.
   if (
     ["client", "client_app", "user_app", "frontend", "web_client", "mobile_app", "browser", "reverse_proxy", "api_gateway", "load_balancer", "firewall", "internet", "cdn", "dns"].includes(type) ||
-    /\\b(client|user app|frontend|browser|mobile app|web client|reverse proxy|reverse proxy)\\b/.test(descriptor)
+    /\b(client|user app|frontend|browser|mobile app|web client|reverse proxy|reverse proxy)\b/.test(descriptor)
   ) return false;
 
   if (COMPUTE_TYPES.has(type)) return true;
-  return /\\b(api|backend|application|app|service|worker|function|lambda|compute|serverless|container)\\b/.test(descriptor)
-    && !/\\b(database|cache|queue|storage|gateway|firewall|load balancer|reverse proxy)\\b/.test(descriptor);
+  return /\b(api|backend|application|app|service|worker|function|lambda|compute|serverless|container)\b/.test(descriptor)
+    && !/\b(database|cache|queue|storage|gateway|firewall|load balancer|reverse proxy)\b/.test(descriptor);
 };
 
 const isIngressNode = (node: EvaluationNode) =>
