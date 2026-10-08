@@ -86,6 +86,32 @@ export const CATALOG = [
   { typeKey: "payment_service", label: "Payment Service", category: "External" },
   { typeKey: "notification_service", label: "Notification Service", category: "External" },
   { typeKey: "external_api", label: "External Service / API", category: "External" },
+
+  // Banking / financial systems
+  { typeKey: "transaction_processor", label: "Transaction Processing Service", category: "Banking" },
+  { typeKey: "transaction_ledger", label: "Account / Transaction Ledger", category: "Banking" },
+  { typeKey: "fraud_detection", label: "Fraud Detection / Risk Engine", category: "Banking" },
+  { typeKey: "kyc_aml_service", label: "KYC / AML Verification", category: "Banking" },
+  { typeKey: "reconciliation_service", label: "Settlement / Reconciliation", category: "Banking" },
+  { typeKey: "idempotency_store", label: "Idempotency / Deduplication Store", category: "Banking" },
+  { typeKey: "hsm", label: "Hardware Security Module (HSM)", category: "Security" },
+
+  // AI / LLM applications
+  { typeKey: "llm_gateway", label: "LLM Gateway / Model Router", category: "AI / ML" },
+  { typeKey: "model_inference", label: "LLM / Model Inference", category: "AI / ML" },
+  { typeKey: "gpu_inference_pool", label: "GPU Inference Pool", category: "AI / ML" },
+  { typeKey: "embedding_service", label: "Embedding Service", category: "AI / ML" },
+  { typeKey: "vector_database", label: "Vector Database", category: "AI / ML" },
+  { typeKey: "reranker", label: "Reranker / Retrieval Ranking", category: "AI / ML" },
+  { typeKey: "prompt_guardrails", label: "Prompt Safety / Guardrails", category: "AI / ML" },
+  { typeKey: "tool_executor", label: "Tool / Function Execution Sandbox", category: "AI / ML" },
+  { typeKey: "conversation_store", label: "Conversation / Chat History Store", category: "AI / ML" },
+  { typeKey: "model_registry", label: "Model Registry", category: "AI / ML" },
+  { typeKey: "feature_store", label: "Feature Store", category: "AI / ML" },
+  { typeKey: "document_parser", label: "Document Ingestion / Parser", category: "AI / ML" },
+
+  // Common production platform components
+  { typeKey: "schema_registry", label: "Schema Registry", category: "Messaging" },
 ] as const;
 
 export type CatalogItem = typeof CATALOG[number];
@@ -125,4 +151,24 @@ export const COMPONENT_CAPABILITIES: Record<string, ComponentCapability> = {
   metrics:{capabilities:["health and performance measurement"],operationalComplexity:"medium",costProfile:"medium"},
   tracing:{capabilities:["distributed request tracing"],operationalComplexity:"medium",costProfile:"medium"},
   alerting:{capabilities:["incident detection","SLO-based alerting"],operationalComplexity:"medium",costProfile:"low"},
+  transaction_processor:{capabilities:["transaction validation","business-rule enforcement","idempotent transaction handling"],operationalComplexity:"high",costProfile:"high"},
+  transaction_ledger:{capabilities:["durable financial records","account balance history","transaction auditability"],operationalComplexity:"high",costProfile:"high"},
+  fraud_detection:{capabilities:["fraud signals","transaction risk scoring"],operationalComplexity:"high",costProfile:"high"},
+  kyc_aml_service:{capabilities:["identity verification","compliance screening"],operationalComplexity:"high",costProfile:"high"},
+  reconciliation_service:{capabilities:["settlement reconciliation","mismatch detection"],operationalComplexity:"medium",costProfile:"medium"},
+  idempotency_store:{capabilities:["duplicate request protection","idempotency keys"],operationalComplexity:"medium",costProfile:"low"},
+  hsm:{capabilities:["protected cryptographic key operations","hardware-backed key isolation"],operationalComplexity:"high",costProfile:"high"},
+  llm_gateway:{capabilities:["model routing","provider abstraction","token and spend controls"],operationalComplexity:"medium",costProfile:"medium"},
+  model_inference:{capabilities:["LLM inference","model-generated responses"],operationalComplexity:"high",costProfile:"very_high"},
+  gpu_inference_pool:{capabilities:["GPU-backed inference","inference capacity scaling"],operationalComplexity:"very_high",costProfile:"very_high"},
+  embedding_service:{capabilities:["text embeddings","semantic retrieval preparation"],operationalComplexity:"medium",costProfile:"medium"},
+  vector_database:{capabilities:["vector similarity search","semantic retrieval"],operationalComplexity:"high",costProfile:"high"},
+  reranker:{capabilities:["retrieval relevance ranking","context selection"],operationalComplexity:"medium",costProfile:"medium"},
+  prompt_guardrails:{capabilities:["input and output safety checks","prompt-injection risk reduction"],operationalComplexity:"medium",costProfile:"medium"},
+  tool_executor:{capabilities:["controlled tool execution","external action isolation"],operationalComplexity:"high",costProfile:"high"},
+  conversation_store:{capabilities:["durable conversation history","session context persistence"],operationalComplexity:"medium",costProfile:"medium"},
+  model_registry:{capabilities:["model version tracking","model artifact governance"],operationalComplexity:"medium",costProfile:"medium"},
+  feature_store:{capabilities:["consistent model features","online and offline feature access"],operationalComplexity:"high",costProfile:"high"},
+  document_parser:{capabilities:["document extraction","unstructured content ingestion"],operationalComplexity:"medium",costProfile:"medium"},
+  schema_registry:{capabilities:["event schema governance","message compatibility checks"],operationalComplexity:"medium",costProfile:"medium"},
 };
