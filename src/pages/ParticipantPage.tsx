@@ -284,6 +284,17 @@ function ParticipantEditor({
         nodes,
         edges,
         notes,
+        workload: {
+          expectedUsers: Number(expectedUsers) || undefined,
+          concurrentUsers: Number(concurrentUsers) || undefined,
+          peakRps: Number(peakRps) || undefined,
+          growthPercent: Number(growthPercent) || undefined,
+          availabilityTarget: Number(availabilityTarget) || undefined,
+          latencyMs: Number(latencyMs) || undefined,
+          geography,
+          budget,
+          features: features.split("\n").map((item) => item.trim()).filter(Boolean),
+        },
         status: submissionStatus,
         updatedAt: new Date().toISOString(),
       };
@@ -401,7 +412,7 @@ function ParticipantEditor({
             disabled={submitted}
           />
         </div>
-        <section className="problem-banner">
+        <div className="workload-section">
           <div className="section-kicker">WORKLOAD & CONSTRAINTS</div>
           <div className="workload-grid">
             <div className="field"><label>EXPECTED USERS</label><input type="number" min="0" value={expectedUsers} onChange={(e) => setExpectedUsers(e.target.value)} placeholder="e.g. 100000" disabled={submitted} /></div>
@@ -418,7 +429,8 @@ function ParticipantEditor({
             <textarea rows={3} value={features} onChange={(e) => setFeatures(e.target.value)} placeholder={"One feature per line, e.g.\nreal-time driver tracking\npayments\npush notifications\norder history"} disabled={submitted} />
           </div>
           <div className="tiny">These constraints are evaluated before component choice. Advanced infrastructure is not rewarded unless the workload or requirements justify it.</div>
-        </section>
+        </div>
+      </section>
 
       <div className="workspace">
         <aside className="sidebar left-panel">
