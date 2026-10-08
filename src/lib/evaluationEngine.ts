@@ -166,7 +166,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   if (requirements.sensitiveData && !hasAny(notesAndLabels, ["authentication","authorization","oauth","iam","rbac","least privilege","access control"])) add("SEC_MISSING_ACCESS_MODEL","Security","medium","Access-control model is not explained","The workload contains sensitive data, but the submission does not explain how callers are authenticated or authorized.",["Sensitive data requirement","No authentication/authorization rationale found"],"Document the identity boundary, authorization model, and least-privilege access to sensitive resources.",4,"SEC-002");
   if (requirements.highScale && compute.length === 1 && !types.has("load_balancer") && !types.has("autoscaler")) add("SCALE_SINGLE_COMPUTE","Scalability","high","Single compute capacity at stated scale","The workload states meaningful scale, but the architecture shows one application-processing instance with no traffic-distribution mechanism.",[label(compute[0]),"No load balancer"],"Introduce horizontal capacity and a mechanism that distributes traffic across healthy instances.",7,"SD-21");
   if (
-    compute.length > 1 && !findings.some((finding) => finding.id === "CAP_SCALE_DISTRIBUTION") &&
+    compute.length > 1 && !presentCapabilities.has("traffic distribution") && !findings.some((finding) => finding.id === "CAP_SCALE_DISTRIBUTION") &&
     !types.has("load_balancer") &&
     !types.has("service_discovery") &&
     !types.has("service_mesh") &&
