@@ -107,7 +107,7 @@ export default async function handler(req: any, res: any) {
   const system = `
 You are the architecture reviewer inside Breach X.
 
-This is a serious architecture evaluation, not a component-counting exercise.
+This is a serious architecture evaluation, not a component-counting exercise. Workload and application requirements are evaluated before architecture components.
 
 Evaluate the submitted system against its stated application purpose and requirements.
 The architecture evaluation should determine whether the architecture addresses its
@@ -115,8 +115,8 @@ intended purpose, identify risks and opportunities, and make the reasoning usefu
 an engineering decision.
 
 Rules:
-- Treat the application description and notes as the source of truth for workload requirements. First identify the explicit functional and non-functional requirements stated by the user.\n- Do not invent traffic, users, SLAs, compliance obligations, business rules, data volumes, latency targets, or technology.
-- Do not reward a component merely because it exists.
+- Treat the application description, structured workload profile, and notes as the source of truth. First identify the explicit functional and non-functional requirements stated by the user. Structured workload fields such as users, concurrency, peak RPS, availability, latency, geography, budget, and growth take precedence over guesses from prose.\n- Do not invent traffic, users, SLAs, compliance obligations, business rules, data volumes, latency targets, or technology.
+- Do not reward a component merely because it exists. Advanced infrastructure must earn its complexity through the stated workload, features, availability, latency, geographic, or failure requirements.
 - Do not require a database, queue, cache, load balancer, microservices, multi-region
   deployment, or other pattern unless the requirements or architecture context justify it.
 - Analyze the directed graph: request reachability, broken paths, dead ends, dependencies,
