@@ -20,7 +20,8 @@ const hasPattern = (text: string, pattern: RegExp) => pattern.test(text);
 const COMPUTE_TYPES = new Set([
   "app_server", "application_server", "application", "api_server", "backend",
   "service", "microservice", "worker", "compute", "function", "serverless",
-  "lambda", "container", "container_service", "edge_function",
+  "lambda", "container", "container_service", "container_orchestrator",
+  "edge_function", "batch_job", "workflow_engine", "stream_processor",
 ]);
 
 const isComputeNode = (node: EvaluationNode) => {
@@ -32,7 +33,10 @@ const isComputeNode = (node: EvaluationNode) => {
 };
 
 const isIngressNode = (node: EvaluationNode) =>
-  ["client", "internet", "api_gateway", "load_balancer", "firewall"].includes(key(node));
+  [
+    "client", "internet", "dns", "cdn", "reverse_proxy", "bff",
+    "api_gateway", "load_balancer", "firewall", "ddos_protection",
+  ].includes(key(node));
 
 const isConsumerNode = (node: EvaluationNode) => {
   if (isComputeNode(node)) return true;
@@ -69,11 +73,23 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   const reachFrom = (startIds: string[]) => { const seen = new Set<string>(); const queue = [...startIds]; while (queue.length) { const current = queue.shift()!; if (seen.has(current)) continue; seen.add(current); for (const next of outgoing.get(current) ?? []) queue.push(next); } return seen; };
   const ingress = nodes.filter(isIngressNode);
   const compute = nodes.filter(isComputeNode);
-  const stores = nodes.filter((node) => ["database", "storage"].includes(key(node)));
+  const stores = nodes.filter((node) =>
+    [
+      "database", "storage", "object_storage", "blob_storage", "nosql_database",
+      "graph_database", "time_series_db", "data_warehouse", "data_lake",
+      "search_engine", "database_replica", "database_shard",
+    ].includes(key(node)),
+  );
   const caches = nodes.filter((node) => key(node) === "cache");
-  const queues = nodes.filter((node) => key(node) === "queue");
-  const external = nodes.filter((node) => key(node) === "external_api");
-  const securityBoundary = nodes.filter((node) => ["firewall", "api_gateway"].includes(key(node)));
+  const queues = nodes.filter((node) =>
+    ["queue", "kafka", "event_bus", "dead_letter_queue"].includes(key(node)),
+  );
+  const external = nodes.filter((node) =>
+    ["external_api", "payment_service", "notification_service"].includes(key(node)),
+  );
+  const securityBoundary = nodes.filter((node) =>
+    ["firewall", "api_gateway", "ddos_protection", "rate_limiter", "identity_provider", "auth_service", "iam"].includes(key(node)),
+  );
   const reachableFromIngress = reachFrom(ingress.map((node) => node.id));
   const reachableFromCompute = reachFrom(compute.map((node) => node.id));
   if (!requirements.staticLike && ingress.length === 0) add("ARCH_NO_INGRESS","Architecture","high","No clear request ingress","The graph has no identifiable client, internet, gateway, firewall, or load-balancer entry point.",["No ingress component detected"],"Add the actual request entry point and show how traffic enters the application.",7,"REQ-001");
@@ -89,12 +105,18 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   const notesAndLabels = textOf(input);
   if (requirements.sensitiveData && securityBoundary.length === 0) add("SEC_NO_BOUNDARY","Security","high","Sensitive workload lacks a visible security boundary","The requirements describe sensitive data, but the graph has no visible firewall or API gateway boundary.",["Sensitive data inferred from requirements","No firewall/API gateway"],"Add an explicit edge security or API boundary and document authentication, authorization, and data-protection responsibilities.",8,"SEC-001");
   if (requirements.sensitiveData && !hasAny(notesAndLabels, ["authentication","authorization","oauth","iam","rbac","least privilege","access control"])) add("SEC_MISSING_ACCESS_MODEL","Security","medium","Access-control model is not explained","The workload contains sensitive data, but the submission does not explain how callers are authenticated or authorized.",["Sensitive data requirement","No authentication/authorization rationale found"],"Document the identity boundary, authorization model, and least-privilege access to sensitive resources.",4,"SEC-002");
-  if (requirements.highScale && compute.length === 1 && !types.has("load_balancer")) add("SCALE_SINGLE_COMPUTE","Scalability","high","Single compute capacity at stated scale","The workload states meaningful scale, but the architecture shows one application-processing instance with no traffic-distribution mechanism.",[label(compute[0]),"No load balancer"],"Introduce horizontal capacity and a mechanism that distributes traffic across healthy instances.",7,"REL-003");
-  if (compute.length > 1 && !types.has("load_balancer") && !hasAny(notesAndLabels, ["service discovery","service mesh","client-side load balancing"])) add("SCALE_MULTIPLE_NO_DISTRIBUTION","Scalability","medium","Multiple compute instances lack traffic distribution","Multiple application instances are drawn, but the architecture does not show how requests are distributed between them.",compute.map(label),"Add a load-balancing or service-discovery strategy and explain the distribution mechanism.",4,"REL-003");
+  if (requirements.highScale && compute.length === 1 && !types.has("load_balancer") && !types.has("autoscaler")) add("SCALE_SINGLE_COMPUTE","Scalability","high","Single compute capacity at stated scale","The workload states meaningful scale, but the architecture shows one application-processing instance with no traffic-distribution mechanism.",[label(compute[0]),"No load balancer"],"Introduce horizontal capacity and a mechanism that distributes traffic across healthy instances.",7,"REL-003");
+  if (
+    compute.length > 1 &&
+    !types.has("load_balancer") &&
+    !types.has("service_discovery") &&
+    !types.has("service_mesh") &&
+    !hasAny(notesAndLabels, ["client-side load balancing"])
+  ) add("SCALE_MULTIPLE_NO_DISTRIBUTION","Scalability","medium","Multiple compute instances lack traffic distribution","Multiple application instances are drawn, but the architecture does not show how requests are distributed between them.",compute.map(label),"Add a load-balancing or service-discovery strategy and explain the distribution mechanism.",4,"REL-003");
   if (requirements.highAvailability && stores.length === 1 && !hasAny(notesAndLabels, ["replica","replication","failover","multi-zone","multi zone","multi-region","multi region","backup"])) add("REL_SINGLE_STORE","Reliability","high","Critical state has one visible failure point","High availability is a stated requirement, but the only persistent store has no visible redundancy, replication, backup, or failover strategy.",[label(stores[0]),"No replication/failover evidence"],"Define the appropriate redundancy and recovery strategy for the data layer, including backup and restore expectations.",7,"REL-001");
   if (requirements.highAvailability && compute.length === 1 && !requirements.staticLike) add("REL_SINGLE_COMPUTE","Reliability","high","Application tier has a single failure point","High availability is stated, but the application tier contains only one processing instance.",[label(compute[0])],"Use redundant processing capacity across an appropriate failure domain and route traffic only to healthy instances.",6,"REL-001");
   if (requirements.highAvailability && !hasAny(notesAndLabels, ["failover","recovery","rto","rpo","health check","healthcheck","graceful degradation","degrade"])) add("REL_NO_RECOVERY_PLAN","Fault Tolerance","medium","Recovery behavior is not defined","The workload requires high availability, but the submission does not explain what happens when a critical component fails.",["No failover/recovery/graceful-degradation rationale"],"Describe failure detection, failover or recovery, and the expected behavior during partial failure.",4,"REL-002");
-  if (requirements.asyncWork && queues.length === 0) add("ASYNC_NO_QUEUE","Performance","medium","Long-running work has no asynchronous boundary","The requirements imply background or long-running work, but the graph contains no queue or asynchronous handoff.",["Async workload inferred from requirements","No queue node"],"Move non-interactive or bursty work behind a durable asynchronous boundary when the workload requires it.",4,"ARCH-002");
+  if (requirements.asyncWork && queues.length === 0 && !types.has("workflow_engine") && !types.has("scheduler")) add("ASYNC_NO_QUEUE","Performance","medium","Long-running work has no asynchronous boundary","The requirements imply background or long-running work, but the graph contains no queue or asynchronous handoff.",["Async workload inferred from requirements","No queue node"],"Move non-interactive or bursty work behind a durable asynchronous boundary when the workload requires it.",4,"ARCH-002");
   const queueWithoutConsumer = queues.filter((queue) => !(outgoing.get(queue.id) ?? []).some((targetId) => nodes.some((node) => node.id === targetId && isConsumerNode(node))));
   if (queueWithoutConsumer.length) add("ASYNC_QUEUE_NO_CONSUMER","Architecture","high","Queue has no consumer","A queue is present but no downstream component consumes its messages.",queueWithoutConsumer.map(label),"Connect the queue to a worker or application component and document retry, idempotency, and dead-letter behavior when relevant.",5,"ARCH-002");
   if (requirements.externalDependencies && external.length > 0 && !hasAny(notesAndLabels, ["timeout","retry","backoff","circuit breaker","fallback","rate limit"])) add("EXT_NO_FAILURE_POLICY","Reliability","medium","External dependency failure policy is missing","The design depends on an external service but does not explain timeout, retry, backoff, circuit-breaking, rate limiting, or fallback behavior.",external.map(label),"Define bounded timeouts and an appropriate failure policy. Avoid unbounded retries and explain how user-facing behavior degrades when the dependency is unavailable.",4,"REL-002");
