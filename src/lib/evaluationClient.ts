@@ -27,6 +27,7 @@ export async function evaluateSystemDesignWithAI(
         edges: input.edges,
         notes: input.notes ?? "",
         workload: input.workload,
+        graphAnalysis: deterministic.graphAnalysis,
       }),
     });
 
@@ -36,7 +37,7 @@ export async function evaluateSystemDesignWithAI(
 
     const review = (await response.json()) as AIReview & { model?: string };
 
-    if (!Array.isArray(review.findings) || !Array.isArray(review.assessments)) {
+    if (!Array.isArray(review.findings) || !Array.isArray(review.topicReviews)) {
       throw new Error("AI evaluation returned an invalid review.");
     }
 

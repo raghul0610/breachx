@@ -91,6 +91,7 @@ export default async function handler(req: any, res: any) {
   const edges: EdgeSummary[] = Array.isArray(body.edges) ? body.edges : [];
   const notes = typeof body.notes === "string" ? body.notes : "";
   const workload = body.workload && typeof body.workload === "object" ? body.workload : {};
+  const graphAnalysis = body.graphAnalysis && typeof body.graphAnalysis === "object" ? body.graphAnalysis : {};
 
   if (
     !application ||
@@ -109,30 +110,24 @@ You are the architecture reviewer inside Breach X.
 
 This is a serious architecture evaluation, not a component-counting exercise. Workload and application requirements are evaluated before architecture components.
 
-Evaluate the submitted system against its stated application purpose and requirements.
+Evaluate the submitted system against its stated application purpose and requirements. Output an explanation-first structure (Overview, How it Works, Topic-by-Topic Review, Prioritized Recommendations, Assumptions) rather than just marks-based findings.
 The architecture evaluation should determine whether the architecture addresses its
 intended purpose, identify risks and opportunities, and make the reasoning useful for
 an engineering decision.
 
 Rules:
-- Treat the application description, structured workload profile, and notes as the source of truth. First identify the explicit functional and non-functional requirements stated by the user. Structured workload fields such as users, concurrency, peak RPS, availability, latency, geography, budget, and growth take precedence over guesses from prose.\n- Do not invent traffic, users, SLAs, compliance obligations, business rules, data volumes, latency targets, or technology.
-- Do not reward a component merely because it exists. Advanced infrastructure must earn its complexity through the stated workload, features, availability, latency, geographic, or failure requirements.
-- Do not require a database, queue, cache, load balancer, microservices, multi-region
-  deployment, or other pattern unless the requirements or architecture context justify it.
-- Analyze the directed graph: request reachability, broken paths, dead ends, dependencies,
-  bottlenecks, failure boundaries and data flow.
-- Distinguish a missing capability from an optional best practice.\n- Do not infer instance counts, replication counts, geographic distribution, authentication mechanisms, or deployment behavior from a diagram unless explicitly represented or stated in notes.\n- Do not prescribe a specific technology unless the requirement and architecture justify the class of solution; describe the capability first.
-- Evaluate scalability, reliability, security, data correctness, performance, fault
-  tolerance, operability, maintainability and trade-offs.
-- Prefer a few high-confidence findings over generic advice.
-- Every represented-component finding MUST cite valid node IDs and/or edge IDs.
-- A missing capability MUST use omission=true and explain the requirement that makes it
-  relevant.
-- Do not duplicate an obvious rule-based finding unless you add materially different
-  reasoning.
-- confidence must be between 0 and 1. Only return findings at confidence >= 0.65.\n- Every finding must provide a non-empty requirement and only cite principle IDs from the supplied corpus.\n- Compare the architecture only against relevant fundamentals; do not force all 30 concepts onto every workload.
-- Do not return a numeric overall score. The application computes the score deterministically.
-- Dimension assessments are qualitative: strong, adequate, weak, critical, or insufficient_evidence. For each assessment, explain what evidence supports the rating and what the architecture proves or fails to prove.
+1. Evaluate the actual graph. Inspect every node, its component type, every directed edge, and the source and target of each connection. Never infer additional components or connections that are not present.
+2. Explain every relevant node and connection. Describe each component's role in this particular architecture and explain the request or data flow along the directed edges. Identify broken paths, unreachable nodes, missing dependencies, and ambiguous routing only when supported by graph evidence.
+3. Distinguish facts, risks, and unknowns. Fact: directly supported by the graph, application requirements, or supplied notes. Risk: a plausible architectural concern supported by available evidence. Unknown: information that the diagram does not establish. A component not being shown does not prove that its capability is absent from the real implementation.
+4. Validate findings before recommending components. Do not recommend a load balancer merely because a reverse proxy and app server exist. Do not claim multiple compute instances unless multiple instances or equivalent deployment information are represented. Consider whether an existing component could already provide the required capability.
+5. Make recommendations conditional on requirements. Explain which requirement is unmet, cite the relevant nodes or edges, describe the consequence, and recommend the smallest justified change. State when additional information is needed before deciding. Every represented-component finding MUST cite valid node IDs and/or edge IDs. A missing capability MUST use omission=true and explain the requirement that makes it relevant.
+6. Use application context. Evaluate the architecture against the application's stated purpose and requirements. Do not assume production scale, high availability, multiple regions, or specific traffic volumes when they have not been provided.
+7. Keep findings precise. Replace unsupported claims with appropriately qualified findings. For example, use “Traffic distribution is not established by the diagram” instead of “Multiple compute instances lack traffic distribution” when multiple instances are not shown.
+8. Explain the complete design, not just its deficiencies. Start with the current architecture overview and its actual request flow. Then explain what works, what could fail, what remains unknown, and which improvements are justified. Keep scores secondary to explanations.
+
+- confidence must be between 0 and 1. Only return findings at confidence >= 0.65.
+- Every finding must provide a non-empty requirement and only cite principle IDs from the supplied corpus.
+- Do not return a numeric overall score.
 
 Severity:
 critical = the design cannot safely/meaningfully satisfy a stated critical need
@@ -158,7 +153,7 @@ Component-vocabulary rules:
 - Prefer capability-level reasoning over vendor-name recommendations. For example, reason about durable event streaming before recommending Kafka specifically.
 `;
 
-  const user = JSON.stringify({ application, workload, nodes, edges, notes });
+  const user = JSON.stringify({ application, workload, nodes, edges, notes, graphAnalysis });
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -209,7 +204,7 @@ Component-vocabulary rules:
     return json(res, 502, { error: "Provider returned invalid structured output." });
   }
 
-  const validPrincipleIds = new Set<string>([\n    ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),\n    ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),\n  ]);\n\n  const validFindings = (Array.isArray(review.findings) ? review.findings : [])
+  const validPrincipleIds = new Set<string>([\n    ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),\n    ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),\n  ]);\n\n  const validFindings = (Array.isArray(review.recommendations) ? review.recommendations : [])
     .filter((finding: any) => {
       const nodeEvidence = Array.isArray(finding.evidenceNodeIds) ? finding.evidenceNodeIds : [];
       const edgeEvidence = Array.isArray(finding.evidenceEdgeIds) ? finding.evidenceEdgeIds : [];
@@ -234,16 +229,11 @@ Component-vocabulary rules:
     summary: typeof review.summary === "string" ? review.summary : "",
     strengths: Array.isArray(review.strengths) ? review.strengths.slice(0, 8) : [],
     findings: validFindings.map((finding: any) => ({ ...finding, description: `Requirement: ${finding.requirement}\n${finding.description}` })),
-    assessments: Array.isArray(review.assessments)
-      ? review.assessments
-          .filter(
-            (assessment: any) =>
-              typeof assessment.category === "string" &&
-              ["strong", "adequate", "weak", "critical", "insufficient_evidence"].includes(assessment.rating) &&
-              typeof assessment.rationale === "string",
-          )
-          .slice(0, 10)
-      : [],
+    topicReviews: Array.isArray(review.topicReviews) ? review.topicReviews : [],
+    overview: review.overview,
+    howItWorks: review.howItWorks,
+    assumptions: Array.isArray(review.assumptions) ? review.assumptions : [],
+    assessments: [],
     model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
   });
 }
