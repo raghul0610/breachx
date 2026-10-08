@@ -150,7 +150,7 @@ for existing; reward whether they solve a stated requirement. Avoid generic advi
       "X-Title": "Breach X System Design Evaluator",
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
+      model: process.env.OPENROUTER_MODEL ?? "qwen/qwen3.8-27b:free",
       temperature: 0.1,
       messages: [
         { role: "system", content: system },
@@ -225,6 +225,6 @@ for existing; reward whether they solve a stated requirement. Avoid generic advi
           }))
           .slice(0, 9)
       : [],
-    model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
+    model: process.env.OPENROUTER_MODEL ?? "qwen/qwen3.8-27b:free",
   });
 }
