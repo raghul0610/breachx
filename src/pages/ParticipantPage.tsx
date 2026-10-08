@@ -46,7 +46,6 @@ function ParticipantEditor({onBack,onEvaluated}:{onBack:()=>void;onEvaluated:()=
  const nodeTypes=useMemo(()=>({blueprintNode:BlueprintNode}),[]);
  const selected=nodes.find(n=>n.id===selectedId);
 
- useEffect(()=>{const sync=()=>setStatus(readStatus()); window.addEventListener("breachx-sync",sync); window.addEventListener("storage",sync); return()=>{window.removeEventListener("breachx-sync",sync);window.removeEventListener("storage",sync)}},[]);
 
  useEffect(()=>{
    let cancelled=false;
