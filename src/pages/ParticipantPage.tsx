@@ -18,7 +18,7 @@ import {
 import { ArrowLeft, FileText, Layers, Save, Send, Trash2 } from "lucide-react";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
-import { readSubmission, writeSubmission, logActivity } from "../lib/storage";
+import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
 import { type EvaluationNode } from "../lib/evaluationEngine";
 import { evaluateSystemDesignWithAI } from "../lib/evaluationClient";
 import { writeEvaluation } from "../lib/evaluationStorage";
@@ -68,9 +68,69 @@ export function ParticipantPage({
   onBack: () => void;
   onEvaluated: () => void;
 }) {
+  const saved = readSubmission();
+  const [entryMode, setEntryMode] = useState<"chooser" | "reconstruct" | "new">(
+    saved?.status === "submitted" ? "chooser" : saved ? "reconstruct" : "new",
+  );
+
+  if (entryMode === "chooser" && saved?.status === "submitted") {
+    return (
+      <div className="app-shell">
+        <header className="topbar">
+          <button className="nav-btn" onClick={onBack}>
+            <ArrowLeft size={14} /> BACK
+          </button>
+          <div>
+            <strong>BREACH X</strong>
+            <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
+          </div>
+          <span className="status-pill">SUBMISSION COMPLETE</span>
+        </header>
+
+        <main className="admin-content">
+          <section className="panel control-hero">
+            <div className="section-kicker">DESIGN WORKSPACE</div>
+            <h1>WHAT DO YOU WANT TO DO NEXT?</h1>
+            <p>
+              Your submitted architecture is locked as a completed evaluation.
+              You can reconstruct it as a new editable design or start a new design from the starter canvas.
+            </p>
+            <div className="home-actions">
+              <button
+                className="primary-btn"
+                onClick={() => {
+                  writeSubmission({ ...saved, status: "draft", updatedAt: new Date().toISOString() });
+                  setEntryMode("reconstruct");
+                }}
+              >
+                RECONSTRUCT SUBMITTED DESIGN
+              </button>
+              <button
+                className="outline-btn"
+                onClick={() => {
+                  localStorage.removeItem("breachx-design");
+                  setEntryMode("new");
+                }}
+              >
+                START NEW DESIGN
+              </button>
+            </div>
+            <div className="tiny">
+              The existing evaluation report remains available while you build the next design.
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <ReactFlowProvider>
-      <ParticipantEditor onBack={onBack} onEvaluated={onEvaluated} />
+      <ParticipantEditor
+        onBack={onBack}
+        onEvaluated={onEvaluated}
+        startingSubmission={entryMode === "reconstruct" ? saved : null}
+      />
     </ReactFlowProvider>
   );
 }
@@ -78,12 +138,14 @@ export function ParticipantPage({
 function ParticipantEditor({
   onBack,
   onEvaluated,
+  startingSubmission,
 }: {
   onBack: () => void;
   onEvaluated: () => void;
+  startingSubmission: DesignSubmission | null;
 }) {
   const { screenToFlowPosition, getViewport } = useReactFlow();
-  const saved = readSubmission();
+  const saved = startingSubmission;
 
   const [nodes, setNodes, onNodesChange] = useNodesState(
     (saved?.nodes as Node<BlueprintNodeData>[]) ?? initialNodes,
