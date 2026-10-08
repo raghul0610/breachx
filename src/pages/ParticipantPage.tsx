@@ -161,15 +161,15 @@ function ParticipantEditor({
       "Describe the application, expected users, traffic and important requirements.",
   );
   const [notes, setNotes] = useState(saved?.notes ?? "");
-  const [expectedUsers, setExpectedUsers] = useState("");
-  const [concurrentUsers, setConcurrentUsers] = useState("");
-  const [peakRps, setPeakRps] = useState("");
-  const [growthPercent, setGrowthPercent] = useState("");
-  const [availabilityTarget, setAvailabilityTarget] = useState("");
-  const [latencyMs, setLatencyMs] = useState("");
-  const [geography, setGeography] = useState<"single_region" | "multi_region" | "global">("single_region");
-  const [budget, setBudget] = useState<"low" | "moderate" | "high">("moderate");
-  const [features, setFeatures] = useState("");
+  const [expectedUsers, setExpectedUsers] = useState(saved?.workload?.expectedUsers?.toString() ?? "");
+  const [concurrentUsers, setConcurrentUsers] = useState(saved?.workload?.concurrentUsers?.toString() ?? "");
+  const [peakRps, setPeakRps] = useState(saved?.workload?.peakRps?.toString() ?? "");
+  const [growthPercent, setGrowthPercent] = useState(saved?.workload?.growthPercent?.toString() ?? "");
+  const [availabilityTarget, setAvailabilityTarget] = useState(saved?.workload?.availabilityTarget?.toString() ?? "");
+  const [latencyMs, setLatencyMs] = useState(saved?.workload?.latencyMs?.toString() ?? "");
+  const [geography, setGeography] = useState<"single_region" | "multi_region" | "global">(saved?.workload?.geography ?? "single_region");
+  const [budget, setBudget] = useState<"low" | "moderate" | "high">(saved?.workload?.budget ?? "moderate");
+  const [features, setFeatures] = useState(saved?.workload?.features?.join("\n") ?? "");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(saved?.status === "submitted");
   const [persisting, setPersisting] = useState(false);
