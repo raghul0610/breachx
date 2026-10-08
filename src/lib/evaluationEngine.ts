@@ -1,4 +1,4 @@
-import { ARCHITECTURE_PRINCIPLES } from "./architecturePrinciples";
+import { ARCHITECTURE_PRINCIPLES, SYSTEM_DESIGN_FUNDAMENTALS } from "./architecturePrinciples";
 
 export type EvaluationNode = { id: string; type?: string; data?: { label?: string; typeKey?: string; category?: string; notes?: string } };
 export type EvaluationEdge = { id?: string; source: string; target: string };
@@ -175,11 +175,13 @@ export type AIReviewFinding = {
   evidenceEdgeIds?: string[];
   omission?: boolean;
   confidence?: number;
+  requirement?: string;
+  principleIds?: string[];
 };
 
 export type AIReviewAssessment = {
   category: string;
-  rating: "strong" | "adequate" | "weak" | "critical";
+  rating: "strong" | "adequate" | "weak" | "critical" | "insufficient_evidence";
   rationale: string;
 };
 
@@ -202,12 +204,15 @@ export function mergeAIReview(
   const aiFindings: EvaluationFinding[] = review.findings
     .filter((finding) => {
       const nodeEvidence = finding.evidenceNodeIds ?? [];
+      const validPrinciples = new Set(SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id).concat(ARCHITECTURE_PRINCIPLES.map((p) => p.id)));
       const edgeEvidence = finding.evidenceEdgeIds ?? [];
       const grounded =
         finding.omission === true ||
         (nodeEvidence.length > 0 && nodeEvidence.every((id) => validNodeIds.has(id))) ||
         (edgeEvidence.length > 0 && edgeEvidence.every((id) => validEdgeIds.has(id)));
       return grounded &&
+        (finding.requirement ?? "").trim().length > 0 &&
+        Array.isArray(finding.principleIds) && finding.principleIds.every((id) => validPrinciples.has(id)) &&
         finding.title.trim() &&
         finding.description.trim() &&
         (finding.confidence ?? 0.8) >= 0.65;
@@ -217,7 +222,7 @@ export function mergeAIReview(
       category: finding.category,
       severity: finding.severity,
       title: finding.title,
-      description: finding.description,
+      description: `Requirement: ${finding.requirement}\n${finding.description}`,
       evidence: [
         ...(finding.evidenceNodeIds ?? []).map((id) => `Node: ${id}`),
         ...(finding.evidenceEdgeIds ?? []).map((id) => `Edge: ${id}`),
@@ -243,6 +248,7 @@ export function mergeAIReview(
     adequate: 0.03,
     weak: 0.12,
     critical: 0.28,
+    insufficient_evidence: 0.08,
   };
 
   const scores = base.scores.map((baseScore) => {
