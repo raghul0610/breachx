@@ -26,6 +26,35 @@ export type ActivityLogRecord = {
   team?: { name: string } | null;
 };
 
+export async function getActivityLogs(eventId:string,limit=50):Promise<ActivityLogRecord[]>{
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user) return [];
+
+  const {data,error}=await supabase
+    .from("activity_logs")
+    .select("id,event_id,team_id,actor_id,action,metadata,created_at")
+    .eq("event_id",eventId)
+    .order("created_at",{ascending:false})
+    .limit(limit);
+
+  if(error) throw error;
+  return (data??[]) as ActivityLogRecord[];
+}
+
+export async function getMyRole():Promise<"PARTICIPANT"|"ADMIN"|"JUDGE"|null>{
+  const {data:{user}}=await supabase.auth.getUser();
+  if(!user) return null;
+
+  const {data,error}=await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id",user.id)
+    .maybeSingle();
+
+  if(error) throw error;
+  return (data?.role as "PARTICIPANT"|"ADMIN"|"JUDGE"|undefined)??null;
+}
+
 export type BlueprintPayload = {
   eventId: string;
   teamId: string;
