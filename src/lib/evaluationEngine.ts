@@ -5,10 +5,10 @@ export type EvaluationEdge = { id?: string; source: string; target: string };
 export type EvaluationInput = { application: { name: string; description: string }; nodes: EvaluationNode[]; edges: EvaluationEdge[]; notes?: string };
 export type FindingSeverity = "critical" | "high" | "medium" | "low";
 export type FindingSource = "rule" | "ai";
-export type EvaluationFinding = { id: string; category: string; severity: FindingSeverity; title: string; description: string; evidence: string[]; recommendation: string; principleId?: string; penalty: number };
+export type EvaluationFinding = { id: string; category: string; severity: FindingSeverity; title: string; description: string; evidence: string[]; recommendation: string; principleId?: string; penalty: number; source?: FindingSource };
 export type EvaluationScore = { category: string; score: number; maxScore: number; summary: string };
 export type RequirementProfile = { persistenceRequired: boolean; highScale: boolean; highAvailability: boolean; lowLatency: boolean; asyncWork: boolean; externalDependencies: boolean; sensitiveData: boolean; readHeavy: boolean; complexWorkflow: boolean; rationaleRequired: boolean; staticLike: boolean };
-export type EvaluationResult = { score: number; maxScore: 100; scores: EvaluationScore[]; findings: EvaluationFinding[]; strengths: string[]; summary: string; generatedAt: string; reviewBasis: { requirements: RequirementProfile; principles: string[]; methodology: string } };
+export type EvaluationResult = { score: number; maxScore: 100; scores: EvaluationScore[]; findings: EvaluationFinding[]; strengths: string[]; summary: string; generatedAt: string; evaluationMode?: "deterministic" | "hybrid"; aiModel?: string; reviewBasis: { requirements: RequirementProfile; principles: string[]; methodology: string } };
 
 const key = (n: EvaluationNode) => (n.data?.typeKey ?? "").toLowerCase();
 const label = (n: EvaluationNode) => (n.data?.label ?? key(n)) || n.id;
@@ -105,10 +105,10 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   if (!strengths.length) strengths.push("The submission provides a concrete architecture graph that can be evaluated.");
   const sourceCount = new Set(ARCHITECTURE_PRINCIPLES.map((principle) => principle.source)).size;
   const summary = criticalCount > 0 ? "The architecture scored " + score + "/100. " + criticalCount + " critical architectural risk" + (criticalCount === 1 ? "" : "s") + " require attention before the design should be considered production-ready." : findings.length ? "The architecture scored " + score + "/100 against stated requirements and a multi-source architecture-principles corpus. " + findings.length + " improvement finding" + (findings.length === 1 ? "" : "s") + " were identified." : "The architecture scored " + score + "/100 with no material rule-based findings against the stated requirements.";
-  return { score, maxScore:100, scores, findings, strengths, summary, generatedAt:new Date().toISOString(), reviewBasis:{ requirements, principles:ARCHITECTURE_PRINCIPLES.map((principle) => principle.id), methodology:"Requirement-first graph review using " + sourceCount + " public architecture guidance sources (AWS, Google Cloud, Microsoft Azure). Components are evidence, not automatic requirements." } };
+  return { score, maxScore:100, scores, findings, strengths, summary, generatedAt:new Date().toISOString(), evaluationMode:"deterministic", reviewBasis:{ requirements, principles:ARCHITECTURE_PRINCIPLES.map((principle) => principle.id), methodology:"Requirement-first graph review using " + sourceCount + " public architecture guidance sources (AWS, Google Cloud, Microsoft Azure). Components are evidence, not automatic requirements." } };
 }
 
-export type FindingSource = "rule" | "ai";
+
 
 export type AIReviewFinding = {
   id: string;
