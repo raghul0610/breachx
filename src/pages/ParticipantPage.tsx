@@ -5,7 +5,9 @@ import { BlueprintNode,type BlueprintNodeData } from "../components/BlueprintNod
 import { CATALOG,type CatalogItem } from "../lib/catalog";
 import { getActiveProblems,getBreachXEvent,getMyBlueprint,getMyProblemAssignment,getMyTeam,logBlueprintActivity,saveBlueprintDraft,submitBlueprint } from "../lib/db";
 import { supabase } from "../lib/supabase";
-import { readStatus,readSubmission,writeSubmission,logActivity,type EventStatus } from "../lib/storage";
+import { readSubmission,writeSubmission,logActivity } from "../lib/storage";
+import { evaluateSystemDesign } from "../lib/evaluationEngine";
+import { writeEvaluation } from "../lib/evaluationStorage";
 
 const initialNodes:Node<BlueprintNodeData>[]=[
  {id:"node-1",type:"blueprintNode",position:{x:80,y:160},data:{label:"Client / User App",typeKey:"client",category:"Edge"}},
@@ -17,16 +19,18 @@ const initialEdges:Edge[]=[
  {id:"e2-3",source:"node-2",target:"node-3",animated:true,markerEnd:{type:MarkerType.ArrowClosed}}
 ];
 
-export function ParticipantPage({onBack}:{onBack:()=>void}){ return <ReactFlowProvider><ParticipantEditor onBack={onBack}/></ReactFlowProvider>; }
+export function ParticipantPage({onBack,onEvaluated}:{onBack:()=>void;onEvaluated:()=>void}){ return <ReactFlowProvider><ParticipantEditor onBack={onBack} onEvaluated={onEvaluated}/></ReactFlowProvider>; }
 
-function ParticipantEditor({onBack}:{onBack:()=>void}){
+function ParticipantEditor({onBack,onEvaluated}:{onBack:()=>void;onEvaluated:()=>void}){
  const {screenToFlowPosition,getViewport,setViewport}=useReactFlow();
  const saved=readSubmission();
  const [nodes,setNodes,onNodesChange]=useNodesState((saved?.nodes as Node<BlueprintNodeData>[])??initialNodes);
  const [edges,setEdges,onEdgesChange]=useEdgesState((saved?.edges as Edge[])??initialEdges);
  const [notes,setNotes]=useState(saved?.notes??"");
+ const [applicationName,setApplicationName]=useState("My System Design");
+ const [applicationDescription,setApplicationDescription]=useState(saved?.problem??"Describe the application, expected users, traffic and important requirements.");
  const [selectedId,setSelectedId]=useState<string|null>(null);
- const [status,setStatus]=useState<EventStatus>(readStatus());
+ const status="LIVE";
  const [problem,setProblem]=useState(saved?.problem??"");
  const [loading,setLoading]=useState(true);
  const [problemError,setProblemError]=useState("");
@@ -137,7 +141,12 @@ function ParticipantEditor({onBack}:{onBack:()=>void}){
      }
      writeSubmission(local);
      logActivity(submissionStatus==="submitted"?"BLUEPRINT_SUBMITTED":"BLUEPRINT_SAVED",{nodes:nodes.length,edges:edges.length,persisted:authenticated});
-     if(submissionStatus==="submitted")alert("Blueprint submitted to the Breach X control center.");
+     if(submissionStatus==="submitted"){
+       const result=evaluateSystemDesign({application:{name:applicationName,description:applicationDescription},nodes:nodes as never[],edges:edges as never[],notes});
+       writeEvaluation(result);
+       alert("Design evaluated successfully. Your report is ready.");
+       onEvaluated();
+     }
    }catch(e){
      alert(e instanceof Error?e.message:"Unable to persist blueprint.");
    }finally{
@@ -149,14 +158,14 @@ function ParticipantEditor({onBack}:{onBack:()=>void}){
  const removeSelected=()=>{if(!selectedId||status!=="LIVE"||submitted)return;setNodes(cur=>cur.filter(n=>n.id!==selectedId));setEdges(cur=>cur.filter(e=>e.source!==selectedId&&e.target!==selectedId));logActivity("NODE_DELETED",{nodeId:selectedId});setSelectedId(null)};
  const canSubmit=status==="LIVE"&&!!problem&&!submitted&&nodes.length>=3&&edges.length>=2;
 
- if(status!=="LIVE")return <div className="app-shell"><header className="topbar"><button className="nav-btn" onClick={onBack}><ArrowLeft size={14}/> HOME</button><div><strong>BREACH X</strong><span className="topbar-sub"> PARTICIPANT // BLUEPRINT</span></div><span className="status-pill">{status}</span></header><main className="admin-content"><section className="panel control-hero"><div className="section-kicker"><FileText size={13}/> EVENT NOT LIVE</div><h1>BLUEPRINT LOCKED</h1><p>The participant workspace opens when the administrator starts the event.</p><p className="tiny">Current lifecycle state: {status}. Expected flow: DRAFT → READY → LIVE → PAUSED → ENDED.</p></section></main></div>;
+ if(status!=="LIVE")return <div className="app-shell"><header className="topbar"><button className="nav-btn" onClick={onBack}><ArrowLeft size={14}/> HOME</button><div><strong>BREACH X</strong><span className="topbar-sub"> // SYSTEM DESIGN WORKSPACE</span></div><span className="status-pill">{status}</span></header><main className="admin-content"><section className="panel control-hero"><div className="section-kicker"><FileText size={13}/> EVENT NOT LIVE</div><h1>BLUEPRINT LOCKED</h1><p>The participant workspace opens when the administrator starts the event.</p><p className="tiny">Current lifecycle state: {status}. Expected flow: DRAFT → READY → LIVE → PAUSED → ENDED.</p></section></main></div>;
 
  return <div className="app-shell">
   <header className="topbar"><button className="nav-btn" onClick={onBack}><ArrowLeft size={14}/> HOME</button><div><strong>BREACH X</strong><span className="topbar-sub"> PARTICIPANT // BLUEPRINT</span></div><span className="status-pill">{status}</span></header>
-  <section className="problem-banner"><div className="section-kicker"><FileText size={13}/> {authenticated?"ASSIGNED PROBLEM // SUPABASE":"PROBLEM STATEMENT // PROTOTYPE FALLBACK"}</div><div className="problem-text">{loading?"Loading assigned problem…":problem||problemError}</div></section>
+  <section className="problem-banner"><div className="section-kicker"><FileText size={13}/> APPLICATION TO EVALUATE</div><div className="field"><label>APPLICATION NAME</label><input value={applicationName} onChange={e=>setApplicationName(e.target.value)} disabled={submitted}/></div><div className="field"><label>APPLICATION REQUIREMENTS</label><textarea rows={4} value={applicationDescription} onChange={e=>setApplicationDescription(e.target.value)} disabled={submitted}/></div></section>
   <div className="workspace">
    <aside className="sidebar left-panel"><div className="section-kicker"><Layers size={13}/> COMPONENT PALETTE</div>{CATALOG.map(item=><button key={item.typeKey} className="catalog-item" draggable={!submitted} onDragStart={e=>{e.dataTransfer.setData("application/breachx-component",item.typeKey);e.dataTransfer.effectAllowed="move"}} onClick={()=>addCatalogNode(item)} disabled={submitted}><span>{item.label}</span><small>{item.category}</small></button>)}<div className="help-box"><strong>HOW TO CONNECT</strong><p>Drag from a colored handle on one component to a handle on another to create a directional connection.</p></div></aside>
-   <section className="canvas"><div className="canvas-toolbar"><div><div className="section-kicker"><Layers size={13}/> STAGE 1 // SYSTEM BLUEPRINT</div><span className="counter">{nodes.length} components · {edges.length} connections{backendReady?" · SUPABASE SYNCED":""}</span></div><div className="toolbar-actions"><button onClick={()=>save("draft")} disabled={persisting||submitted}><Save size={13}/> {persisting?"SAVING…":"SAVE DRAFT"}</button><button className="primary-btn compact" disabled={!canSubmit||persisting} onClick={()=>save("submitted")}><Send size={13}/> {submitted?"SUBMITTED":"SUBMIT BLUEPRINT"}</button></div></div>
+   <section className="canvas"><div className="canvas-toolbar"><div><div className="section-kicker"><Layers size={13}/> SYSTEM DESIGN WORKSPACE</div><span className="counter">{nodes.length} components · {edges.length} connections{backendReady?" · SUPABASE SYNCED":""}</span></div><div className="toolbar-actions"><button onClick={()=>save("draft")} disabled={persisting||submitted}><Save size={13}/> {persisting?"SAVING…":"SAVE DRAFT"}</button><button className="primary-btn compact" disabled={!canSubmit||persisting} onClick={()=>save("submitted")}><Send size={13}/> {submitted?"SUBMITTED":"SUBMIT BLUEPRINT"}</button></div></div>
     <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} onNodesChange={handleNodesChange} onEdgesChange={handleEdgesChange} onConnect={onConnect} onNodeClick={(_,n)=>setSelectedId(n.id)} onPaneClick={()=>setSelectedId(null)} onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect="move"}} onDrop={onDrop} fitView snapToGrid snapGrid={[16,16]} colorMode="dark" defaultEdgeOptions={{animated:true,markerEnd:{type:MarkerType.ArrowClosed}}}><Background variant={BackgroundVariant.Dots} gap={24} size={1.4}/><Controls position="bottom-left"/><MiniMap position="bottom-right"/></ReactFlow>
    </section>
    <aside className="sidebar right-panel"><div className="section-kicker">INSPECTOR</div>{selected?<><div className="field"><label>COMPONENT LABEL</label><input value={selected.data.label} disabled={submitted} onChange={e=>updateSelected("label",e.target.value)}/></div><div className="field"><label>COMPONENT DETAILS / RATIONALE</label><textarea rows={5} value={selected.data.notes??""} disabled={submitted} onChange={e=>updateSelected("notes",e.target.value)} placeholder="Explain why this component exists."/></div><button className="danger-btn" disabled={submitted} onClick={removeSelected}><Trash2 size={13}/> DELETE COMPONENT</button></>:<div className="empty-inspector">Select a component to edit its label, rationale or delete it.</div>}<div className="field notes-field"><label>ARCHITECTURE NOTES</label><textarea rows={12} disabled={submitted} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Describe request flow, scaling, security boundaries, caching, queues, persistence and failure handling."/></div><div className="submission-rule">{submitted?"Blueprint submitted and locked.":canSubmit?"Minimum graph requirements satisfied.":"Submission requires at least 3 components and 2 connections."}</div></aside>
