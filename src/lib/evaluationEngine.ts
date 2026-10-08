@@ -119,34 +119,6 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     ["firewall", "api_gateway", "ddos_protection", "rate_limiter", "identity_provider", "auth_service", "iam"].includes(key(node)),
   );
   const reachableFromIngress = reachFrom(ingress.map((node) => node.id));
-  const CAPABILITY_REQUIREMENT_ANALYSIS = true;
-  const presentCapabilities = new Set(nodes.flatMap((node) => componentCapability(node)?.capabilities ?? []));
-  const addCapabilityFinding = (id: string, category: string, title: string, requirement: string, missing: string, alternatives: string[], recommendation: string, penalty: number, principleId: string) => {
-    if (presentCapabilities.has(missing)) return;
-    add(id, category, "medium", title,
-      "The requirement calls for the capability \"" + missing + "\" but the submitted graph does not represent it.",
-      ["Requirement: " + requirement, "Missing capability: " + missing],
-      recommendation + " Available alternatives: " + alternatives.join(", ") + ".",
-      penalty, principleId);
-    const finding = findings[findings.length - 1];
-    if (finding?.id === id) {
-      finding.requirement = requirement;
-      finding.alternatives = alternatives;
-    }
-  };
-  if (requirements.highScale && compute.length > 1 && !presentCapabilities.has("traffic distribution"))
-    addCapabilityFinding("CAP_TRAFFIC_DISTRIBUTION","Scalability","Multiple compute components lack a routing capability","Multiple processing components require a defined request-distribution mechanism.","traffic distribution",["load_balancer","service_discovery","service_mesh"],"Add the simplest traffic-distribution capability that matches the deployment model.",4,"SD-21");
-  if (requirements.asyncWork && !presentCapabilities.has("asynchronous work") && !presentCapabilities.has("durable event streaming"))
-    addCapabilityFinding("CAP_ASYNC_PROCESSING","Performance","Background workload lacks an asynchronous capability","The requirements include background, bursty, or long-running work.","asynchronous work",["queue","kafka","event_bus","workflow_engine"],"Use the simplest sufficient asynchronous boundary and define retry/consumer behavior.",4,"SD-28");
-  if (requirements.highScale && requirements.readHeavy && !presentCapabilities.has("low-latency reads") && !presentCapabilities.has("read scaling") && !presentCapabilities.has("edge caching"))
-    addCapabilityFinding("CAP_READ_SCALE","Performance","Read-heavy workload lacks a read-acceleration capability","The workload is explicitly read-heavy at meaningful scale.","low-latency reads",["cache","database_replica","cdn","search_engine"],"Accelerate only the hot access paths and define freshness or invalidation semantics.",3,"SD-16");
-  if (requirements.highAvailability && stores.length > 0 && !presentCapabilities.has("replication") && !presentCapabilities.has("failure-domain resilience"))
-    addCapabilityFinding("CAP_STATE_RESILIENCE","Reliability","Persistent state lacks a resilience capability","High availability is explicitly required for a persistent workload.","replication",["database_replica","backup","failover","multi_region"],"Choose the smallest redundancy or recovery mechanism that satisfies the required failure domain.",5,"REL-001");
-  if (requirements.externalDependencies && external.length > 0 && !presentCapabilities.has("dependency failure isolation") && !presentCapabilities.has("transient-failure recovery"))
-    addCapabilityFinding("CAP_DEPENDENCY_RESILIENCE","Fault Tolerance","External dependency lacks failure isolation","An external dependency requires bounded behavior during timeout or outage.","dependency failure isolation",["circuit_breaker","retry_policy","rate_limiter"],"Add bounded retry/backoff and/or circuit breaking where justified.",4,"REL-002");
-  if (requirements.sensitiveData && !presentCapabilities.has("least privilege") && !presentCapabilities.has("identity management"))
-    addCapabilityFinding("CAP_ACCESS_CONTROL","Security","Sensitive workload lacks an authorization capability","Sensitive data requires explicit identity and access control.","least privilege",["identity_provider","iam","auth_service","api_gateway"],"Represent identity and authorization and document least-privilege access.",4,"SEC-002");
-
   const presentCapabilities = new Set(nodes.flatMap((node) => COMPONENT_CAPABILITIES[key(node)]?.capabilities ?? []));
   const addCapabilityGap = (id: string, category: string, title: string, requirement: string, capability: string, alternatives: string[], description: string, recommendation: string, penalty: number, principleId: string) => {
     if (presentCapabilities.has(capability) || findings.some((finding) => finding.id === id)) return;
@@ -205,7 +177,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     const finding = findings[findings.length - 1];
     if (finding?.id === "ARCH_COMPLEXITY_BUDGET") {
       finding.complexityImpact = highComplexityNodes.map((node) => key(node)).join(", ");
-      finding.costImpact = highComplexityNodes.some((node) => COMPONENT_CAPABILITIES[key(node)]?.costTier === "very_high") ? "Includes very-high-cost infrastructure." : "Includes multiple high-complexity infrastructure components.";
+      finding.costImpact = highComplexityNodes.some((node) => COMPONENT_CAPABILITIES[key(node)]?.costProfile === "very_high") ? "Includes very-high-cost infrastructure." : "Includes multiple high-complexity infrastructure components.";
     }
   }
   const maxScores: Record<string, number> = { Architecture:15, Scalability:12, Reliability:12, Security:14, "Data Design":12, Performance:10, "Fault Tolerance":10, Operability:5, "Trade-offs":5, Completeness:5 };
@@ -229,6 +201,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     add(
       "ARCH_OVERENGINEERED_FOR_WORKLOAD",
       "Trade-offs",
+      "medium",
       "Architecture complexity is disproportionate to the stated workload",
       "The stated workload is small or moderate and does not justify several high-complexity distributed-system capabilities.",
       ["Workload tier: " + workloadScale, "Advanced components: " + advancedComponents.map(label).join(", ")],
@@ -248,6 +221,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     add(
       "REL_GLOBAL_SINGLE_REGION",
       "Reliability",
+      "medium",
       "Global availability requirement lacks regional resilience",
       "The workload explicitly targets global operation and high availability.",
       ["Geography: global", "No multi-region capability represented"],
