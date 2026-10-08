@@ -6,7 +6,7 @@ import { CATALOG,type CatalogItem } from "../lib/catalog";
 import { getActiveProblems,getBreachXEvent,getMyBlueprint,getMyProblemAssignment,getMyTeam,logBlueprintActivity,saveBlueprintDraft,submitBlueprint } from "../lib/db";
 import { supabase } from "../lib/supabase";
 import { readSubmission,writeSubmission,logActivity } from "../lib/storage";
-import { evaluateSystemDesign } from "../lib/evaluationEngine";
+import { evaluateSystemDesign,type EvaluationNode } from "../lib/evaluationEngine";
 import { writeEvaluation } from "../lib/evaluationStorage";
 
 const initialNodes:Node<BlueprintNodeData>[]=[
@@ -141,7 +141,7 @@ function ParticipantEditor({onBack,onEvaluated}:{onBack:()=>void;onEvaluated:()=
      writeSubmission(local);
      logActivity(submissionStatus==="submitted"?"BLUEPRINT_SUBMITTED":"BLUEPRINT_SAVED",{nodes:nodes.length,edges:edges.length,persisted:authenticated});
      if(submissionStatus==="submitted"){
-       const result=evaluateSystemDesign({application:{name:applicationName,description:applicationDescription},nodes:nodes as never[],edges:edges as never[],notes});
+       const result=evaluateSystemDesign({application:{name:applicationName,description:applicationDescription},nodes:nodes as unknown as EvaluationNode[],edges:edges as unknown as {id?:string;source:string;target:string}[],notes});
        writeEvaluation(result);
        alert("Design evaluated successfully. Your report is ready.");
        onEvaluated();
