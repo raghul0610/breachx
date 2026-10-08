@@ -121,12 +121,12 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
       const evidenceByCategory: Record<string, boolean> = {
         Architecture: nodes.length > 0 && (requirements.staticLike || ingress.length > 0) && (requirements.staticLike || compute.length > 0),
         Scalability: !requirements.highScale || compute.length > 1 || types.has("load_balancer") || requirements.staticLike,
-        Reliability: !requirements.highAvailability || compute.length > 1 || stores.length > 1 || hasAny(notesAndLabels, ["replica","replication","failover","multi-zone","multi zone","backup"]),
+        Reliability: requirements.staticLike || (compute.length > 1 && (stores.length === 0 || stores.length > 1 || hasAny(notesAndLabels, ["replica","replication","failover","multi-zone","multi zone","backup"]))),
         Security: !requirements.sensitiveData || securityBoundary.length > 0,
-        "Data Design": !requirements.persistenceRequired || stores.length > 0,
-        Performance: !requirements.highScale || (!requirements.readHeavy || caches.length > 0) && (!requirements.asyncWork || queues.length > 0),
-        "Fault Tolerance": !requirements.highAvailability || hasAny(notesAndLabels, ["failover","recovery","rto","rpo","health check","healthcheck","graceful degradation","degrade"]),
-        Operability: !requirements.highAvailability && !requirements.highScale && !requirements.complexWorkflow || observabilityMentioned,
+        "Data Design": !requirements.persistenceRequired || (stores.length > 0 && (compute.length === 0 || stores.some((store) => reachableFromCompute.has(store.id)))),
+        Performance: (!requirements.highScale && !requirements.lowLatency) || ((!requirements.readHeavy || caches.length > 0) && (!requirements.asyncWork || queues.length > 0)),
+        "Fault Tolerance": (!requirements.highAvailability && !requirements.asyncWork) || (hasAny(notesAndLabels, ["failover","recovery","rto","rpo","health check","healthcheck","graceful degradation","degrade","retry","backoff","circuit breaker","dead letter"])),
+        Operability: (!requirements.highAvailability && !requirements.highScale && !requirements.complexWorkflow) || observabilityMentioned,
         "Trade-offs": !requirements.rationaleRequired || (input.notes ?? "").trim().length >= 80 || nodes.some((node) => (node.data?.notes ?? "").trim().length >= 40),
         Completeness: requirements.staticLike || (ingress.length > 0 && compute.length > 0 && edges.length >= Math.max(1, Math.min(3, nodes.length - 1))),
       };
