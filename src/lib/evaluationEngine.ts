@@ -390,16 +390,17 @@ export function mergeAIReview(
   base: EvaluationResult,
   review: AIReview,
   model = "openrouter/free",
+  input?: EvaluationInput,
 ): EvaluationResult {
-  const nodeIds = new Set(review.findings.flatMap((f) => f.evidenceNodeIds ?? []));
-  const edgeIds = new Set(review.findings.flatMap((f) => f.evidenceEdgeIds ?? []));
+  const validNodeIds = new Set((input?.nodes ?? []).map((node) => node.id));
+  const validEdgeIds = new Set((input?.edges ?? []).map((edge) => edge.id).filter(Boolean));
 
   const aiFindings: EvaluationFinding[] = review.findings
     .filter((finding) => {
       const grounded =
         finding.omission === true ||
-        (finding.evidenceNodeIds ?? []).some((id) => nodeIds.has(id)) ||
-        (finding.evidenceEdgeIds ?? []).some((id) => edgeIds.has(id));
+        (finding.evidenceNodeIds ?? []).every((id) => validNodeIds.has(id)) ||
+        (finding.evidenceEdgeIds ?? []).every((id) => validEdgeIds.has(id));
       return grounded && finding.title.trim() && finding.description.trim();
     })
     .map((finding) => ({
@@ -437,14 +438,9 @@ export function mergeAIReview(
 
     const max = maxByCategory[baseScore.category] ?? baseScore.maxScore;
     const normalizedAI = Math.max(0, Math.min(max, (aiScore.score / 100) * max));
-    const ruleFloor = Math.min(
-      baseScore.score,
-      Math.max(0, baseScore.score + 2),
-    );
-
     return {
       ...baseScore,
-      score: Math.round((normalizedAI * 0.55 + ruleFloor * 0.45) * 10) / 10,
+      score: Math.round(Math.min(baseScore.score, normalizedAI) * 10) / 10,
       summary: aiScore.summary || baseScore.summary,
       maxScore: max,
     };
