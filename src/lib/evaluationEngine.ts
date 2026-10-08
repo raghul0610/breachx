@@ -34,6 +34,9 @@ const COMPUTE_TYPES = new Set([
   "service", "microservice", "worker", "compute", "function", "serverless",
   "lambda", "container", "container_service", "container_orchestrator",
   "edge_function", "batch_job", "workflow_engine", "stream_processor",
+  "transaction_processor", "fraud_detection", "kyc_aml_service", "reconciliation_service",
+  "llm_gateway", "model_inference", "gpu_inference_pool", "embedding_service", "reranker",
+  "prompt_guardrails", "tool_executor", "document_parser", "schema_registry",
 ]);
 
 const isComputeNode = (node: EvaluationNode) => {
@@ -105,7 +108,8 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     [
       "database", "storage", "object_storage", "blob_storage", "nosql_database",
       "graph_database", "time_series_db", "data_warehouse", "data_lake",
-      "search_engine", "database_replica", "database_shard",
+      "search_engine", "database_replica", "database_shard", "vector_database",
+      "transaction_ledger", "idempotency_store", "conversation_store", "feature_store",
     ].includes(key(node)),
   );
   const caches = nodes.filter((node) => key(node) === "cache");
@@ -116,7 +120,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     ["external_api", "payment_service", "notification_service"].includes(key(node)),
   );
   const securityBoundary = nodes.filter((node) =>
-    ["firewall", "api_gateway", "ddos_protection", "rate_limiter", "identity_provider", "auth_service", "iam"].includes(key(node)),
+    ["firewall", "api_gateway", "ddos_protection", "rate_limiter", "identity_provider", "auth_service", "iam", "hsm", "prompt_guardrails"].includes(key(node)),
   );
   const reachableFromIngress = reachFrom(ingress.map((node) => node.id));
   const presentCapabilities = new Set(nodes.flatMap((node) => COMPONENT_CAPABILITIES[key(node)]?.capabilities ?? []));
