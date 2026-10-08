@@ -1,11 +1,13 @@
 import { useEffect,useState } from "react";
 import { ArrowLeft,Activity,Eye,Layers,Pause,Play,RotateCcw,Shield,Square,Users } from "lucide-react";
-import { getBreachXEvent } from "../lib/db";
+import { getActivityLogs,getBreachXEvent,getMyRole,type ActivityLogRecord } from "../lib/db";
+import { supabase } from "../lib/supabase";
 import { canTransition,logActivity,readLogs,readStatus,readSubmission,readTeams,writeStatus,type EventStatus } from "../lib/storage";
 
 export function AdminPage({onBack}:{onBack:()=>void}){
  const [status,setStatus]=useState<EventStatus>(readStatus()); const [databaseStatus,setDatabaseStatus]=useState("LOADING");
  const [teams,setTeams]=useState(readTeams()); const [logs,setLogs]=useState(readLogs()); const [submission,setSubmission]=useState(readSubmission());
+ const [backendLogs,setBackendLogs]=useState<ActivityLogRecord[]>([]); const [backendMonitoring,setBackendMonitoring]=useState(false);
  useEffect(()=>{const sync=()=>{setStatus(readStatus());setTeams(readTeams());setLogs(readLogs());setSubmission(readSubmission())};window.addEventListener("breachx-sync",sync);window.addEventListener("storage",sync);getBreachXEvent().then(e=>setDatabaseStatus(e?.status??"NOT FOUND")).catch(()=>setDatabaseStatus("UNAVAILABLE"));return()=>{window.removeEventListener("breachx-sync",sync);window.removeEventListener("storage",sync)}},[]);
  const transition=(next:EventStatus)=>{if(!canTransition(status,next)){alert(`Invalid event transition: ${status} → ${next}`);return}writeStatus(next);logActivity(`EVENT_${next}`,{from:status,to:next});setStatus(next);setLogs(readLogs())};
  const reset=()=>{localStorage.removeItem("breachx-submission");transition("DRAFT");setSubmission(null)};
@@ -15,6 +17,10 @@ export function AdminPage({onBack}:{onBack:()=>void}){
   </div></section>
   <section className="stats-grid"><div className="stat panel"><span>PROTOTYPE STATUS</span><strong>{status}</strong></div><div className="stat panel"><span>DATABASE STATUS</span><strong>{databaseStatus}</strong></div><div className="stat panel"><span>TEAMS</span><strong>{teams.length}</strong></div><div className="stat panel"><span>BLUEPRINT</span><strong>{submission?.status?.toUpperCase()??"NONE"}</strong></div></section>
   <section className="admin-grid"><div className="panel section-block"><div className="section-kicker"><Users size={13}/> TEAM MONITOR</div>{teams.map(t=><div className="team-row" key={t.id}><div><strong>{t.name}</strong><small>Stage: {t.stage} · {t.status}</small></div><button className="icon-btn"><Eye size={13}/> INSPECT</button></div>)}</div><div className="panel section-block"><div className="section-kicker"><Layers size={13}/> BLUEPRINT INSPECTION</div>{submission?<><div className="inspect-summary"><span>{submission.teamName}</span><span>{submission.nodes.length} nodes · {submission.edges.length} edges</span><span>Status: {submission.status}</span></div><pre className="json-view">{JSON.stringify(submission,null,2)}</pre></>:<div className="empty-state">No participant blueprint has been submitted.</div>}</div></section>
-  <section className="panel section-block"><div className="section-kicker"><Activity size={13}/> LIVE ACTIVITY FEED</div>{logs.length?logs.slice(0,25).map((l,i)=><div className="activity-row" key={`${l.createdAt}-${i}`}><strong>{l.action}</strong><span>{new Date(l.createdAt).toLocaleTimeString()}</span><small>{JSON.stringify(l.metadata)}</small></div>):<div className="empty-state">No activity recorded yet.</div>}</section>
+  <section className="panel section-block"><div className="section-kicker"><Activity size={13}/> LIVE ACTIVITY FEED {backendMonitoring&&<span className="topbar-sub"> // SUPABASE REALTIME</span>}</div>
+   {backendMonitoring
+    ? backendLogs.length ? backendLogs.slice(0,25).map((l,i)=><div className="activity-row" key={l.id||String(l.created_at)+String(i)}><strong>{l.action}</strong><span>{new Date(l.created_at).toLocaleTimeString()}</span><small>{l.team?.name||l.team_id} · {JSON.stringify(l.metadata)}</small></div>):<div className="empty-state">No backend activity recorded yet.</div>
+    : logs.length ? logs.slice(0,25).map((l,i)=><div className="activity-row" key={String(l.createdAt)+String(i)}><strong>{l.action}</strong><span>{new Date(l.createdAt).toLocaleTimeString()}</span><small>{JSON.stringify(l.metadata)}</small></div>):<div className="empty-state">No activity recorded yet.</div>}
+  </section>
  </main></div>;
 }
