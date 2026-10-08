@@ -220,6 +220,10 @@ Component-vocabulary rules:
         typeof finding.description === "string" &&
         typeof finding.confidence === "number" &&
         finding.confidence >= 0.65 &&
+        typeof finding.requirement === "string" &&
+        finding.requirement.trim().length > 0 &&
+        Array.isArray(finding.principleIds) &&
+        finding.principleIds.every((id: string) => validPrincipleIds.has(id)) &&
         (finding.omission === true || validNodes || validEdges)
       );
     })
