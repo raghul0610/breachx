@@ -4,6 +4,7 @@ export type EvaluationNode = { id: string; type?: string; data?: { label?: strin
 export type EvaluationEdge = { id?: string; source: string; target: string };
 export type EvaluationInput = { application: { name: string; description: string }; nodes: EvaluationNode[]; edges: EvaluationEdge[]; notes?: string };
 export type FindingSeverity = "critical" | "high" | "medium" | "low";
+export type FindingSource = "rule" | "ai";
 export type EvaluationFinding = { id: string; category: string; severity: FindingSeverity; title: string; description: string; evidence: string[]; recommendation: string; principleId?: string; penalty: number };
 export type EvaluationScore = { category: string; score: number; maxScore: number; summary: string };
 export type RequirementProfile = { persistenceRequired: boolean; highScale: boolean; highAvailability: boolean; lowLatency: boolean; asyncWork: boolean; externalDependencies: boolean; sensitiveData: boolean; readHeavy: boolean; complexWorkflow: boolean; rationaleRequired: boolean; staticLike: boolean };
