@@ -1,4 +1,4 @@
-import { ARCHITECTURE_PRINCIPLES } from "../src/lib/architecturePrinciples.js";
+import { ARCHITECTURE_PRINCIPLES, SYSTEM_DESIGN_FUNDAMENTALS } from "../src/lib/architecturePrinciples.js";
 
 declare const process: { env: Record<string, string | undefined> };
 
@@ -34,6 +34,8 @@ const schema = {
           evidenceEdgeIds: { type: "array", items: { type: "string" } },
           omission: { type: "boolean" },
           confidence: { type: "number" },
+          requirement: { type: "string" },
+          principleIds: { type: "array", items: { type: "string" } },
         },
         required: [
           "id",
@@ -46,6 +48,8 @@ const schema = {
           "evidenceEdgeIds",
           "omission",
           "confidence",
+          "requirement",
+          "principleIds",
         ],
       },
     },
@@ -56,7 +60,7 @@ const schema = {
         additionalProperties: false,
         properties: {
           category: { type: "string" },
-          rating: { type: "string", enum: ["strong", "adequate", "weak", "critical"] },
+          rating: { type: "string", enum: ["strong", "adequate", "weak", "critical", "insufficient_evidence"] },
           rationale: { type: "string" },
         },
         required: ["category", "rating", "rationale"],
@@ -109,13 +113,13 @@ intended purpose, identify risks and opportunities, and make the reasoning usefu
 an engineering decision.
 
 Rules:
-- Do not invent traffic, users, SLAs, compliance obligations, business rules, or technology.
+- Treat the application description and notes as the source of truth for workload requirements. First identify the explicit functional and non-functional requirements stated by the user.\n- Do not invent traffic, users, SLAs, compliance obligations, business rules, data volumes, latency targets, or technology.
 - Do not reward a component merely because it exists.
 - Do not require a database, queue, cache, load balancer, microservices, multi-region
   deployment, or other pattern unless the requirements or architecture context justify it.
 - Analyze the directed graph: request reachability, broken paths, dead ends, dependencies,
   bottlenecks, failure boundaries and data flow.
-- Distinguish a missing capability from an optional best practice.
+- Distinguish a missing capability from an optional best practice.\n- Do not infer instance counts, replication counts, geographic distribution, authentication mechanisms, or deployment behavior from a diagram unless explicitly represented or stated in notes.\n- Do not prescribe a specific technology unless the requirement and architecture justify the class of solution; describe the capability first.
 - Evaluate scalability, reliability, security, data correctness, performance, fault
   tolerance, operability, maintainability and trade-offs.
 - Prefer a few high-confidence findings over generic advice.
@@ -124,9 +128,9 @@ Rules:
   relevant.
 - Do not duplicate an obvious rule-based finding unless you add materially different
   reasoning.
-- confidence must be between 0 and 1. Only return findings at confidence >= 0.65.
+- confidence must be between 0 and 1. Only return findings at confidence >= 0.65.\n- Every finding must provide a non-empty requirement and only cite principle IDs from the supplied corpus.\n- Compare the architecture only against relevant fundamentals; do not force all 30 concepts onto every workload.
 - Do not return a numeric overall score. The application computes the score deterministically.
-- Dimension assessments are qualitative: strong, adequate, weak, or critical.
+- Dimension assessments are qualitative: strong, adequate, weak, critical, or insufficient_evidence. For each assessment, explain what evidence supports the rating and what the architecture proves or fails to prove.
 
 Severity:
 critical = the design cannot safely/meaningfully satisfy a stated critical need
@@ -189,7 +193,7 @@ ${JSON.stringify(ARCHITECTURE_PRINCIPLES)}
     return json(res, 502, { error: "Provider returned invalid structured output." });
   }
 
-  const validFindings = (Array.isArray(review.findings) ? review.findings : [])
+  const validPrincipleIds = new Set(SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id).concat(ARCHITECTURE_PRINCIPLES.map((p) => p.id)));\n\n  const validFindings = (Array.isArray(review.findings) ? review.findings : [])
     .filter((finding: any) => {
       const nodeEvidence = Array.isArray(finding.evidenceNodeIds) ? finding.evidenceNodeIds : [];
       const edgeEvidence = Array.isArray(finding.evidenceEdgeIds) ? finding.evidenceEdgeIds : [];
@@ -209,13 +213,13 @@ ${JSON.stringify(ARCHITECTURE_PRINCIPLES)}
   return json(res, 200, {
     summary: typeof review.summary === "string" ? review.summary : "",
     strengths: Array.isArray(review.strengths) ? review.strengths.slice(0, 8) : [],
-    findings: validFindings,
+    findings: validFindings.map((finding: any) => ({ ...finding, description: `Requirement: ${finding.requirement}\n${finding.description}` })),
     assessments: Array.isArray(review.assessments)
       ? review.assessments
           .filter(
             (assessment: any) =>
               typeof assessment.category === "string" &&
-              ["strong", "adequate", "weak", "critical"].includes(assessment.rating) &&
+              ["strong", "adequate", "weak", "critical", "insufficient_evidence"].includes(assessment.rating) &&
               typeof assessment.rationale === "string",
           )
           .slice(0, 10)
