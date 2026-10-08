@@ -15,6 +15,17 @@ export type BlueprintRecord = {
   updated_at: string;
 };
 
+export type ActivityLogRecord = {
+  id: string;
+  event_id: string;
+  team_id: string;
+  actor_id: string;
+  action: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  team?: { name: string } | null;
+};
+
 export type BlueprintPayload = {
   eventId: string;
   teamId: string;
