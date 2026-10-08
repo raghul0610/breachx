@@ -176,6 +176,8 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
 
   const types = new Set(nodes.map(key));
   const apps = nodes.filter((n) => key(n) === "app_server");
+  const staticLikeApplication =
+    /static|landing page|documentation site|portfolio|marketing site|blog|content-only|static frontend/.test(textOf(input));
   const databases = nodes.filter((n) => key(n) === "database");
   const storage = nodes.filter((n) => key(n) === "storage");
   const caches = nodes.filter((n) => key(n) === "cache");
@@ -193,7 +195,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
       "Show where external requests enter the system.");
   }
 
-  if (!apps.length) {
+  if (!apps.length && !staticLikeApplication) {
     add("NO_APPLICATION_SERVICE", "Architecture", "critical", "No application service",
       "The architecture has no component that represents application or business logic.",
       ["No app server node"],
