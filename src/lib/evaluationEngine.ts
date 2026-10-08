@@ -3,7 +3,18 @@ import { COMPONENT_CAPABILITIES } from "./catalog";
 
 export type EvaluationNode = { id: string; type?: string; data?: { label?: string; typeKey?: string; category?: string; notes?: string } };
 export type EvaluationEdge = { id?: string; source: string; target: string };
-export type EvaluationInput = { application: { name: string; description: string }; nodes: EvaluationNode[]; edges: EvaluationEdge[]; notes?: string };
+export type WorkloadProfile = {
+  expectedUsers?: number;
+  concurrentUsers?: number;
+  peakRps?: number;
+  growthPercent?: number;
+  availabilityTarget?: number;
+  latencyMs?: number;
+  geography?: "single_region" | "multi_region" | "global";
+  budget?: "low" | "moderate" | "high";
+  features?: string[];
+};
+export type EvaluationInput = { application: { name: string; description: string }; nodes: EvaluationNode[]; edges: EvaluationEdge[]; notes?: string; workload?: WorkloadProfile };
 export type FindingSeverity = "critical" | "high" | "medium" | "low";
 export type EvidenceStatus = "strong" | "adequate" | "weak" | "critical" | "insufficient_evidence";
 export type FindingSource = "rule" | "ai";
@@ -13,37 +24,6 @@ export type RequirementProfile = { persistenceRequired: boolean; highScale: bool
 export type EvaluationResult = { score: number; maxScore: 100; scores: EvaluationScore[]; findings: EvaluationFinding[]; strengths: string[]; summary: string; generatedAt: string; evaluationMode?: "deterministic" | "hybrid"; aiModel?: string; reviewBasis: { requirements: RequirementProfile; principles: string[]; methodology: string } };
 
 const key = (n: EvaluationNode) => (n.data?.typeKey ?? "").toLowerCase();
-const COMPONENT_CAPABILITY_MAP: Record<string, { capabilities: string[]; complexity: "low" | "medium" | "high"; cost: "low" | "medium" | "high" | "very_high" }> = {
-  load_balancer:{capabilities:["traffic distribution","health-based routing"],complexity:"medium",cost:"medium"},
-  service_discovery:{capabilities:["service discovery","traffic distribution"],complexity:"medium",cost:"medium"},
-  service_mesh:{capabilities:["service-to-service routing","traffic distribution","mTLS"],complexity:"high",cost:"high"},
-  autoscaler:{capabilities:["elastic capacity","horizontal scaling"],complexity:"medium",cost:"medium"},
-  microservice:{capabilities:["independent service ownership","independent scaling"],complexity:"high",cost:"high"},
-  container_orchestrator:{capabilities:["container scheduling","service recovery","horizontal scaling"],complexity:"high",cost:"high"},
-  cache:{capabilities:["low-latency reads","read offload"],complexity:"medium",cost:"medium"},
-  database:{capabilities:["durable transactional state","strong consistency"],complexity:"medium",cost:"medium"},
-  nosql_database:{capabilities:["horizontally scalable data","high throughput"],complexity:"medium",cost:"medium"},
-  database_replica:{capabilities:["read scaling","replication"],complexity:"high",cost:"high"},
-  database_shard:{capabilities:["write/storage scale-out","partitioned data"],complexity:"high",cost:"very_high"},
-  queue:{capabilities:["asynchronous work","burst buffering","producer-consumer decoupling"],complexity:"medium",cost:"medium"},
-  kafka:{capabilities:["durable event streaming","high-throughput asynchronous processing","replay"],complexity:"high",cost:"high"},
-  event_bus:{capabilities:["event routing","producer-consumer decoupling"],complexity:"medium",cost:"medium"},
-  workflow_engine:{capabilities:["workflow orchestration","asynchronous work"],complexity:"high",cost:"high"},
-  cdn:{capabilities:["edge caching","global content delivery"],complexity:"low",cost:"medium"},
-  search_engine:{capabilities:["full-text search","faceted retrieval"],complexity:"high",cost:"high"},
-  api_gateway:{capabilities:["API routing","authentication integration","rate limiting"],complexity:"medium",cost:"medium"},
-  identity_provider:{capabilities:["identity management","authentication"],complexity:"medium",cost:"medium"},
-  iam:{capabilities:["authorization","least privilege"],complexity:"medium",cost:"medium"},
-  circuit_breaker:{capabilities:["dependency failure isolation"],complexity:"medium",cost:"low"},
-  retry_policy:{capabilities:["transient-failure recovery","bounded retries"],complexity:"low",cost:"low"},
-  failover:{capabilities:["recovery routing","failure-domain resilience"],complexity:"high",cost:"high"},
-  multi_region:{capabilities:["regional failure resilience"],complexity:"high",cost:"very_high"},
-  metrics:{capabilities:["health and performance measurement"],complexity:"medium",cost:"medium"},
-  tracing:{capabilities:["distributed request tracing"],complexity:"medium",cost:"medium"},
-  alerting:{capabilities:["incident detection","SLO-based alerting"],complexity:"medium",cost:"low"},
-};
-const componentCapability = (node: EvaluationNode) => COMPONENT_CAPABILITY_MAP[key(node)];
-
 const label = (n: EvaluationNode) => (n.data?.label ?? key(n)) || n.id;
 const textOf = (input: EvaluationInput) => [input.application.name, input.application.description, input.notes ?? "", ...input.nodes.map((n) => (label(n) + " " + (n.data?.notes ?? "")))].join(" ").toLowerCase();
 const hasAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
@@ -78,17 +58,33 @@ const isConsumerNode = (node: EvaluationNode) => {
 
 function inferRequirements(input: EvaluationInput): RequirementProfile {
   const text = textOf(input);
-  const highScale = (hasPattern(text, /\b(\d{2,}|\d+\.?\d*\s*(million|billion|k|m)\b)/) && hasAny(text, ["users", "requests", "rps", "qps", "traffic", "transactions"])) || hasAny(text, ["million users", "billion users", "high traffic", "large scale", "internet scale", "global scale", "viral traffic", "massive scale"]);
-  const highAvailability = hasAny(text, ["99.9", "99.99", "99.999", "24/7", "zero downtime", "high availability", "highly available", "mission critical", "mission-critical", "business critical", "business-critical", "always available", "disaster recovery"]);
+  const w = input.workload ?? {};
+  const peakRps = w.peakRps ?? 0;
+  const concurrentUsers = w.concurrentUsers ?? 0;
+  const expectedUsers = w.expectedUsers ?? 0;
+  const highScale =
+    peakRps >= 1000 ||
+    concurrentUsers >= 10000 ||
+    expectedUsers >= 1000000 ||
+    hasAny(text, ["million users", "billion users", "high traffic", "large scale", "internet scale", "global scale", "viral traffic", "massive scale"]);
+  const highAvailability =
+    (w.availabilityTarget ?? 0) >= 99.9 ||
+    hasAny(text, ["99.9", "99.99", "99.999", "24/7", "zero downtime", "high availability", "highly available", "mission critical", "mission-critical", "business critical", "business-critical", "always available", "disaster recovery"]);
   const persistenceRequired = hasAny(text, ["database", "persist", "persistent", "durable storage", "store orders", "order history", "user account", "user profile", "payment", "transaction", "inventory", "booking", "reservation", "message history", "chat history", "post", "record", "audit trail"]);
   const asyncWork = hasAny(text, ["email", "notification", "push notification", "image processing", "video processing", "upload processing", "background job", "background task", "batch", "export", "report generation", "webhook", "event-driven", "event driven", "asynchronous", "async processing", "long-running"]);
   const externalDependencies = hasAny(text, ["external api", "third-party", "third party", "stripe", "payment gateway", "maps api", "google maps", "twilio", "shipping provider", "oauth", "social login", "external service"]);
   const sensitiveData = hasAny(text, ["password", "credential", "secret", "token", "pii", "personal data", "personal information", "credit card", "card number", "payment data", "medical", "health data", "private data"]);
   const readHeavy = hasAny(text, ["read-heavy", "read heavy", "search", "catalog", "feed", "browse", "frequently read", "high read", "mostly reads", "read intensive"]);
-  const lowLatency = hasAny(text, ["low latency", "real-time", "realtime", "sub-second", "milliseconds", "latency sensitive"]) || hasPattern(text, /\b(under|below|less than)\s*\d+\s*ms\b/);
+  const lowLatency = (w.latencyMs !== undefined && w.latencyMs <= 200) || hasAny(text, ["low latency", "real-time", "realtime", "sub-second", "milliseconds", "latency sensitive"]) || hasPattern(text, /\b(under|below|less than)\s*\d+\s*ms\b/);
   const complexWorkflow = hasAny(text, ["checkout", "order processing", "workflow", "multi-step", "saga", "reservation", "payment flow", "approval", "pipeline", "orchestration"]);
   const staticLike = hasAny(text, ["static website", "landing page", "portfolio", "documentation site", "docs site", "marketing site", "blog", "static frontend", "content site"]) && !hasAny(text, ["login", "database", "payment", "user account", "transaction"]);
-  return { persistenceRequired, highScale, highAvailability, lowLatency, asyncWork, externalDependencies, sensitiveData, readHeavy, complexWorkflow, rationaleRequired: highScale || highAvailability || externalDependencies || complexWorkflow || input.nodes.length >= 6 || (input.notes ?? "").trim().length > 0, staticLike };
+  const featureCount = input.workload?.features?.length ?? 0;
+  return {
+    persistenceRequired, highScale, highAvailability, lowLatency, asyncWork, externalDependencies,
+    sensitiveData, readHeavy, complexWorkflow,
+    rationaleRequired: highScale || highAvailability || externalDependencies || complexWorkflow || featureCount >= 4 || input.nodes.length >= 6 || (input.notes ?? "").trim().length > 0,
+    staticLike,
+  };
 }
 
 export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
@@ -214,6 +210,53 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   }
   const maxScores: Record<string, number> = { Architecture:15, Scalability:12, Reliability:12, Security:14, "Data Design":12, Performance:10, "Fault Tolerance":10, Operability:5, "Trade-offs":5, Completeness:5 };
   const categorySummaries: Record<string, string> = { Architecture:"Evaluates request flow, component boundaries, reachability, and proportional complexity.", Scalability:"Evaluates capacity, horizontal scaling, and traffic distribution against stated demand.", Reliability:"Evaluates redundancy, failure points, dependency behavior, and recovery readiness.", Security:"Evaluates trust boundaries, sensitive-data exposure, authentication, and least-privilege evidence.", "Data Design":"Evaluates durable state, ownership, source of truth, and persistence reachability.", Performance:"Evaluates workload-aware caching, asynchronous processing, and bottlenecks.", "Fault Tolerance":"Evaluates behavior under component and dependency failure.", Operability:"Evaluates observability and operational readiness.", "Trade-offs":"Evaluates whether important architecture decisions are justified.", Completeness:"Evaluates whether the submitted graph contains enough structure to review the stated workload." };
+  const workload = input.workload ?? {};
+  const workloadScale =
+    (workload.peakRps ?? 0) >= 10000 ? "internet-scale" :
+    (workload.peakRps ?? 0) >= 1000 || (workload.concurrentUsers ?? 0) >= 10000 ? "large" :
+    (workload.peakRps ?? 0) >= 100 || (workload.concurrentUsers ?? 0) >= 1000 ? "moderate" : "small";
+
+  const advancedComponents = nodes.filter((node) =>
+    ["kafka","database_shard","multi_region","service_mesh","container_orchestrator","search_engine","microservice"].includes(key(node))
+  );
+  if (
+    workloadScale === "small" &&
+    advancedComponents.length >= 3 &&
+    !requirements.highAvailability &&
+    !requirements.complexWorkflow &&
+    !requirements.asyncWork
+  ) {
+    add(
+      "ARCH_OVERENGINEERED_FOR_WORKLOAD",
+      "Trade-offs",
+      "Architecture complexity is disproportionate to the stated workload",
+      "The stated workload is small or moderate and does not justify several high-complexity distributed-system capabilities.",
+      ["Workload tier: " + workloadScale, "Advanced components: " + advancedComponents.map(label).join(", ")],
+      "Prefer the simplest architecture that satisfies the stated requirements. Add distributed infrastructure only when scale, reliability, or feature requirements justify its operational cost.",
+      4,
+      "ARCH-001",
+    );
+    const finding = findings[findings.length - 1];
+    if (finding?.id === "ARCH_OVERENGINEERED_FOR_WORKLOAD") {
+      finding.requirement = "Architecture complexity should be proportional to expected workload and required capabilities.";
+      finding.costImpact = "High relative to the stated workload.";
+      finding.complexityImpact = "Introduces multiple high-operational-complexity distributed components without a demonstrated need.";
+    }
+  }
+
+  if (workload.geography === "global" && requirements.highAvailability && !types.has("multi_region")) {
+    add(
+      "REL_GLOBAL_SINGLE_REGION",
+      "Reliability",
+      "Global availability requirement lacks regional resilience",
+      "The workload explicitly targets global operation and high availability.",
+      ["Geography: global", "No multi-region capability represented"],
+      "Evaluate multi-region deployment or another explicitly justified regional failure strategy.",
+      5,
+      "REL-001",
+    );
+  }
+
   const scores = Object.entries(maxScores).map(([category, maxScore]) => {
     const categoryFindings = findings.filter((finding) => finding.category === category);
     const penalty = categoryFindings.reduce((sum, finding) => sum + finding.penalty, 0);
