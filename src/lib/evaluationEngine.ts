@@ -7,7 +7,7 @@ export type EvaluationScore={category:string;score:number;maxScore:number;summar
 export type EvaluationResult={score:number;maxScore:100;scores:EvaluationScore[];findings:EvaluationFinding[];strengths:string[];summary:string;generatedAt:string};
 
 const key=(n:EvaluationNode)=>n.data?.typeKey??"";
-const label=(n:EvaluationNode)=>n.data?.label??key(n)||n.id;
+const label=(n:EvaluationNode)=>(n.data?.label ?? key(n)) || n.id;
 
 export function evaluateSystemDesign(input:EvaluationInput):EvaluationResult{
  const nodes=input.nodes??[],edges=input.edges??[],findings:EvaluationFinding[]=[];
