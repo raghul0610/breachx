@@ -4,9 +4,10 @@ export type EvaluationNode = { id: string; type?: string; data?: { label?: strin
 export type EvaluationEdge = { id?: string; source: string; target: string };
 export type EvaluationInput = { application: { name: string; description: string }; nodes: EvaluationNode[]; edges: EvaluationEdge[]; notes?: string };
 export type FindingSeverity = "critical" | "high" | "medium" | "low";
+export type EvidenceStatus = "strong" | "adequate" | "weak" | "critical" | "insufficient_evidence";
 export type FindingSource = "rule" | "ai";
 export type EvaluationFinding = { id: string; category: string; severity: FindingSeverity; title: string; description: string; evidence: string[]; recommendation: string; principleId?: string; penalty: number; source?: FindingSource };
-export type EvaluationScore = { category: string; score: number; maxScore: number; summary: string };
+export type EvaluationScore = { category: string; score: number; maxScore: number; summary: string; evidenceStatus: EvidenceStatus };
 export type RequirementProfile = { persistenceRequired: boolean; highScale: boolean; highAvailability: boolean; lowLatency: boolean; asyncWork: boolean; externalDependencies: boolean; sensitiveData: boolean; readHeavy: boolean; complexWorkflow: boolean; rationaleRequired: boolean; staticLike: boolean };
 export type EvaluationResult = { score: number; maxScore: 100; scores: EvaluationScore[]; findings: EvaluationFinding[]; strengths: string[]; summary: string; generatedAt: string; evaluationMode?: "deterministic" | "hybrid"; aiModel?: string; reviewBasis: { requirements: RequirementProfile; principles: string[]; methodology: string } };
 
@@ -15,6 +16,29 @@ const label = (n: EvaluationNode) => (n.data?.label ?? key(n)) || n.id;
 const textOf = (input: EvaluationInput) => [input.application.name, input.application.description, input.notes ?? "", ...input.nodes.map((n) => (label(n) + " " + (n.data?.notes ?? "")))].join(" ").toLowerCase();
 const hasAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
 const hasPattern = (text: string, pattern: RegExp) => pattern.test(text);
+
+const COMPUTE_TYPES = new Set([
+  "app_server", "application_server", "application", "api_server", "backend",
+  "service", "microservice", "worker", "compute", "function", "serverless",
+  "lambda", "container", "container_service", "edge_function",
+]);
+
+const isComputeNode = (node: EvaluationNode) => {
+  const type = key(node);
+  if (COMPUTE_TYPES.has(type)) return true;
+  const descriptor = (label(node) + " " + (node.data?.notes ?? "")).toLowerCase();
+  return /\\b(api|backend|application|app|service|worker|function|lambda|compute|serverless|container)\\b/.test(descriptor)
+    && !/\\b(database|cache|queue|storage|gateway|firewall|load balancer)\\b/.test(descriptor);
+};
+
+const isIngressNode = (node: EvaluationNode) =>
+  ["client", "internet", "api_gateway", "load_balancer", "firewall"].includes(key(node));
+
+const isConsumerNode = (node: EvaluationNode) => {
+  if (isComputeNode(node)) return true;
+  const descriptor = (label(node) + " " + (node.data?.notes ?? "")).toLowerCase();
+  return /\\b(consumer|processor|handler)\\b/.test(descriptor);
+};
 
 function inferRequirements(input: EvaluationInput): RequirementProfile {
   const text = textOf(input);
@@ -43,8 +67,8 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   for (const edge of edges) { outgoing.get(edge.source)?.push(edge.target); incoming.get(edge.target)?.push(edge.source); }
   const add = (id: string, category: string, severity: FindingSeverity, title: string, description: string, evidence: string[], recommendation: string, penalty: number, principleId?: string) => { if (!findings.some((finding) => finding.id === id)) findings.push({ id, category, severity, title, description, evidence, recommendation, penalty, principleId }); };
   const reachFrom = (startIds: string[]) => { const seen = new Set<string>(); const queue = [...startIds]; while (queue.length) { const current = queue.shift()!; if (seen.has(current)) continue; seen.add(current); for (const next of outgoing.get(current) ?? []) queue.push(next); } return seen; };
-  const ingress = nodes.filter((node) => ["client", "internet", "api_gateway", "load_balancer", "firewall"].includes(key(node)));
-  const compute = nodes.filter((node) => key(node) === "app_server");
+  const ingress = nodes.filter(isIngressNode);
+  const compute = nodes.filter(isComputeNode);
   const stores = nodes.filter((node) => ["database", "storage"].includes(key(node)));
   const caches = nodes.filter((node) => key(node) === "cache");
   const queues = nodes.filter((node) => key(node) === "queue");
@@ -53,7 +77,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   const reachableFromIngress = reachFrom(ingress.map((node) => node.id));
   const reachableFromCompute = reachFrom(compute.map((node) => node.id));
   if (!requirements.staticLike && ingress.length === 0) add("ARCH_NO_INGRESS","Architecture","high","No clear request ingress","The graph has no identifiable client, internet, gateway, firewall, or load-balancer entry point.",["No ingress component detected"],"Add the actual request entry point and show how traffic enters the application.",7,"REQ-001");
-  if (!requirements.staticLike && compute.length === 0) add("ARCH_NO_COMPUTE","Architecture","high","No application processing layer","The application description appears dynamic, but the graph has no application-processing component.",["No app_server node detected"],"Add the component responsible for application logic, or explain why the workload is intentionally static/serverless.",7,"REQ-001");
+  if (!requirements.staticLike && compute.length === 0) add("ARCH_NO_COMPUTE","Architecture","high","No application processing layer","The application description appears dynamic, but the graph has no identifiable application-processing or compute component.","No application/service/worker/function component detected","Add the component responsible for application logic, or explain why the workload is intentionally static/serverless.",7,"REQ-001");
   const unreachableCompute = compute.filter((node) => ingress.length > 0 && !reachableFromIngress.has(node.id));
   if (unreachableCompute.length) add("ARCH_UNREACHABLE_COMPUTE","Architecture","critical","Application layer is unreachable","One or more application-processing components cannot be reached from the declared ingress path.",unreachableCompute.map(label),"Connect the request path to the application-processing layer and remove accidental disconnected branches.",10,"REQ-001");
   const orphan = nodes.filter((node) => (incoming.get(node.id)?.length ?? 0) + (outgoing.get(node.id)?.length ?? 0) === 0);
@@ -71,7 +95,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   if (requirements.highAvailability && compute.length === 1 && !requirements.staticLike) add("REL_SINGLE_COMPUTE","Reliability","high","Application tier has a single failure point","High availability is stated, but the application tier contains only one processing instance.",[label(compute[0])],"Use redundant processing capacity across an appropriate failure domain and route traffic only to healthy instances.",6,"REL-001");
   if (requirements.highAvailability && !hasAny(notesAndLabels, ["failover","recovery","rto","rpo","health check","healthcheck","graceful degradation","degrade"])) add("REL_NO_RECOVERY_PLAN","Fault Tolerance","medium","Recovery behavior is not defined","The workload requires high availability, but the submission does not explain what happens when a critical component fails.",["No failover/recovery/graceful-degradation rationale"],"Describe failure detection, failover or recovery, and the expected behavior during partial failure.",4,"REL-002");
   if (requirements.asyncWork && queues.length === 0) add("ASYNC_NO_QUEUE","Performance","medium","Long-running work has no asynchronous boundary","The requirements imply background or long-running work, but the graph contains no queue or asynchronous handoff.",["Async workload inferred from requirements","No queue node"],"Move non-interactive or bursty work behind a durable asynchronous boundary when the workload requires it.",4,"ARCH-002");
-  const queueWithoutConsumer = queues.filter((queue) => (outgoing.get(queue.id)?.length ?? 0) === 0);
+  const queueWithoutConsumer = queues.filter((queue) => !(outgoing.get(queue.id) ?? []).some((targetId) => nodes.some((node) => node.id === targetId && isConsumerNode(node))));
   if (queueWithoutConsumer.length) add("ASYNC_QUEUE_NO_CONSUMER","Architecture","high","Queue has no consumer","A queue is present but no downstream component consumes its messages.",queueWithoutConsumer.map(label),"Connect the queue to a worker or application component and document retry, idempotency, and dead-letter behavior when relevant.",5,"ARCH-002");
   if (requirements.externalDependencies && external.length > 0 && !hasAny(notesAndLabels, ["timeout","retry","backoff","circuit breaker","fallback","rate limit"])) add("EXT_NO_FAILURE_POLICY","Reliability","medium","External dependency failure policy is missing","The design depends on an external service but does not explain timeout, retry, backoff, circuit-breaking, rate limiting, or fallback behavior.",external.map(label),"Define bounded timeouts and an appropriate failure policy. Avoid unbounded retries and explain how user-facing behavior degrades when the dependency is unavailable.",4,"REL-002");
   if (requirements.highScale && requirements.readHeavy && caches.length === 0) add("PERF_READ_HEAVY_NO_CACHE","Performance","medium","Read-heavy workload has no acceleration strategy","The workload is explicitly read-heavy at meaningful scale, but the architecture shows no cache or equivalent read-optimization strategy.",["High-scale read-heavy requirement","No cache node"],"Consider caching frequently read, relatively stable data or explain why the primary store and query path are sufficient.",3,"PERF-002");
@@ -84,10 +108,40 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   const maxScores: Record<string, number> = { Architecture:15, Scalability:12, Reliability:12, Security:14, "Data Design":12, Performance:10, "Fault Tolerance":10, Operability:5, "Trade-offs":5, Completeness:5 };
   const categorySummaries: Record<string, string> = { Architecture:"Evaluates request flow, component boundaries, reachability, and proportional complexity.", Scalability:"Evaluates capacity, horizontal scaling, and traffic distribution against stated demand.", Reliability:"Evaluates redundancy, failure points, dependency behavior, and recovery readiness.", Security:"Evaluates trust boundaries, sensitive-data exposure, authentication, and least-privilege evidence.", "Data Design":"Evaluates durable state, ownership, source of truth, and persistence reachability.", Performance:"Evaluates workload-aware caching, asynchronous processing, and bottlenecks.", "Fault Tolerance":"Evaluates behavior under component and dependency failure.", Operability:"Evaluates observability and operational readiness.", "Trade-offs":"Evaluates whether important architecture decisions are justified.", Completeness:"Evaluates whether the submitted graph contains enough structure to review the stated workload." };
   const scores = Object.entries(maxScores).map(([category, maxScore]) => {
-    const penalty = findings.filter((finding) => finding.category === category).reduce((sum, finding) => sum + finding.penalty, 0);
+    const categoryFindings = findings.filter((finding) => finding.category === category);
+    const penalty = categoryFindings.reduce((sum, finding) => sum + finding.penalty, 0);
     let score = Math.max(0, maxScore - penalty);
-    if (category === "Completeness") { if (!requirements.staticLike && ingress.length === 0) score -= 2; if (!requirements.staticLike && compute.length === 0) score -= 2; if (edges.length < Math.max(1, Math.min(3, nodes.length - 1))) score -= 1; score = Math.max(0, score); }
-    return { category, score, maxScore, summary: categorySummaries[category] };
+
+    let evidenceStatus: EvidenceStatus = "adequate";
+    if (categoryFindings.some((finding) => finding.severity === "critical")) evidenceStatus = "critical";
+    else if (categoryFindings.some((finding) => finding.severity === "high")) evidenceStatus = "weak";
+    else if (categoryFindings.some((finding) => finding.severity === "medium")) evidenceStatus = "adequate";
+    else if (categoryFindings.some((finding) => finding.severity === "low")) evidenceStatus = "adequate";
+    else {
+      const evidenceByCategory: Record<string, boolean> = {
+        Architecture: nodes.length > 0 && (requirements.staticLike || ingress.length > 0) && (requirements.staticLike || compute.length > 0),
+        Scalability: !requirements.highScale || compute.length > 1 || types.has("load_balancer") || requirements.staticLike,
+        Reliability: !requirements.highAvailability || compute.length > 1 || stores.length > 1 || hasAny(notesAndLabels, ["replica","replication","failover","multi-zone","multi zone","backup"]),
+        Security: !requirements.sensitiveData || securityBoundary.length > 0,
+        "Data Design": !requirements.persistenceRequired || stores.length > 0,
+        Performance: !requirements.highScale || (!requirements.readHeavy || caches.length > 0) && (!requirements.asyncWork || queues.length > 0),
+        "Fault Tolerance": !requirements.highAvailability || hasAny(notesAndLabels, ["failover","recovery","rto","rpo","health check","healthcheck","graceful degradation","degrade"]),
+        Operability: !requirements.highAvailability && !requirements.highScale && !requirements.complexWorkflow || observabilityMentioned,
+        "Trade-offs": !requirements.rationaleRequired || (input.notes ?? "").trim().length >= 80 || nodes.some((node) => (node.data?.notes ?? "").trim().length >= 40),
+        Completeness: requirements.staticLike || (ingress.length > 0 && compute.length > 0 && edges.length >= Math.max(1, Math.min(3, nodes.length - 1))),
+      };
+      evidenceStatus = evidenceByCategory[category] ? "adequate" : "insufficient_evidence";
+      if (evidenceStatus === "insufficient_evidence") score = Math.round(maxScore * 0.6);
+    }
+
+    if (category === "Completeness") {
+      if (!requirements.staticLike && ingress.length === 0) score -= 2;
+      if (!requirements.staticLike && compute.length === 0) score -= 2;
+      if (edges.length < Math.max(1, Math.min(3, nodes.length - 1))) score -= 1;
+      score = Math.max(0, score);
+    }
+
+    return { category, score: Math.max(0, Math.min(maxScore, score)), maxScore, summary: categorySummaries[category], evidenceStatus };
   });
   const criticalCount = findings.filter((finding) => finding.severity === "critical").length;
   const highCount = findings.filter((finding) => finding.severity === "high").length;
