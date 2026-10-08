@@ -89,3 +89,40 @@ export const CATALOG = [
 ] as const;
 
 export type CatalogItem = typeof CATALOG[number];
+
+
+export type ComponentCapability = {
+  capabilities: string[];
+  operationalComplexity: "low" | "medium" | "high";
+  costProfile: "low" | "medium" | "high" | "very_high";
+};
+
+export const COMPONENT_CAPABILITIES: Record<string, ComponentCapability> = {
+  load_balancer:{capabilities:["traffic distribution","health-based routing"],operationalComplexity:"medium",costProfile:"medium"},
+  service_discovery:{capabilities:["service discovery","traffic distribution"],operationalComplexity:"medium",costProfile:"medium"},
+  service_mesh:{capabilities:["service-to-service routing","traffic distribution","mTLS"],operationalComplexity:"high",costProfile:"high"},
+  autoscaler:{capabilities:["elastic capacity","horizontal scaling"],operationalComplexity:"medium",costProfile:"medium"},
+  microservice:{capabilities:["independent service ownership","independent scaling"],operationalComplexity:"high",costProfile:"high"},
+  container_orchestrator:{capabilities:["container scheduling","service recovery","horizontal scaling"],operationalComplexity:"high",costProfile:"high"},
+  cache:{capabilities:["low-latency reads","read offload"],operationalComplexity:"medium",costProfile:"medium"},
+  database:{capabilities:["durable transactional state","strong consistency"],operationalComplexity:"medium",costProfile:"medium"},
+  nosql_database:{capabilities:["horizontally scalable data","high throughput"],operationalComplexity:"medium",costProfile:"medium"},
+  database_replica:{capabilities:["read scaling","replication"],operationalComplexity:"high",costProfile:"high"},
+  database_shard:{capabilities:["write/storage scale-out","partitioned data"],operationalComplexity:"high",costProfile:"very_high"},
+  queue:{capabilities:["asynchronous work","burst buffering","producer-consumer decoupling"],operationalComplexity:"medium",costProfile:"medium"},
+  kafka:{capabilities:["durable event streaming","high-throughput asynchronous processing","replay"],operationalComplexity:"high",costProfile:"high"},
+  event_bus:{capabilities:["event routing","producer-consumer decoupling"],operationalComplexity:"medium",costProfile:"medium"},
+  workflow_engine:{capabilities:["workflow orchestration","asynchronous work"],operationalComplexity:"high",costProfile:"high"},
+  cdn:{capabilities:["edge caching","global content delivery"],operationalComplexity:"low",costProfile:"medium"},
+  search_engine:{capabilities:["full-text search","faceted retrieval"],operationalComplexity:"high",costProfile:"high"},
+  api_gateway:{capabilities:["API routing","authentication integration","rate limiting"],operationalComplexity:"medium",costProfile:"medium"},
+  identity_provider:{capabilities:["identity management","authentication"],operationalComplexity:"medium",costProfile:"medium"},
+  iam:{capabilities:["authorization","least privilege"],operationalComplexity:"medium",costProfile:"medium"},
+  circuit_breaker:{capabilities:["dependency failure isolation"],operationalComplexity:"medium",costProfile:"low"},
+  retry_policy:{capabilities:["transient-failure recovery","bounded retries"],operationalComplexity:"low",costProfile:"low"},
+  failover:{capabilities:["recovery routing","failure-domain resilience"],operationalComplexity:"high",costProfile:"high"},
+  multi_region:{capabilities:["regional failure resilience"],operationalComplexity:"high",costProfile:"very_high"},
+  metrics:{capabilities:["health and performance measurement"],operationalComplexity:"medium",costProfile:"medium"},
+  tracing:{capabilities:["distributed request tracing"],operationalComplexity:"medium",costProfile:"medium"},
+  alerting:{capabilities:["incident detection","SLO-based alerting"],operationalComplexity:"medium",costProfile:"low"},
+};
