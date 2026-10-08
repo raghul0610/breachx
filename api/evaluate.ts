@@ -90,6 +90,7 @@ export default async function handler(req: any, res: any) {
   const nodes: NodeSummary[] = Array.isArray(body.nodes) ? body.nodes : [];
   const edges: EdgeSummary[] = Array.isArray(body.edges) ? body.edges : [];
   const notes = typeof body.notes === "string" ? body.notes : "";
+  const workload = body.workload && typeof body.workload === "object" ? body.workload : {};
 
   if (
     !application ||
@@ -157,7 +158,7 @@ Component-vocabulary rules:
 - Prefer capability-level reasoning over vendor-name recommendations. For example, reason about durable event streaming before recommending Kafka specifically.
 `;
 
-  const user = JSON.stringify({ application, nodes, edges, notes });
+  const user = JSON.stringify({ application, workload, nodes, edges, notes });
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
