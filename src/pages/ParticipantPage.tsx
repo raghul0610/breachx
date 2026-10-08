@@ -129,7 +129,7 @@ export function ParticipantPage({
       <ParticipantEditor
         onBack={onBack}
         onEvaluated={onEvaluated}
-        startingSubmission={entryMode === "reconstruct" ? saved : null}
+        startingSubmission={entryMode === "reconstruct" && saved ? { ...saved, status: "draft" } : null}
       />
     </ReactFlowProvider>
   );
