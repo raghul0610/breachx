@@ -21,7 +21,7 @@ export type FindingSource = "rule" | "ai";
 export type EvaluationFinding = { id: string; category: string; severity: FindingSeverity; title: string; description: string; evidence: string[]; recommendation: string; principleId?: string; principleIds?: string[]; requirement?: string; alternatives?: string[]; costImpact?: string; complexityImpact?: string; penalty: number; source?: FindingSource };
 export type EvaluationScore = { category: string; score: number; maxScore: number; summary: string; evidenceStatus: EvidenceStatus };
 export type RequirementProfile = { persistenceRequired: boolean; highScale: boolean; highAvailability: boolean; lowLatency: boolean; asyncWork: boolean; externalDependencies: boolean; sensitiveData: boolean; readHeavy: boolean; complexWorkflow: boolean; rationaleRequired: boolean; staticLike: boolean };
-export type EvaluationResult = { score: number; maxScore: 100; scores: EvaluationScore[]; findings: EvaluationFinding[]; strengths: string[]; summary: string; generatedAt: string; evaluationMode?: "deterministic" | "hybrid"; aiModel?: string; reviewBasis: { requirements: RequirementProfile; workload?: WorkloadProfile; principles: string[]; methodology: string } };
+export type EvaluationResult = { score: number; maxScore: 100; scores: EvaluationScore[]; findings: EvaluationFinding[]; strengths: string[]; summary: string; generatedAt: string; evaluationMode?: "deterministic" | "hybrid"; aiModel?: string; topicReviews?: TopicReview[]; reviewBasis: { requirements: RequirementProfile; workload?: WorkloadProfile; principles: string[]; methodology: string } };
 
 const key = (n: EvaluationNode) => (n.data?.typeKey ?? "").toLowerCase();
 const label = (n: EvaluationNode) => (n.data?.label ?? key(n)) || n.id;
