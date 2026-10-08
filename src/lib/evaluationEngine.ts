@@ -23,6 +23,7 @@ export type EvaluationInput = {
 };
 
 export type FindingSeverity = "critical" | "high" | "medium" | "low";
+export type FindingSource = "rule" | "ai";
 
 export type EvaluationFinding = {
   id: string;
@@ -32,7 +33,7 @@ export type EvaluationFinding = {
   description: string;
   evidence: string[];
   recommendation: string;
-  source?: "rule" | "ai";
+  source?: FindingSource;
 };
 
 export type EvaluationScore = {
@@ -42,12 +43,22 @@ export type EvaluationScore = {
   summary: string;
 };
 
+export type RequirementProfile = {
+  persistenceRequired: boolean;
+  highScale: boolean;
+  highAvailability: boolean;
+  asynchronousWorkLikely: boolean;
+  externalIntegrations: boolean;
+  sensitiveData: boolean;
+  rationaleRequired: boolean;
+};
+
 export type AIReviewFinding = {
   id: string;
   category: string;
   severity: FindingSeverity;
   title: string;
- description: string;
+  description: string;
   recommendation: string;
   evidenceNodeIds?: string[];
   evidenceEdgeIds?: string[];
@@ -55,11 +66,17 @@ export type AIReviewFinding = {
   confidence?: number;
 };
 
+export type AIReviewAssessment = {
+  category: string;
+  rating: "strong" | "adequate" | "weak" | "critical";
+  rationale: string;
+};
+
 export type AIReview = {
   summary: string;
   strengths: string[];
   findings: AIReviewFinding[];
-  scores: { category: string; score: number; summary: string }[];
+  assessments: AIReviewAssessment[];
 };
 
 export type EvaluationResult = {
@@ -72,15 +89,63 @@ export type EvaluationResult = {
   generatedAt: string;
   evaluationMode?: "deterministic" | "hybrid";
   aiModel?: string;
+  requirements?: RequirementProfile;
 };
 
+const DIMENSIONS: Array<{ category: string; maxScore: number }> = [
+  { category: "Architecture", maxScore: 18 },
+  { category: "Scalability", maxScore: 14 },
+  { category: "Reliability", maxScore: 14 },
+  { category: "Security", maxScore: 14 },
+  { category: "Data Design", maxScore: 12 },
+  { category: "Performance", maxScore: 10 },
+  { category: "Fault Tolerance", maxScore: 6 },
+  { category: "Operability", maxScore: 5 },
+  { category: "Trade-offs", maxScore: 4 },
+  { category: "Completeness", maxScore: 3 },
+];
+
+const label = (n: EvaluationNode) => n.data?.label ?? n.data?.typeKey ?? n.id;
 const key = (n: EvaluationNode) => n.data?.typeKey ?? "";
-const label = (n: EvaluationNode) => (n.data?.label ?? key(n)) || n.id;
+
+function textOf(input: EvaluationInput) {
+  return [
+    input.application.name,
+    input.application.description,
+    input.notes ?? "",
+    ...input.nodes.map((n) => n.data?.label ?? ""),
+    ...input.nodes.map((n) => n.data?.notes ?? ""),
+  ].join(" ").toLowerCase();
+}
+
+export function inferRequirements(input: EvaluationInput): RequirementProfile {
+  const text = textOf(input);
+  return {
+    persistenceRequired:
+      /database|persist|storage|store|order|account|user|profile|payment|transaction|inventory|booking|message|chat|post|delivery|history|record/.test(text),
+    highScale:
+      /million|\b\d{2,}[,.]?\s*(million|k|rps|qps)|high traffic|large scale|global|internet scale|10x|100x|peak traffic/.test(text),
+    highAvailability:
+      /99\.9|99\.99|availability|highly available|zero downtime|mission critical|critical service/.test(text),
+    asynchronousWorkLikely:
+      /email|notification|analytics|video|image|upload|processing|event|webhook|background|report|export|queue|async|batch/.test(text),
+    externalIntegrations:
+      /payment|maps|stripe|twilio|external api|third party|gateway|shipping|oauth|social login/.test(text),
+    sensitiveData:
+      /password|credential|pii|personal data|payment|card|health|medical|secret|token|private/.test(text),
+    rationaleRequired: true,
+  };
+}
 
 export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   const nodes = input.nodes ?? [];
   const edges = input.edges ?? [];
+  const requirements = inferRequirements(input);
   const findings: EvaluationFinding[] = [];
+  const nodeById = new Map(nodes.map((n) => [n.id, n]));
+  const incoming = new Map(nodes.map((n) => [n.id, 0]));
+  const outgoing = new Map(nodes.map((n) => [n.id, 0]));
+  const adjacency = new Map<string, string[]>();
 
   const add = (
     id: string,
@@ -92,271 +157,223 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     recommendation: string,
   ) => {
     if (!findings.some((f) => f.id === id)) {
-      findings.push({
-        id,
-        category,
-        severity,
-        title,
-        description,
-        evidence,
-        recommendation,
-        source: "rule",
-      });
+      findings.push({ id, category, severity, title, description, evidence, recommendation, source: "rule" });
     }
   };
 
-  const types = new Set(nodes.map(key));
-  const incoming = new Map(nodes.map((n) => [n.id, 0]));
-  const outgoing = new Map(nodes.map((n) => [n.id, 0]));
-
   for (const edge of edges) {
-    if (incoming.has(edge.target)) {
-      incoming.set(edge.target, (incoming.get(edge.target) ?? 0) + 1);
+    if (!nodeById.has(edge.source) || !nodeById.has(edge.target)) {
+      add("INVALID_EDGE", "Architecture", "critical", "Invalid connection",
+        "The graph contains a connection whose source or target component does not exist.",
+        [edge.id ?? `${edge.source} → ${edge.target}`],
+        "Remove or repair invalid connections before evaluating the architecture.");
+      continue;
     }
-    if (outgoing.has(edge.source)) {
-      outgoing.set(edge.source, (outgoing.get(edge.source) ?? 0) + 1);
-    }
+    incoming.set(edge.target, (incoming.get(edge.target) ?? 0) + 1);
+    outgoing.set(edge.source, (outgoing.get(edge.source) ?? 0) + 1);
+    adjacency.set(edge.source, [...(adjacency.get(edge.source) ?? []), edge.target]);
   }
 
-  const databases = nodes.filter((n) => key(n) === "database");
+  const types = new Set(nodes.map(key));
   const apps = nodes.filter((n) => key(n) === "app_server");
+  const databases = nodes.filter((n) => key(n) === "database");
+  const storage = nodes.filter((n) => key(n) === "storage");
   const caches = nodes.filter((n) => key(n) === "cache");
   const queues = nodes.filter((n) => key(n) === "queue");
-  const publicNodes = nodes.filter((n) =>
-    ["client", "internet", "firewall", "load_balancer", "api_gateway"].includes(
-      key(n),
-    ),
+  const ingress = nodes.filter((n) => ["client", "internet"].includes(key(n)));
+  const security = nodes.filter((n) => ["firewall", "api_gateway"].includes(key(n)));
+  const publicBoundary = nodes.filter((n) =>
+    ["client", "internet", "firewall", "api_gateway", "load_balancer"].includes(key(n)),
   );
 
-  const orphan = nodes.filter(
-    (n) =>
-      (incoming.get(n.id) ?? 0) + (outgoing.get(n.id) ?? 0) === 0,
-  );
+  if (!ingress.length) {
+    add("NO_INGRESS", "Architecture", "high", "No request ingress",
+      "No client or internet entry point is represented.",
+      ["No client/internet node"],
+      "Show where external requests enter the system.");
+  }
 
+  if (!apps.length) {
+    add("NO_APPLICATION_SERVICE", "Architecture", "critical", "No application service",
+      "The architecture has no component that represents application or business logic.",
+      ["No app server node"],
+      "Add an application/service layer that owns request handling and business logic.");
+  }
+
+  const reachable = new Set<string>();
+  const stack = ingress.map((n) => n.id);
+  while (stack.length) {
+    const current = stack.pop()!;
+    if (reachable.has(current)) continue;
+    reachable.add(current);
+    for (const next of adjacency.get(current) ?? []) stack.push(next);
+  }
+
+  if (apps.length && !apps.some((n) => reachable.has(n.id))) {
+    add("INGRESS_CANNOT_REACH_APP", "Architecture", "critical",
+      "Request flow cannot reach application logic",
+      "The visible ingress path does not reach any application service.",
+      ingress.map(label),
+      "Connect the request path through the security/routing layer to application logic.");
+  }
+
+  const orphan = nodes.filter((n) => (incoming.get(n.id) ?? 0) + (outgoing.get(n.id) ?? 0) === 0);
   if (orphan.length) {
-    add(
-      "ORPHAN_COMPONENT",
-      "architecture",
-      "medium",
-      "Orphaned components",
-      "Some components are disconnected from the request flow.",
+    add("ORPHAN_COMPONENTS", "Architecture", "medium", "Disconnected components",
+      "Components exist outside the connected architecture graph.",
       orphan.map(label),
-      "Connect or remove components that are not part of the architecture.",
-    );
+      "Connect a component only when it has a justified role; otherwise remove it.");
   }
 
-  if (!databases.length) {
-    add(
-      "NO_DATABASE",
-      "data",
-      "high",
-      "No persistence layer",
-      "The design contains no database or durable persistence component.",
-      ["No database node"],
-      "Add an appropriate persistent data store if the application requires durable state.",
-    );
+  if (requirements.persistenceRequired && !databases.length && !storage.length) {
+    add("MISSING_DURABLE_STATE", "Data Design", "high", "Required durable state is missing",
+      "The stated application appears to require persistent state, but no database or durable storage is represented.",
+      ["No database or durable storage node"],
+      "Add a durable source of truth and explain its consistency, backup, and ownership model.");
   }
 
-  if (apps.length > 0 && apps.length < 2 && !types.has("load_balancer")) {
-    add(
-      "SINGLE_APP_CAPACITY",
-      "scalability",
-      "medium",
-      "Single application instance",
-      "Only one application server is defined and there is no load balancer.",
+  if (requirements.highScale && apps.length === 1 && !types.has("load_balancer")) {
+    add("HIGH_SCALE_SINGLE_COMPUTE", "Scalability", "high", "Single compute bottleneck",
+      "The stated scale is inconsistent with a single application instance and no traffic-distribution mechanism.",
       apps.map(label),
-      "Define horizontal application scaling and a load-balancing strategy for meaningful traffic.",
-    );
+      "Define horizontal scaling, load balancing, or another explicit capacity strategy.");
   }
 
-  if (databases.length === 1 && nodes.length >= 5) {
-    add(
-      "DATABASE_SPOF",
-      "reliability",
-      "high",
-      "Database single point of failure",
-      "The architecture has one database instance and no visible replication or failover strategy.",
+  if (apps.length > 1 && !types.has("load_balancer")) {
+    add("MULTI_APP_NO_DISTRIBUTION", "Scalability", "medium", "Multiple application instances lack traffic distribution",
+      "Multiple application servers are shown without a visible load balancer or equivalent routing mechanism.",
+      apps.map(label),
+      "Show how requests are distributed and how instance health is handled.");
+  }
+
+  if (requirements.highAvailability && databases.length === 1) {
+    add("HA_DATABASE_SINGLE_POINT", "Reliability", "high", "Database availability bottleneck",
+      "The requirements call for high availability but the design shows one database instance with no visible failover strategy.",
       databases.map(label),
-      "Define replication, failover, backups, or another availability strategy appropriate to the workload.",
-    );
+      "Show replication, managed HA, failover, backup/recovery, or explicitly document the availability trade-off.");
   }
 
-  if (
-    types.has("queue") &&
-    queues.some((q) => (outgoing.get(q.id) ?? 0) === 0)
-  ) {
-    add(
-      "QUEUE_WITHOUT_CONSUMER",
-      "architecture",
-      "high",
-      "Queue without a consumer",
-      "A message queue is present but no downstream component is connected to consume its messages.",
-      queues.filter((q) => (outgoing.get(q.id) ?? 0) === 0).map(label),
-      "Connect the queue to a worker or service that consumes and processes its messages.",
-    );
+  if (requirements.sensitiveData && !security.length) {
+    add("SENSITIVE_DATA_NO_BOUNDARY", "Security", "high", "Sensitive workload lacks a visible trust boundary",
+      "The requirements mention sensitive data but no WAF/firewall or gateway boundary is represented.",
+      ["No firewall or API gateway"],
+      "Define the public trust boundary, authentication/authorization boundary, and private data boundary.");
   }
 
-  if (types.has("cache") && databases.length === 0) {
-    add(
-      "CACHE_WITHOUT_STORE",
-      "data",
-      "medium",
-      "Cache without durable store",
-      "A cache is present without a visible durable persistence layer.",
+  const directPublicData = edges.filter((e) => {
+    const source = nodeById.get(e.source);
+    const target = nodeById.get(e.target);
+    return source && target &&
+      publicBoundary.some((n) => n.id === source.id) &&
+      ["database", "storage"].includes(key(target));
+  });
+
+  if (directPublicData.length) {
+    add("PUBLIC_TO_DATA", "Security", "critical", "Public path reaches data storage directly",
+      "A public-facing component connects directly to durable data storage.",
+      directPublicData.map((e) => `${label(nodeById.get(e.source)!)} → ${label(nodeById.get(e.target)!)}`),
+      "Terminate public traffic at an application/service boundary; do not expose the data layer directly.");
+  }
+
+  if (types.has("queue")) {
+    const consumerless = queues.filter((q) => (outgoing.get(q.id) ?? 0) === 0);
+    if (consumerless.length) {
+      add("QUEUE_NO_CONSUMER", "Performance", "high", "Queue has no consumer",
+        "A queue is represented but no downstream component consumes it.",
+        consumerless.map(label),
+        "Connect the queue to a worker/service and document retries, idempotency and backpressure.");
+    }
+  }
+
+  if (requirements.asynchronousWorkLikely && !types.has("queue")) {
+    add("ASYNC_CAPABILITY_MISSING", "Performance", "medium", "Likely asynchronous work is not decoupled",
+      "The requirements suggest background, bursty, or retryable work but no queue or worker boundary is represented.",
+      ["No queue/worker path"],
+      "Consider asynchronous processing for work that should not block the request path.");
+  }
+
+  if (types.has("cache") && !databases.length && !storage.length && requirements.persistenceRequired) {
+    add("CACHE_NOT_SOURCE_OF_TRUTH", "Data Design", "high", "Cache appears to be the only state layer",
+      "A cache is present but no durable source of truth is visible for a workload that requires persistence.",
       caches.map(label),
-      "Use the cache as an acceleration layer in front of a durable source of truth.",
-    );
+      "Keep authoritative state in durable storage and use the cache only as an acceleration layer.");
   }
 
-  if (
-    databases.some((database) =>
-      publicNodes.some((publicNode) =>
-        edges.some(
-          (edge) =>
-            edge.source === publicNode.id && edge.target === database.id,
-        ),
-      ),
-    )
-  ) {
-    add(
-      "PUBLIC_DATABASE_PATH",
-      "security",
-      "critical",
-      "Direct public database path",
-      "A public-facing component is directly connected to a database.",
-      ["Public component → database"],
-      "Place an application/service boundary between public traffic and the database.",
-    );
-  }
-
-  if (!types.has("firewall") && nodes.length >= 5) {
-    add(
-      "NO_SECURITY_BOUNDARY",
-      "security",
-      "medium",
-      "No visible security boundary",
-      "The design has no WAF or firewall component.",
-      ["No WAF / Firewall"],
-      "Define a network or application security boundary appropriate to the threat model.",
-    );
-  }
-
-  if (!types.has("load_balancer") && apps.length > 1) {
-    add(
-      "MULTI_APP_NO_LB",
-      "scalability",
-      "medium",
-      "Multiple app servers without load balancing",
-      "Multiple application instances exist without a visible load balancer.",
+  if (requirements.highAvailability && apps.length === 1) {
+    add("HA_SINGLE_APP", "Reliability", "high", "Single application instance for high-availability requirements",
+      "The requirements call for high availability but only one application instance is represented.",
       apps.map(label),
-      "Add a load balancer or service-discovery mechanism to distribute traffic.",
-    );
+      "Define redundant application capacity across an appropriate failure domain.");
   }
 
-  if (!types.has("queue") && nodes.length >= 7) {
-    add(
-      "NO_ASYNC_PATH",
-      "performance",
-      "low",
-      "No asynchronous processing path",
-      "The design is relatively complex but contains no visible asynchronous processing mechanism.",
-      ["No queue"],
-      "Consider asynchronous processing for long-running, bursty, or non-critical work.",
-    );
+  if (nodes.length >= 6 && !types.has("firewall") && !types.has("api_gateway")) {
+    add("NO_TRUST_BOUNDARY", "Security", requirements.sensitiveData ? "high" : "medium",
+      "No visible application/security boundary",
+      "A non-trivial exposed architecture has no visible WAF, firewall, or API gateway boundary.",
+      ["No firewall/WAF/API gateway"],
+      "Define the public trust boundary and explain how traffic is authenticated and authorized.");
   }
 
-  if ((input.notes ?? "").trim().length < 40) {
-    add(
-      "LIMITED_RATIONALE",
-      "tradeoffs",
-      "low",
-      "Limited architecture rationale",
-      "The submission contains little written explanation of its architectural decisions.",
-      ["Architecture notes are brief or empty"],
-      "Explain major technology choices, bottlenecks, failure modes, and trade-offs.",
-    );
+  if ((input.notes ?? "").trim().length < 80) {
+    add("WEAK_RATIONALE", "Trade-offs", "low", "Architectural decisions are under-explained",
+      "The design does not explain important technology choices, bottlenecks, failure modes, or trade-offs.",
+      ["Architecture rationale is under 80 characters"],
+      "Explain the major decisions, expected bottlenecks, failure handling and trade-offs.");
   }
 
-  const scoreFor = (category: string, max: number, penalty: number) =>
-    Math.max(
-      0,
-      max - findings.filter((f) => f.category === category).length * penalty,
-    );
+  const severityPenalty: Record<FindingSeverity, number> = {
+    critical: 0.42,
+    high: 0.24,
+    medium: 0.11,
+    low: 0.045,
+  };
 
-  const scores: EvaluationScore[] = [
-    {
-      category: "Architecture",
-      score: scoreFor("architecture", 20, 4),
-      maxScore: 20,
-      summary: types.has("client") || types.has("internet")
-        ? "Ingress is represented."
-        : "The request ingress is unclear.",
-    },
-    {
-      category: "Scalability",
-      score: scoreFor("scalability", 15, 4),
-      maxScore: 15,
-      summary: "Evaluated visible scaling and traffic-distribution mechanisms.",
-    },
-    {
-      category: "Reliability",
-      score: scoreFor("reliability", 15, 5),
-      maxScore: 15,
-      summary: "Evaluated redundancy and failure boundaries.",
-    },
-    {
-      category: "Security",
-      score: scoreFor("security", 15, 6),
-      maxScore: 15,
-      summary: "Evaluated security boundaries and public data paths.",
-    },
-    {
-      category: "Data Design",
-      score: scoreFor("data", 10, 4),
-      maxScore: 10,
-      summary: "Evaluated persistence and data-layer structure.",
-    },
-    {
-      category: "Performance",
-      score: scoreFor("performance", 10, 3),
-      maxScore: 10,
-      summary: "Evaluated caching and asynchronous processing.",
-    },
-    {
-      category: "Fault Tolerance",
-      score: scoreFor("reliability", 5, 2),
-      maxScore: 5,
-      summary: "Evaluated visible resilience mechanisms.",
-    },
-    {
-      category: "Trade-offs",
-      score: scoreFor("tradeoffs", 5, 2),
-      maxScore: 5,
-      summary: "Evaluated architectural rationale.",
-    },
-    {
-      category: "Completeness",
-      score: Math.max(
-        0,
-        5 - (nodes.length < 3 ? 3 : 0) - (edges.length < 2 ? 2 : 0),
-      ),
-      maxScore: 5,
-      summary: "Evaluated submission completeness.",
-    },
-  ];
+  const summaries: Record<string, string> = {
+    Architecture: "Evaluates whether the graph forms a coherent end-to-end system.",
+    Scalability: "Evaluates capacity, traffic distribution and growth assumptions.",
+    Reliability: "Evaluates redundancy, availability and failure boundaries.",
+    Security: "Evaluates trust boundaries and exposure of critical resources.",
+    "Data Design": "Evaluates durable state, data ownership and correctness boundaries.",
+    Performance: "Evaluates latency-sensitive paths, caching and asynchronous work.",
+    "Fault Tolerance": "Evaluates recovery and isolation of component failures.",
+    Operability: "Evaluates the ability to observe, diagnose and recover the system.",
+    "Trade-offs": "Evaluates whether major architectural decisions are justified.",
+    Completeness: "Evaluates whether the submission contains enough architecture information to make a meaningful judgment.",
+  };
+
+  const scores = DIMENSIONS.map(({ category, maxScore }) => {
+    const related = findings.filter((f) =>
+      f.category === category ||
+      (category === "Fault Tolerance" && f.category === "Reliability"),
+    );
+    const penalty = related.reduce((sum, f) => sum + severityPenalty[f.severity], 0);
+    let score = maxScore * Math.max(0, 1 - Math.min(0.9, penalty));
+
+    if (category === "Completeness") {
+      if (nodes.length < 4) score -= 1.5;
+      if (edges.length < 3) score -= 1.5;
+      if (!input.application.description.trim()) score -= 1.5;
+    }
+
+    return {
+      category,
+      score: Math.round(Math.max(0, Math.min(maxScore, score)) * 10) / 10,
+      maxScore,
+      summary: summaries[category],
+    };
+  });
+
+  const critical = findings.filter((f) => f.severity === "critical").length;
+  const high = findings.filter((f) => f.severity === "high").length;
+  const score = Math.round(scores.reduce((sum, s) => sum + s.score, 0));
 
   const strengths: string[] = [];
-  if (types.has("firewall")) strengths.push("A visible security boundary is included.");
-  if (types.has("load_balancer")) strengths.push("Traffic distribution is explicitly represented.");
-  if (types.has("cache")) strengths.push("A caching layer is represented.");
-  if (types.has("queue")) strengths.push("Asynchronous processing is represented.");
-  if (databases.length && apps.length) strengths.push("Application and persistence layers are separated.");
-  if (!strengths.length) {
-    strengths.push("The submission provides a concrete component graph that can be evaluated.");
-  }
-
-  const score = Math.round(scores.reduce((sum, item) => sum + item.score, 0));
-  const critical = findings.filter((f) => f.severity === "critical").length;
+  if (apps.length && ingress.some((n) => reachable.has(n.id))) strengths.push("The graph contains a request ingress path.");
+  if (types.has("firewall") || types.has("api_gateway")) strengths.push("A visible trust boundary is represented.");
+  if (types.has("load_balancer") && apps.length > 1) strengths.push("Traffic distribution is represented for multiple application instances.");
+  if (databases.length || storage.length) strengths.push("A durable data layer is represented.");
+  if (types.has("queue")) strengths.push("An asynchronous processing boundary is represented.");
+  if (!strengths.length) strengths.push("The submission provides a graph that can be analyzed for architectural risks.");
 
   return {
     score,
@@ -365,26 +382,15 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
     findings,
     strengths,
     summary: critical
-      ? `The architecture scored ${score}/100 and contains ${critical} critical issue${critical === 1 ? "" : "s"}.`
-      : findings.length
-        ? `The architecture scored ${score}/100 with ${findings.length} improvement finding${findings.length === 1 ? "" : "s"}.`
-        : `The architecture scored ${score}/100 with no rule-based findings.`,
+      ? `The architecture has ${critical} critical issue${critical === 1 ? "" : "s"} that materially affect its stated purpose.`
+      : high
+        ? `The architecture is partially viable but has ${high} high-severity risk${high === 1 ? "" : "s"} requiring attention.`
+        : `The architecture is broadly coherent against the stated requirements, with ${findings.length} improvement finding${findings.length === 1 ? "" : "s"}.`,
     generatedAt: new Date().toISOString(),
     evaluationMode: "deterministic",
+    requirements,
   };
 }
-
-const maxByCategory: Record<string, number> = {
-  Architecture: 20,
-  Scalability: 15,
-  Reliability: 15,
-  Security: 15,
-  "Data Design": 10,
-  Performance: 10,
-  "Fault Tolerance": 5,
-  Trade-offs: 5,
-  Completeness: 5,
-};
 
 export function mergeAIReview(
   base: EvaluationResult,
@@ -401,11 +407,12 @@ export function mergeAIReview(
       const edgeEvidence = finding.evidenceEdgeIds ?? [];
       const grounded =
         finding.omission === true ||
-        (nodeEvidence.length > 0 &&
-          nodeEvidence.every((id) => validNodeIds.has(id))) ||
-        (edgeEvidence.length > 0 &&
-          edgeEvidence.every((id) => validEdgeIds.has(id)));
-      return grounded && finding.title.trim() && finding.description.trim();
+        (nodeEvidence.length > 0 && nodeEvidence.every((id) => validNodeIds.has(id))) ||
+        (edgeEvidence.length > 0 && edgeEvidence.every((id) => validEdgeIds.has(id)));
+      return grounded &&
+        finding.title.trim() &&
+        finding.description.trim() &&
+        (finding.confidence ?? 0.8) >= 0.65;
     })
     .map((finding) => ({
       id: `AI_${finding.id}`,
@@ -419,34 +426,35 @@ export function mergeAIReview(
         ...(finding.omission ? ["Omission: not represented in the design"] : []),
       ],
       recommendation: finding.recommendation,
-      source: "ai",
+      source: "ai" as const,
     }));
 
   const mergedFindings = [
     ...base.findings,
-    ...aiFindings.filter(
-      (ai) =>
-        !base.findings.some(
-          (rule) =>
-            rule.category === ai.category &&
-            rule.title.toLowerCase() === ai.title.toLowerCase(),
-        ),
+    ...aiFindings.filter((ai) =>
+      !base.findings.some((rule) =>
+        rule.category === ai.category &&
+        rule.title.toLowerCase() === ai.title.toLowerCase(),
+      ),
     ),
   ];
 
-  const scores = base.scores.map((baseScore) => {
-    const aiScore = review.scores.find(
-      (score) => score.category === baseScore.category,
-    );
-    if (!aiScore) return baseScore;
+  const aiDimensionPenalty: Record<AIReviewAssessment["rating"], number> = {
+    strong: 0,
+    adequate: 0.03,
+    weak: 0.12,
+    critical: 0.28,
+  };
 
-    const max = maxByCategory[baseScore.category] ?? baseScore.maxScore;
-    const normalizedAI = Math.max(0, Math.min(max, (aiScore.score / 100) * max));
+  const scores = base.scores.map((baseScore) => {
+    const assessment = review.assessments.find((a) => a.category === baseScore.category);
+    if (!assessment) return baseScore;
+
+    const penalty = aiDimensionPenalty[assessment.rating] ?? 0;
     return {
       ...baseScore,
-      score: Math.round(Math.min(baseScore.score, normalizedAI) * 10) / 10,
-      summary: aiScore.summary || baseScore.summary,
-      maxScore: max,
+      score: Math.round(Math.max(0, baseScore.score * (1 - penalty)) * 10) / 10,
+      summary: assessment.rationale || baseScore.summary,
     };
   });
 
@@ -457,9 +465,7 @@ export function mergeAIReview(
     score,
     scores,
     findings: mergedFindings,
-    strengths: Array.from(
-      new Set([...base.strengths, ...(review.strengths ?? [])]),
-    ).slice(0, 8),
+    strengths: Array.from(new Set([...base.strengths, ...(review.strengths ?? [])])).slice(0, 8),
     summary: review.summary || base.summary,
     evaluationMode: "hybrid",
     aiModel: model,
