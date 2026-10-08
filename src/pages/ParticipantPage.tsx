@@ -19,7 +19,8 @@ import { ArrowLeft, FileText, Layers, Save, Send, Trash2 } from "lucide-react";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { readSubmission, writeSubmission, logActivity } from "../lib/storage";
-import { evaluateSystemDesign, type EvaluationNode } from "../lib/evaluationEngine";
+import { type EvaluationNode } from "../lib/evaluationEngine";
+import { evaluateSystemDesignWithAI } from "../lib/evaluationClient";
 import { writeEvaluation } from "../lib/evaluationStorage";
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -192,7 +193,7 @@ function ParticipantEditor({
     [onEdgesChange, submitted],
   );
 
-  const save = (submissionStatus: "draft" | "submitted") => {
+  const save = async (submissionStatus: "draft" | "submitted") => {
     if (submitted) return;
 
     if (submissionStatus === "submitted" && !canSubmit) {
@@ -225,7 +226,7 @@ function ParticipantEditor({
       );
 
       if (submissionStatus === "submitted") {
-        const result = evaluateSystemDesign({
+        const result = await evaluateSystemDesignWithAI({
           application: {
             name: applicationName.trim(),
             description: applicationDescription.trim(),
