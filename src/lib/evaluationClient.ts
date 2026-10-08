@@ -35,7 +35,11 @@ export async function evaluateSystemDesignWithAI(
 
     const review = (await response.json()) as AIReview & { model?: string };
 
-    if (!Array.isArray(review.findings) || !Array.isArray(review.scores)) {
+    if (
+      !Array.isArray(review.findings) ||
+      !Array.isArray(review.assessments) ||
+      typeof review.summary !== "string"
+    ) {
       throw new Error("AI evaluation returned an invalid review.");
     }
 
