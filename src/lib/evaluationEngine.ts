@@ -397,10 +397,14 @@ export function mergeAIReview(
 
   const aiFindings: EvaluationFinding[] = review.findings
     .filter((finding) => {
+      const nodeEvidence = finding.evidenceNodeIds ?? [];
+      const edgeEvidence = finding.evidenceEdgeIds ?? [];
       const grounded =
         finding.omission === true ||
-        (finding.evidenceNodeIds ?? []).every((id) => validNodeIds.has(id)) ||
-        (finding.evidenceEdgeIds ?? []).every((id) => validEdgeIds.has(id));
+        (nodeEvidence.length > 0 &&
+          nodeEvidence.every((id) => validNodeIds.has(id))) ||
+        (edgeEvidence.length > 0 &&
+          edgeEvidence.every((id) => validEdgeIds.has(id)));
       return grounded && finding.title.trim() && finding.description.trim();
     })
     .map((finding) => ({
