@@ -369,7 +369,11 @@ function ParticipantEditor({
       } else {
         alert("Draft saved.");
       }
-
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "The project could not be saved.";
+      setSaveStatus("error");
+      setSaveError(message);
+      alert(message);
     } finally {
       setPersisting(false);
     }
