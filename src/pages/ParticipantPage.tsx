@@ -15,10 +15,11 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Info } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
+import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
 
 
@@ -160,11 +161,16 @@ function ParticipantEditor({
   );
   const [notes, setNotes] = useState(saved?.notes ?? "");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
+  const [catalogNotes, setCatalogNotes] = useState("");
+  const [showFullExplanation, setShowFullExplanation] = useState(false);
   const [submitted, setSubmitted] = useState(saved?.status === "submitted");
   const [persisting, setPersisting] = useState(false);
 
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const selected = nodes.find((node) => node.id === selectedId);
+  const selectedCatalogItem = CATALOG.find((item) => item.typeKey === selectedCatalogTypeKey);
+  const selectedKnowledge = selectedCatalogItem ? getComponentKnowledge(selectedCatalogItem) : null;
   const canSubmit =
     !submitted &&
     applicationName.trim().length > 0 &&
@@ -175,6 +181,7 @@ function ParticipantEditor({
   const addCatalogNode = (
     item: CatalogItem,
     position?: { x: number; y: number },
+    componentNotes = "",
   ) => {
     if (submitted) return;
 
@@ -190,10 +197,14 @@ function ParticipantEditor({
           label: item.label,
           typeKey: item.typeKey,
           category: item.category,
+          notes: componentNotes.trim() || undefined,
         },
       },
     ]);
     setSelectedId(id);
+    setSelectedCatalogTypeKey(null);
+    setCatalogNotes("");
+    setShowFullExplanation(false);
     logActivity("NODE_ADDED", { typeKey: item.typeKey });
   };
 
@@ -377,7 +388,7 @@ function ParticipantEditor({
           {CATALOG.map((item) => (
             <button
               key={item.typeKey}
-              className="catalog-item"
+              className={`catalog-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`}
               draggable={!submitted}
               onDragStart={(event) => {
                 event.dataTransfer.setData(
@@ -386,7 +397,8 @@ function ParticipantEditor({
                 );
                 event.dataTransfer.effectAllowed = "move";
               }}
-              onClick={() => addCatalogNode(item)}
+              onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setCatalogNotes(""); setShowFullExplanation(false); }}
+              aria-pressed={selectedCatalogTypeKey === item.typeKey}
               disabled={submitted}
             >
               <span>{item.label}</span>
@@ -440,8 +452,8 @@ function ParticipantEditor({
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
             onConnect={onConnect}
-            onNodeClick={(_, node) => setSelectedId(node.id)}
-            onPaneClick={() => setSelectedId(null)}
+            onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedCatalogTypeKey(null); }}
+            onPaneClick={() => { setSelectedId(null); setSelectedCatalogTypeKey(null); }}
             onDragOver={(event) => {
               event.preventDefault();
               event.dataTransfer.dropEffect = "move";
@@ -469,43 +481,98 @@ function ParticipantEditor({
         <aside className="sidebar right-panel">
           <div className="section-kicker">INSPECTOR</div>
 
-          {selected ? (
+          {selectedCatalogItem && selectedKnowledge ? (
+            <div className="catalog-inspector">
+              <div className="catalog-inspector-title">
+                <div className="catalog-component-icon"><Info size={18} /></div>
+                <div>
+                  <div className="section-kicker">{selectedCatalogItem.category}</div>
+                  <h3>{selectedCatalogItem.label}</h3>
+                </div>
+              </div>
+              <p className="catalog-summary">{selectedKnowledge.summary}</p>
+              <div className="catalog-detail-block">
+                <strong>WHAT IT IS</strong>
+                <p>{selectedKnowledge.whatItIs}</p>
+              </div>
+              <div className="catalog-detail-block">
+                <strong>WHEN TO USE IT</strong>
+                <p>{selectedKnowledge.whenToUse}</p>
+              </div>
+              {showFullExplanation ? (
+                <>
+                  <div className="catalog-detail-block">
+                    <strong>HOW IT FITS IN</strong>
+                    <p>{selectedKnowledge.howItFits}</p>
+                  </div>
+                  <div className="catalog-detail-block">
+                    <strong>TRADE-OFFS</strong>
+                    <p>{selectedKnowledge.tradeoffs}</p>
+                  </div>
+                  <div className="catalog-detail-block">
+                    <strong>EXAMPLE</strong>
+                    <p>{selectedKnowledge.example}</p>
+                  </div>
+                </>
+              ) : null}
+              <button className="catalog-learn-btn" onClick={() => setShowFullExplanation(value => !value)}>
+                <BookOpen size={13} /> {showFullExplanation ? "SHOW LESS" : "LEARN MORE"}
+              </button>
+              <div className="field">
+                <label>YOUR NOTES (OPTIONAL)</label>
+                <textarea
+                  rows={3}
+                  value={catalogNotes}
+                  onChange={(event) => setCatalogNotes(event.target.value)}
+                  placeholder="Why are you adding this component? Add a reminder or design decision."
+                  disabled={submitted}
+                />
+              </div>
+              <button
+                className="primary-btn catalog-add-btn"
+                disabled={submitted}
+                onClick={() => addCatalogNode(selectedCatalogItem, undefined, catalogNotes)}
+              >
+                <PlusCircle size={14} /> ADD COMPONENT TO CANVAS
+              </button>
+              <div className="catalog-hint">You can also drag this item from the palette directly onto the canvas.</div>
+            </div>
+          ) : selected ? (
             <>
+              <div className="catalog-inspector-title">
+                <div className="catalog-component-icon"><Layers size={18} /></div>
+                <div>
+                  <div className="section-kicker">{selected.data.category}</div>
+                  <h3>Canvas component</h3>
+                </div>
+              </div>
               <div className="field">
                 <label>COMPONENT LABEL</label>
                 <input
                   value={selected.data.label}
                   disabled={submitted}
-                  onChange={(event) =>
-                    updateSelected("label", event.target.value)
-                  }
+                  onChange={(event) => updateSelected("label", event.target.value)}
                 />
               </div>
-
               <div className="field">
                 <label>COMPONENT DETAILS / RATIONALE</label>
                 <textarea
                   rows={5}
                   value={selected.data.notes ?? ""}
                   disabled={submitted}
-                  onChange={(event) =>
-                    updateSelected("notes", event.target.value)
-                  }
+                  onChange={(event) => updateSelected("notes", event.target.value)}
                   placeholder="Explain why this component exists."
                 />
               </div>
-
-              <button
-                className="danger-btn"
-                disabled={submitted}
-                onClick={removeSelected}
-              >
+              <button className="danger-btn" disabled={submitted} onClick={removeSelected}>
                 <Trash2 size={13} /> DELETE COMPONENT
               </button>
             </>
           ) : (
             <div className="empty-inspector">
-              Select a component to edit its label, rationale or delete it.
+              <BookOpen size={18} />
+              <p>Select a component from the palette to learn about it, or select a canvas component to edit it.</p>
+              <p className="catalog-hint">Clicking a palette item only opens its details. Use ADD COMPONENT or drag it onto the canvas to place it.</p>
             </div>
           )}
 
