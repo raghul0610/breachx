@@ -528,7 +528,7 @@ function ParticipantEditor({
                 );
                 event.dataTransfer.effectAllowed = "move";
               }}
-              onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setCatalogNotes(""); setShowFullExplanation(false); }}
+              onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }}
               aria-pressed={selectedCatalogTypeKey === item.typeKey}
               disabled={submitted}
             >
@@ -718,7 +718,7 @@ function ParticipantEditor({
             </div>
           )}
 
-          <div className="editor-history-status" aria-live="polite">{pastRef.current.length} undo step{pastRef.current.length === 1 ? "" : "s"} available · {futureRef.current.length} redo step{futureRef.current.length === 1 ? "" : "s"} <span>{historyVersion >= 0 ? "" : ""}</span></div>
+          <div className="editor-history-status" aria-live="polite">{pastRef.current.length} undo step{pastRef.current.length === 1 ? "" : "s"} available · {futureRef.current.length} redo step{futureRef.current.length === 1 ? "" : "s"} </div>
 
           <div className="field notes-field">
             <label>ARCHITECTURE NOTES</label>
