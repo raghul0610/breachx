@@ -19,6 +19,7 @@ import {
 import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Info, Undo2, Redo2, Link2 } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
+import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
@@ -519,7 +520,7 @@ function ParticipantEditor({
           {CATALOG.map((item) => (
             <button
               key={item.typeKey}
-              className={`catalog-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`}
+              className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`}
               draggable={!submitted}
               onDragStart={(event) => {
                 event.dataTransfer.setData(
@@ -532,7 +533,7 @@ function ParticipantEditor({
               aria-pressed={selectedCatalogTypeKey === item.typeKey}
               disabled={submitted}
             >
-              <span>{item.label}</span>
+              <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={14} /></span><span>{item.label}</span></span>
               <small>{item.category}</small>
             </button>
           ))}
@@ -621,7 +622,7 @@ function ParticipantEditor({
           {selectedCatalogItem && selectedKnowledge ? (
             <div className="catalog-inspector">
               <div className="catalog-inspector-title">
-                <div className="catalog-component-icon"><Info size={18} /></div>
+                <div className={`catalog-component-icon catalog-component-icon--${getCategoryVisual(selectedCatalogItem.category).tone}`}><CategoryIcon category={selectedCatalogItem.category} size={18} /></div>
                 <div>
                   <div className="section-kicker">{selectedCatalogItem.category}</div>
                   <h3>{selectedCatalogItem.label}</h3>
@@ -677,7 +678,7 @@ function ParticipantEditor({
           ) : selected ? (
             <>
               <div className="catalog-inspector-title">
-                <div className="catalog-component-icon"><Layers size={18} /></div>
+                <div className={`catalog-component-icon catalog-component-icon--${getCategoryVisual(String(selected.data.category)).tone}`}><CategoryIcon category={String(selected.data.category)} size={18} /></div>
                 <div>
                   <div className="section-kicker">{selected.data.category}</div>
                   <h3>Canvas component</h3>
