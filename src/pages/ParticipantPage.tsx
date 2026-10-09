@@ -22,6 +22,7 @@ import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNo
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
+import { deleteGraphSelection } from "../lib/graphEditing";
 
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -413,12 +414,11 @@ function ParticipantEditor({
     const selectedEdgeIds = new Set(edgesRef.current.filter((edge) => edge.selected || edge.id === selectedEdgeId).map((edge) => edge.id));
     if (selectedNodeIds.size === 0 && selectedEdgeIds.size === 0) return;
     pushHistory();
-    nodesRef.current = nodesRef.current.filter((node) => !selectedNodeIds.has(node.id));
-    edgesRef.current = edgesRef.current.filter((edge) =>
-      !selectedEdgeIds.has(edge.id) && !selectedNodeIds.has(edge.source) && !selectedNodeIds.has(edge.target),
-    );
-    setNodes(nodesRef.current);
-    setEdges(edgesRef.current);
+    const result = deleteGraphSelection(nodesRef.current, edgesRef.current, selectedNodeIds, selectedEdgeIds);
+    nodesRef.current = result.nodes;
+    edgesRef.current = result.edges;
+    setNodes(result.nodes);
+    setEdges(result.edges);
     selectedNodeIds.forEach((nodeId) => logActivity("NODE_DELETED", { nodeId }));
     selectedEdgeIds.forEach((edgeId) => logActivity("EDGE_DELETED", { edgeId }));
     setSelectedId(null);
