@@ -67,71 +67,21 @@ const initialEdges: Edge[] = [
 export function ParticipantPage({
   onBack,
   onSubmitted,
+  projectId,
 }: {
   onBack: () => void;
   onSubmitted: () => void;
+  projectId: string;
 }) {
-  const saved = readSubmission();
-  const [entryMode, setEntryMode] = useState<"chooser" | "reconstruct" | "new">(
-    saved?.status === "submitted" ? "chooser" : saved ? "reconstruct" : "new",
-  );
-
-  if (entryMode === "chooser" && saved?.status === "submitted") {
-    return (
-      <div className="app-shell">
-        <header className="topbar">
-          <button className="nav-btn" onClick={onBack}>
-            <ArrowLeft size={14} /> BACK
-          </button>
-          <div>
-            <strong>ANCHON</strong>
-            <span className="topbar-sub"> // ARCHITECTURE DESIGNER</span>
-          </div>
-          <span className="status-pill">BLUEPRINT SAVED</span>
-        </header>
-
-        <main className="admin-content">
-          <section className="panel control-hero">
-            <div className="section-kicker">DESIGN WORKSPACE</div>
-            <h1>WHAT DO YOU WANT TO DO NEXT?</h1>
-            <p>
-              Your blueprint has been saved. You can reopen it for editing or start a fresh design.
-            </p>
-            <div className="home-actions">
-              <button
-                className="primary-btn"
-                onClick={() => {
-                  writeSubmission({ ...saved, status: "draft", updatedAt: new Date().toISOString() });
-                  setEntryMode("reconstruct");
-                }}
-              >
-                RECONSTRUCT SUBMITTED DESIGN
-              </button>
-              <button
-                className="outline-btn"
-                onClick={() => {
-                  localStorage.removeItem("breachx-design");
-                  setEntryMode("new");
-                }}
-              >
-                START NEW DESIGN
-              </button>
-            </div>
-            <div className="tiny">
-              Export your blueprint as a PDF from the designer. Generate a suggested architecture whenever you need a starting point.
-            </div>
-          </section>
-        </main>
-      </div>
-    );
-  }
-
+  const saved = readSubmission(projectId);
   return (
     <ReactFlowProvider>
       <ParticipantEditor
+        key={projectId}
+        projectId={projectId}
         onBack={onBack}
         onSubmitted={onSubmitted}
-        startingSubmission={entryMode === "reconstruct" && saved ? { ...saved, status: "draft" } : null}
+        startingSubmission={saved}
       />
     </ReactFlowProvider>
   );
@@ -140,10 +90,12 @@ export function ParticipantPage({
 function ParticipantEditor({
   onBack,
   onSubmitted,
+  projectId,
   startingSubmission,
 }: {
   onBack: () => void;
   onSubmitted: () => void;
+  projectId: string;
   startingSubmission: DesignSubmission | null;
 }) {
   const { screenToFlowPosition, getViewport } = useReactFlow();
@@ -163,6 +115,9 @@ function ParticipantEditor({
       "Describe the application, expected users, traffic and important requirements.",
   );
   const [notes, setNotes] = useState(saved?.notes ?? "");
+  const [viewport, setViewport] = useState(saved?.viewport);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
+  const [saveError, setSaveError] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
@@ -177,6 +132,31 @@ function ParticipantEditor({
   const futureRef = useRef<GraphSnapshot[]>([]);
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { edgesRef.current = edges; }, [edges]);
+
+  useEffect(() => {
+    if (submitted) return;
+    setSaveStatus("saving");
+    const timeout = window.setTimeout(() => {
+      try {
+        writeSubmission({
+          applicationName,
+          applicationDescription,
+          nodes,
+          edges,
+          notes,
+          viewport,
+          status: "draft",
+          updatedAt: new Date().toISOString(),
+        }, projectId);
+        setSaveStatus("saved");
+        setSaveError("");
+      } catch (cause) {
+        setSaveStatus("error");
+        setSaveError(cause instanceof Error ? cause.message : "Autosave failed. Your latest changes may not be saved.");
+      }
+    }, 700);
+    return () => window.clearTimeout(timeout);
+  }, [applicationName, applicationDescription, nodes, edges, notes, viewport, submitted, projectId]);
 
   const pushHistory = useCallback(() => {
     pastRef.current = [...pastRef.current.slice(-49), {
@@ -359,18 +339,22 @@ function ParticipantEditor({
     setPersisting(true);
 
     try {
-      const viewport = getViewport();
+      const currentViewport = getViewport();
+      setViewport(currentViewport);
       const submission = {
         applicationName: applicationName.trim(),
         applicationDescription: applicationDescription.trim(),
         nodes,
         edges,
         notes,
+        viewport: currentViewport,
         status: submissionStatus,
         updatedAt: new Date().toISOString(),
       };
 
-      writeSubmission(submission);
+      writeSubmission(submission, projectId);
+      setSaveStatus("saved");
+      setSaveError("");
       logActivity(
         submissionStatus === "submitted"
           ? "DESIGN_SUBMITTED"
@@ -386,7 +370,6 @@ function ParticipantEditor({
         alert("Draft saved.");
       }
 
-      void viewport;
     } finally {
       setPersisting(false);
     }
@@ -482,7 +465,7 @@ function ParticipantEditor({
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
         <span className="status-pill">
-          {submitted ? "SUBMITTED" : "DESIGNING"}
+          {submitted ? "SUBMITTED" : saveStatus === "saving" ? "SAVING…" : saveStatus === "error" ? "SAVE ERROR" : "SAVED LOCALLY"}
         </span>
       </header>
 
@@ -557,6 +540,7 @@ function ParticipantEditor({
                 {nodes.length} components · {edges.length} connections
               </span>
               <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
+              {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
 
             <div className="toolbar-actions">
@@ -597,7 +581,9 @@ function ParticipantEditor({
               event.dataTransfer.dropEffect = "move";
             }}
             onDrop={onDrop}
-            fitView
+            defaultViewport={viewport as { x: number; y: number; zoom: number } | undefined}
+            fitView={!viewport}
+            onMoveEnd={(_, nextViewport) => setViewport(nextViewport)}
             snapToGrid
             snapGrid={[16, 16]}
             colorMode="dark"
