@@ -164,6 +164,8 @@ function ParticipantEditor({
   const [notes, setNotes] = useState(saved?.notes ?? "");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(saved?.status === "submitted");
   const [historyVersion, setHistoryVersion] = useState(0);
   const canvasRef = useRef<HTMLElement | null>(null);
   const dragHistoryOpen = useRef(false);
@@ -223,10 +225,8 @@ function ParticipantEditor({
     setSelectedCatalogTypeKey(null);
     setHistoryVersion((version) => version + 1);
   }, [setNodes, setEdges, submitted]);
-  const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
   const [catalogNotes, setCatalogNotes] = useState("");
   const [showFullExplanation, setShowFullExplanation] = useState(false);
-  const [submitted, setSubmitted] = useState(saved?.status === "submitted");
   const [persisting, setPersisting] = useState(false);
 
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
