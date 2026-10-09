@@ -126,7 +126,7 @@ export function ParticipantPage({
     <ReactFlowProvider>
       <ParticipantEditor
         onBack={onBack}
-        onEvaluated={onEvaluated}
+        onSubmitted={onSubmitted}
         startingSubmission={entryMode === "reconstruct" && saved ? { ...saved, status: "draft" } : null}
       />
     </ReactFlowProvider>
@@ -135,11 +135,11 @@ export function ParticipantPage({
 
 function ParticipantEditor({
   onBack,
-  onEvaluated,
+  onSubmitted,
   startingSubmission,
 }: {
   onBack: () => void;
-  onEvaluated: () => void;
+  onSubmitted: () => void;
   startingSubmission: DesignSubmission | null;
 }) {
   const { screenToFlowPosition, getViewport } = useReactFlow();
@@ -522,7 +522,7 @@ function ParticipantEditor({
 
           <div className="submission-rule">
             {submitted
-              ? "Design submitted and evaluated."
+              ? "Blueprint saved. Continue to the AI architecture generator."
               : canSubmit
                 ? "Blueprint is ready to save."
                 : "Add an application description, 3 components and 2 connections to save."}
