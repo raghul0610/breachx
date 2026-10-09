@@ -407,7 +407,7 @@ function ParticipantEditor({
     );
   };
 
-  const removeSelected = () => {
+  const removeSelected = useCallback(() => {
     if (submitted) return;
     const selectedNodeIds = new Set(nodesRef.current.filter((node) => node.selected || node.id === selectedId).map((node) => node.id));
     const selectedEdgeIds = new Set(edgesRef.current.filter((edge) => edge.selected || edge.id === selectedEdgeId).map((edge) => edge.id));
@@ -424,7 +424,7 @@ function ParticipantEditor({
     setSelectedId(null);
     setSelectedEdgeId(null);
     setSelectedCatalogTypeKey(null);
-  };
+  }, [submitted, selectedId, selectedEdgeId, pushHistory, setNodes, setEdges]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -468,7 +468,7 @@ function ParticipantEditor({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, setNodes, setEdges]);
+  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, setNodes, setEdges]);
 
   return (
     <div className="app-shell">
@@ -528,7 +528,7 @@ function ParticipantEditor({
                 );
                 event.dataTransfer.effectAllowed = "move";
               }}
-              onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setCatalogNotes(""); setShowFullExplanation(false); }}
+              onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setCatalogNotes(""); setShowFullExplanation(false); }}
               aria-pressed={selectedCatalogTypeKey === item.typeKey}
               disabled={submitted}
             >
