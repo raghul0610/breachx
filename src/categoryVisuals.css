@@ -1,0 +1,35 @@
+/* Phase 3: category identity shared by palette, canvas nodes and inspector. */
+.node-heading{display:flex;align-items:center;gap:6px;min-width:0}
+.node-category-icon{display:inline-flex;align-items:center;justify-content:center;flex:none}
+.bp-node{border-top-width:2px;border-top-color:var(--category-accent,#64748b);transition:border-color .14s ease,box-shadow .14s ease,background .14s ease}
+.bp-node .node-category,.bp-node .node-category-icon{color:var(--category-accent,#94a3b8)}
+.bp-node.selected{border-color:var(--category-accent,#29b6f6);box-shadow:0 0 0 2px var(--category-glow,#29b6f633),0 12px 28px #0009}
+.bp-node--edge,.catalog-item--edge,.catalog-component-icon--edge{--category-accent:#38bdf8;--category-glow:#38bdf833}
+.bp-node--security,.catalog-item--security,.catalog-component-icon--security{--category-accent:#fb7185;--category-glow:#fb718533}
+.bp-node--network,.catalog-item--network,.catalog-component-icon--network{--category-accent:#60a5fa;--category-glow:#60a5fa33}
+.bp-node--routing,.catalog-item--routing,.catalog-component-icon--routing{--category-accent:#818cf8;--category-glow:#818cf833}
+.bp-node--compute,.catalog-item--compute,.catalog-component-icon--compute{--category-accent:#a78bfa;--category-glow:#a78bfa33}
+.bp-node--api,.catalog-item--api,.catalog-component-icon--api{--category-accent:#22d3ee;--category-glow:#22d3ee33}
+.bp-node--realtime,.catalog-item--realtime,.catalog-component-icon--realtime{--category-accent:#2dd4bf;--category-glow:#2dd4bf33}
+.bp-node--integration,.catalog-item--integration,.catalog-component-icon--integration{--category-accent:#34d399;--category-glow:#34d39933}
+.bp-node--data,.catalog-item--data,.catalog-component-icon--data{--category-accent:#fbbf24;--category-glow:#fbbf2433}
+.bp-node--analytics,.catalog-item--analytics,.catalog-component-icon--analytics{--category-accent:#facc15;--category-glow:#facc1533}
+.bp-node--storage,.catalog-item--storage,.catalog-component-icon--storage{--category-accent:#f59e0b;--category-glow:#f59e0b33}
+.bp-node--reliability,.catalog-item--reliability,.catalog-component-icon--reliability{--category-accent:#4ade80;--category-glow:#4ade8033}
+.bp-node--messaging,.catalog-item--messaging,.catalog-component-icon--messaging{--category-accent:#c084fc;--category-glow:#c084fc33}
+.bp-node--orchestration,.catalog-item--orchestration,.catalog-component-icon--orchestration{--category-accent:#e879f9;--category-glow:#e879f933}
+.bp-node--observability,.catalog-item--observability,.catalog-component-icon--observability{--category-accent:#2dd4bf;--category-glow:#2dd4bf33}
+.bp-node--platform,.catalog-item--platform,.catalog-component-icon--platform{--category-accent:#94a3b8;--category-glow:#94a3b833}
+.bp-node--external,.catalog-item--external,.catalog-component-icon--external{--category-accent:#fb923c;--category-glow:#fb923c33}
+.bp-node--banking,.catalog-item--banking,.catalog-component-icon--banking{--category-accent:#f87171;--category-glow:#f8717133}
+.bp-node--ai,.catalog-item--ai,.catalog-component-icon--ai{--category-accent:#c4b5fd;--category-glow:#c4b5fd33}
+.bp-node--neutral,.catalog-item--neutral{--category-accent:#94a3b8;--category-glow:#94a3b833}
+.catalog-item{border-left:2px solid var(--category-accent,#263541);transition:border-color .14s ease,background .14s ease,transform .14s ease}
+.catalog-item:hover:not(:disabled){border-color:var(--category-accent,#263541);background:#111e29;transform:translateX(2px)}
+.catalog-item-active{border-color:var(--category-accent,#29b6f6)!important;background:#12202b!important;box-shadow:inset 2px 0 0 var(--category-accent,#29b6f6)}
+.catalog-item-title{display:flex;align-items:center;gap:8px;min-width:0}
+.catalog-item-title>span:last-child{min-width:0}
+.catalog-item-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--category-accent,#94a3b8)}
+.catalog-item small{padding-left:22px}
+.catalog-component-icon{color:var(--category-accent,#29b6f6);background:#0b1219;border-color:var(--category-accent,#1c2a36)}
+@media(prefers-reduced-motion:reduce){.bp-node,.catalog-item{transition:none}.catalog-item:hover:not(:disabled){transform:none}}
