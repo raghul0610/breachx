@@ -19,9 +19,7 @@ import { ArrowLeft, FileText, Layers, Save, Send, Trash2 } from "lucide-react";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
-import { type EvaluationNode } from "../lib/evaluationEngine";
-import { evaluateSystemDesignWithAI } from "../lib/evaluationClient";
-import { writeEvaluation } from "../lib/evaluationStorage";
+
 
 const initialNodes: Node<BlueprintNodeData>[] = [
   {
@@ -63,7 +61,7 @@ const initialEdges: Edge[] = [
 
 export function ParticipantPage({
   onBack,
-  onEvaluated,
+  onSubmitted,
 }: {
   onBack: () => void;
   onEvaluated: () => void;
@@ -288,24 +286,9 @@ function ParticipantEditor({
       );
 
       if (submissionStatus === "submitted") {
-        const result = await evaluateSystemDesignWithAI({
-          application: {
-            name: applicationName.trim(),
-            description: applicationDescription.trim(),
-          },
-          nodes: nodes as unknown as EvaluationNode[],
-          edges: edges as unknown as {
-            id?: string;
-            source: string;
-            target: string;
-          }[],
-          notes,
-        });
-
-        writeEvaluation(result);
         setSubmitted(true);
-        alert("Design evaluated successfully. Your report is ready.");
-        onEvaluated();
+        alert("Blueprint saved. You can now generate a suggested architecture or export your design as a PDF.");
+        onSubmitted();
       } else {
         alert("Draft saved.");
       }
