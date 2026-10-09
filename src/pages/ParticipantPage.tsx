@@ -65,7 +65,7 @@ export function ParticipantPage({
   onSubmitted,
 }: {
   onBack: () => void;
-  onEvaluated: () => void;
+  onSubmitted: () => void;
 }) {
   const saved = readSubmission();
   const [entryMode, setEntryMode] = useState<"chooser" | "reconstruct" | "new">(
@@ -91,8 +91,7 @@ export function ParticipantPage({
             <div className="section-kicker">DESIGN WORKSPACE</div>
             <h1>WHAT DO YOU WANT TO DO NEXT?</h1>
             <p>
-              Your submitted architecture is locked as a completed evaluation.
-              You can reconstruct it as a new editable design or start a new design from the starter canvas.
+              Your blueprint has been saved. You can reopen it for editing or start a fresh design.
             </p>
             <div className="home-actions">
               <button
@@ -115,7 +114,7 @@ export function ParticipantPage({
               </button>
             </div>
             <div className="tiny">
-              The existing evaluation report remains available while you build the next design.
+              Export your blueprint as a PDF from the designer. Generate a suggested architecture whenever you need a starting point.
             </div>
           </section>
         </main>
