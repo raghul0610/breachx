@@ -83,7 +83,7 @@ export function ParticipantPage({
             <strong>BREACH X</strong>
             <span className="topbar-sub"> // ARCHITECTURE DESIGNER</span>
           </div>
-          <span className="status-pill">SUBMISSION COMPLETE</span>
+          <span className="status-pill">BLUEPRINT SAVED</span>
         </header>
 
         <main className="admin-content">
@@ -428,7 +428,7 @@ function ParticipantEditor({
                 onClick={() => save("submitted")}
               >
                 <Send size={13} />{" "}
-                {submitted ? "SUBMITTED" : "SUBMIT & EVALUATE"}
+                {submitted ? "SUBMITTED" : "SAVE BLUEPRINT & CONTINUE"}
               </button>
             </div>
           </div>
@@ -524,8 +524,8 @@ function ParticipantEditor({
             {submitted
               ? "Design submitted and evaluated."
               : canSubmit
-                ? "Minimum evaluation requirements satisfied."
-                : "Add an application description, 3 components and 2 connections to submit."}
+                ? "Blueprint is ready to save."
+                : "Add an application description, 3 components and 2 connections to save."}
           </div>
         </aside>
       </div>
