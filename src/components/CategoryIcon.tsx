@@ -10,7 +10,6 @@ import {
   Globe2,
   HardDrive,
   Layers3,
-  LockKeyhole,
   Network,
   RadioTower,
   Route,
