@@ -33,3 +33,8 @@
 .catalog-item small{padding-left:22px}
 .catalog-component-icon{color:var(--category-accent,#29b6f6);background:#0b1219;border-color:var(--category-accent,#1c2a36)}
 @media(prefers-reduced-motion:reduce){.bp-node,.catalog-item{transition:none}.catalog-item:hover:not(:disabled){transform:none}}
+
+/* Make selection and connection direction easy to read on the dark canvas. */
+.react-flow__edge.selected .react-flow__edge-path{stroke:#67e8f9;stroke-width:3}
+.react-flow__edge-path{transition:stroke .14s ease,stroke-width .14s ease}
+.react-flow__connection-path{stroke:#67e8f9;stroke-width:2}
