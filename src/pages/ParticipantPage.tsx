@@ -15,7 +15,8 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2 } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown } from "lucide-react";
+import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
@@ -80,7 +81,7 @@ export function ParticipantPage({
           </button>
           <div>
             <strong>BREACH X</strong>
-            <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
+            <span className="topbar-sub"> // ARCHITECTURE DESIGNER</span>
           </div>
           <span className="status-pill">SUBMISSION COMPLETE</span>
         </header>
@@ -299,6 +300,8 @@ function ParticipantEditor({
     }
   };
 
+  const handleExportPdf = () => exportArchitecturePdf(applicationName, applicationDescription, notes, nodes, edges);
+
   const updateSelected = (field: "label" | "notes", value: string) => {
     if (!selectedId || submitted) return;
 
@@ -343,7 +346,7 @@ function ParticipantEditor({
 
       <section className="problem-banner">
         <div className="section-kicker">
-          <FileText size={13} /> APPLICATION TO EVALUATE
+          <FileText size={13} /> APPLICATION REQUIREMENTS
         </div>
 
         <div className="field">
@@ -405,7 +408,7 @@ function ParticipantEditor({
           <div className="canvas-toolbar">
             <div>
               <div className="section-kicker">
-                <Layers size={13} /> SYSTEM DESIGN WORKSPACE
+                <Layers size={13} /> ARCHITECTURE WORKSPACE
               </div>
               <span className="counter">
                 {nodes.length} components · {edges.length} connections
@@ -413,6 +416,7 @@ function ParticipantEditor({
             </div>
 
             <div className="toolbar-actions">
+              <button onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
               <button
                 onClick={() => save("draft")}
                 disabled={persisting || submitted}
