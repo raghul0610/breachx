@@ -245,3 +245,12 @@ html { scroll-behavior: smooth; }
   html { scroll-behavior: auto; }
   .lp-root *, .lp-root *::before, .lp-root *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+
+/* Phase 2: graph editing controls */
+.editor-shortcuts{display:block;margin-top:4px;color:#526576;font:8px ui-monospace,monospace;letter-spacing:.01em}
+.editor-history-status{margin-top:14px;padding:8px 9px;border:1px solid #1b2934;border-radius:7px;color:#71808e;font:9px ui-monospace,monospace;line-height:1.5}
+.toolbar-actions button:disabled{opacity:.35;cursor:not-allowed}
+.canvas:focus{outline:none}
+.react-flow__edge.selected .react-flow__edge-path{stroke:#29b6f6;stroke-width:3}
+@media(max-width:1250px){.canvas-toolbar{height:auto;min-height:56px;align-items:flex-start;gap:8px;padding:9px;flex-wrap:wrap}.toolbar-actions{flex-wrap:wrap}.editor-shortcuts{display:none}}
