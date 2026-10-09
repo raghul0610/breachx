@@ -27,6 +27,9 @@ export type EvaluationResult = { score: number; maxScore: 100; scores: Evaluatio
 const key = (n: EvaluationNode) => (n.data?.typeKey ?? "").toLowerCase();
 const label = (n: EvaluationNode) => (n.data?.label ?? key(n)) || n.id;
 const textOf = (input: EvaluationInput) => [input.application.name, input.application.description, input.notes ?? "", ...(input.workload?.features ?? []), ...input.nodes.map((n) => (label(n) + " " + (n.data?.notes ?? "")))].join(" ").toLowerCase();
+// Requirements should be inferred from workload/application context, not component names.
+// A node label such as "High Traffic Cache" must not silently establish a workload target.
+const requirementTextOf = (input: EvaluationInput) => [input.application.name, input.application.description, input.notes ?? "", ...(input.workload?.features ?? [])].join(" ").toLowerCase();
 const hasAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
 const hasPattern = (text: string, pattern: RegExp) => pattern.test(text);
 
@@ -69,7 +72,7 @@ const isConsumerNode = (node: EvaluationNode) => {
 };
 
 function inferRequirements(input: EvaluationInput): RequirementProfile {
-  const text = textOf(input);
+  const text = requirementTextOf(input);
   const w = input.workload ?? {};
   const peakRps = w.peakRps ?? 0;
   const concurrentUsers = w.concurrentUsers ?? 0;
@@ -164,7 +167,7 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   const notesAndLabels = textOf(input);
   if (requirements.sensitiveData && securityBoundary.length === 0) add("SEC_NO_BOUNDARY","Security","high","Sensitive workload lacks a visible security boundary","The requirements describe sensitive data, but the graph has no visible firewall or API gateway boundary.",["Sensitive data inferred from requirements","No firewall/API gateway"],"Add an explicit edge security or API boundary and document authentication, authorization, and data-protection responsibilities.",8,"SEC-001");
   if (requirements.sensitiveData && !hasAny(notesAndLabels, ["authentication","authorization","oauth","iam","rbac","least privilege","access control"])) add("SEC_MISSING_ACCESS_MODEL","Security","medium","Access-control model is not explained","The workload contains sensitive data, but the submission does not explain how callers are authenticated or authorized.",["Sensitive data requirement","No authentication/authorization rationale found"],"Document the identity boundary, authorization model, and least-privilege access to sensitive resources.",4,"SEC-002");
-  if (requirements.highScale && compute.length === 1 && !types.has("load_balancer") && !types.has("autoscaler")) add("SCALE_SINGLE_COMPUTE","Scalability","high","Single compute capacity at stated scale","The workload states meaningful scale, but the architecture shows one application-processing instance with no traffic-distribution mechanism.",[label(compute[0]),"No load balancer"],"Introduce horizontal capacity and a mechanism that distributes traffic across healthy instances.",7,"SD-21");
+  if (requirements.highScale && compute.length === 1 && !types.has("load_balancer") && !types.has("autoscaler")) add("SCALE_SINGLE_COMPUTE","Scalability","high","Single compute capacity at stated scale","The application/workload description explicitly indicates high scale, but the graph shows one application-processing component and no represented traffic-distribution or autoscaling capability. A single diagram node does not prove there is only one deployed instance; confirm deployment topology before treating this as a defect.",["Scale trigger: " + (input.workload?.peakRps && input.workload.peakRps >= 1000 ? "peak RPS >= 1,000" : input.workload?.concurrentUsers && input.workload.concurrentUsers >= 10000 ? "concurrent users >= 10,000" : input.workload?.expectedUsers && input.workload.expectedUsers >= 1000000 ? "expected users >= 1,000,000" : "explicit high-scale phrase in application description/notes/features"),label(compute[0]),"No load balancer/autoscaler node represented"],"Confirm whether the app server represents one deployed instance or a replicated service. If it is a single instance at the stated demand, add horizontal capacity and traffic distribution; otherwise document the platform-managed scaling mechanism.",5,"SD-21");
   if (
     compute.length > 1 && !presentCapabilities.has("traffic distribution") && !findings.some((finding) => finding.id === "CAP_SCALE_DISTRIBUTION") &&
     !types.has("load_balancer") &&
