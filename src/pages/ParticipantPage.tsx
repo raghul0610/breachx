@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   addEdge,
+  reconnectEdge,
   Background,
   BackgroundVariant,
   Controls,
@@ -15,7 +16,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Info } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Info, Undo2, Redo2, Link2 } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
@@ -161,6 +162,66 @@ function ParticipantEditor({
   );
   const [notes, setNotes] = useState(saved?.notes ?? "");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [historyVersion, setHistoryVersion] = useState(0);
+  const canvasRef = useRef<HTMLElement | null>(null);
+  const dragHistoryOpen = useRef(false);
+  type GraphSnapshot = { nodes: Node<BlueprintNodeData>[]; edges: Edge[] };
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+  const pastRef = useRef<GraphSnapshot[]>([]);
+  const futureRef = useRef<GraphSnapshot[]>([]);
+  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
+  useEffect(() => { edgesRef.current = edges; }, [edges]);
+
+  const pushHistory = useCallback(() => {
+    pastRef.current = [...pastRef.current.slice(-49), {
+      nodes: structuredClone(nodesRef.current),
+      edges: structuredClone(edgesRef.current),
+    }];
+    futureRef.current = [];
+    setHistoryVersion((version) => version + 1);
+  }, []);
+
+  const undo = useCallback(() => {
+    if (submitted || pastRef.current.length === 0) return;
+    const previous = pastRef.current[pastRef.current.length - 1];
+    pastRef.current = pastRef.current.slice(0, -1);
+    futureRef.current = [...futureRef.current, {
+      nodes: structuredClone(nodesRef.current),
+      edges: structuredClone(edgesRef.current),
+    }];
+    const restoredNodes = structuredClone(previous.nodes).map((node) => ({ ...node, selected: false }));
+    const restoredEdges = structuredClone(previous.edges).map((edge) => ({ ...edge, selected: false }));
+    nodesRef.current = restoredNodes;
+    edgesRef.current = restoredEdges;
+    setNodes(restoredNodes);
+    setEdges(restoredEdges);
+    setSelectedId(null);
+    setSelectedEdgeId(null);
+    setSelectedCatalogTypeKey(null);
+    setHistoryVersion((version) => version + 1);
+  }, [setNodes, setEdges, submitted]);
+
+  const redo = useCallback(() => {
+    if (submitted || futureRef.current.length === 0) return;
+    const next = futureRef.current[futureRef.current.length - 1];
+    futureRef.current = futureRef.current.slice(0, -1);
+    pastRef.current = [...pastRef.current.slice(-49), {
+      nodes: structuredClone(nodesRef.current),
+      edges: structuredClone(edgesRef.current),
+    }];
+    const restoredNodes = structuredClone(next.nodes).map((node) => ({ ...node, selected: false }));
+    const restoredEdges = structuredClone(next.edges).map((edge) => ({ ...edge, selected: false }));
+    nodesRef.current = restoredNodes;
+    edgesRef.current = restoredEdges;
+    setNodes(restoredNodes);
+    setEdges(restoredEdges);
+    setSelectedId(null);
+    setSelectedEdgeId(null);
+    setSelectedCatalogTypeKey(null);
+    setHistoryVersion((version) => version + 1);
+  }, [setNodes, setEdges, submitted]);
   const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
   const [catalogNotes, setCatalogNotes] = useState("");
   const [showFullExplanation, setShowFullExplanation] = useState(false);
@@ -169,6 +230,8 @@ function ParticipantEditor({
 
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const selected = nodes.find((node) => node.id === selectedId);
+  const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
+  const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
   const selectedCatalogItem = CATALOG.find((item) => item.typeKey === selectedCatalogTypeKey);
   const selectedKnowledge = selectedCatalogItem ? getComponentKnowledge(selectedCatalogItem) : null;
   const canSubmit =
@@ -185,6 +248,7 @@ function ParticipantEditor({
   ) => {
     if (submitted) return;
 
+    pushHistory();
     const id = crypto.randomUUID();
     setNodes((current) => [
       ...current,
@@ -202,6 +266,7 @@ function ParticipantEditor({
       },
     ]);
     setSelectedId(id);
+    setSelectedEdgeId(null);
     setSelectedCatalogTypeKey(null);
     setCatalogNotes("");
     setShowFullExplanation(false);
@@ -231,6 +296,7 @@ function ParticipantEditor({
   const onConnect = useCallback(
     (connection: Connection) => {
       if (submitted) return;
+      pushHistory();
 
       setEdges((current) =>
         addEdge(
@@ -247,14 +313,28 @@ function ParticipantEditor({
         target: connection.target,
       });
     },
-    [setEdges, submitted],
+    [setEdges, submitted, pushHistory],
   );
+
+  const onReconnect = useCallback((oldEdge: Edge, connection: Connection) => {
+    if (submitted) return;
+    pushHistory();
+    setEdges((current) => reconnectEdge(oldEdge, connection, current));
+  }, [setEdges, submitted, pushHistory]);
 
   const handleNodesChange = useCallback(
     (changes: Parameters<typeof onNodesChange>[0]) => {
-      if (!submitted) onNodesChange(changes);
+      if (submitted) return;
+      const startsDrag = changes.some((change) => change.type === "position" && change.dragging === true);
+      const endsDrag = changes.some((change) => change.type === "position" && change.dragging === false);
+      if (startsDrag && !dragHistoryOpen.current) {
+        pushHistory();
+        dragHistoryOpen.current = true;
+      }
+      onNodesChange(changes);
+      if (endsDrag) dragHistoryOpen.current = false;
     },
-    [onNodesChange, submitted],
+    [onNodesChange, submitted, pushHistory],
   );
 
   const handleEdgesChange = useCallback(
@@ -314,6 +394,9 @@ function ParticipantEditor({
 
   const updateSelected = (field: "label" | "notes", value: string) => {
     if (!selectedId || submitted) return;
+    const currentNode = nodesRef.current.find((node) => node.id === selectedId);
+    if (!currentNode || currentNode.data[field] === value) return;
+    pushHistory();
 
     setNodes((current) =>
       current.map((node) =>
@@ -325,19 +408,67 @@ function ParticipantEditor({
   };
 
   const removeSelected = () => {
-    if (!selectedId || submitted) return;
-
-    setNodes((current) =>
-      current.filter((node) => node.id !== selectedId),
+    if (submitted) return;
+    const selectedNodeIds = new Set(nodesRef.current.filter((node) => node.selected || node.id === selectedId).map((node) => node.id));
+    const selectedEdgeIds = new Set(edgesRef.current.filter((edge) => edge.selected || edge.id === selectedEdgeId).map((edge) => edge.id));
+    if (selectedNodeIds.size === 0 && selectedEdgeIds.size === 0) return;
+    pushHistory();
+    nodesRef.current = nodesRef.current.filter((node) => !selectedNodeIds.has(node.id));
+    edgesRef.current = edgesRef.current.filter((edge) =>
+      !selectedEdgeIds.has(edge.id) && !selectedNodeIds.has(edge.source) && !selectedNodeIds.has(edge.target),
     );
-    setEdges((current) =>
-      current.filter(
-        (edge) => edge.source !== selectedId && edge.target !== selectedId,
-      ),
-    );
-    logActivity("NODE_DELETED", { nodeId: selectedId });
+    setNodes(nodesRef.current);
+    setEdges(edgesRef.current);
+    selectedNodeIds.forEach((nodeId) => logActivity("NODE_DELETED", { nodeId }));
+    selectedEdgeIds.forEach((edgeId) => logActivity("EDGE_DELETED", { edgeId }));
     setSelectedId(null);
+    setSelectedEdgeId(null);
+    setSelectedCatalogTypeKey(null);
   };
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+      const canvasHasFocus = Boolean(canvasRef.current?.contains(document.activeElement)) || target === document.body;
+      if (event.key === "Escape") {
+        if (!hasGraphSelection && !selectedCatalogTypeKey) return;
+        setSelectedId(null);
+        setSelectedEdgeId(null);
+        setSelectedCatalogTypeKey(null);
+        setNodes((current) => current.map((node) => ({ ...node, selected: false })));
+        setEdges((current) => current.map((edge) => ({ ...edge, selected: false })));
+        return;
+      }
+      if (submitted || !canvasHasFocus) return;
+      const modifier = event.ctrlKey || event.metaKey;
+      if (modifier && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        if (event.shiftKey) redo(); else undo();
+        return;
+      }
+      if (modifier && event.key.toLowerCase() === "y") {
+        event.preventDefault();
+        redo();
+        return;
+      }
+      if (modifier && event.key.toLowerCase() === "a") {
+        event.preventDefault();
+        setNodes((current) => current.map((node) => ({ ...node, selected: true })));
+        setEdges((current) => current.map((edge) => ({ ...edge, selected: false })));
+        setSelectedId(null);
+        setSelectedEdgeId(null);
+        setSelectedCatalogTypeKey(null);
+        return;
+      }
+      if ((event.key === "Delete" || event.key === "Backspace") && hasGraphSelection) {
+        event.preventDefault();
+        removeSelected();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, setNodes, setEdges]);
 
   return (
     <div className="app-shell">
@@ -415,7 +546,7 @@ function ParticipantEditor({
           </div>
         </aside>
 
-        <section className="canvas">
+        <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas">
           <div className="canvas-toolbar">
             <div>
               <div className="section-kicker">
@@ -424,9 +555,12 @@ function ParticipantEditor({
               <span className="counter">
                 {nodes.length} components · {edges.length} connections
               </span>
+              <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
             </div>
 
             <div className="toolbar-actions">
+              <button onClick={undo} disabled={submitted || pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
+              <button onClick={redo} disabled={submitted || futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
               <button onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
               <button
                 onClick={() => save("draft")}
@@ -452,8 +586,10 @@ function ParticipantEditor({
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
             onConnect={onConnect}
-            onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedCatalogTypeKey(null); }}
-            onPaneClick={() => { setSelectedId(null); setSelectedCatalogTypeKey(null); }}
+            onReconnect={onReconnect}
+            onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); canvasRef.current?.focus({ preventScroll: true }); }}
+            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); canvasRef.current?.focus({ preventScroll: true }); }}
+            onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); }}
             onDragOver={(event) => {
               event.preventDefault();
               event.dataTransfer.dropEffect = "move";
@@ -568,6 +704,12 @@ function ParticipantEditor({
                 <Trash2 size={13} /> DELETE COMPONENT
               </button>
             </>
+          ) : selectedEdge ? (
+            <div className="catalog-inspector">
+              <div className="catalog-inspector-title"><div className="catalog-component-icon"><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION</div><h3>Directed connection</h3></div></div>
+              <p className="catalog-summary">This connection carries flow from <strong>{nodes.find((node) => node.id === selectedEdge.source)?.data.label ?? selectedEdge.source}</strong> to <strong>{nodes.find((node) => node.id === selectedEdge.target)?.data.label ?? selectedEdge.target}</strong>.</p>
+              <button className="danger-btn" disabled={submitted} onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
+            </div>
           ) : (
             <div className="empty-inspector">
               <BookOpen size={18} />
@@ -575,6 +717,8 @@ function ParticipantEditor({
               <p className="catalog-hint">Clicking a palette item only opens its details. Use ADD COMPONENT or drag it onto the canvas to place it.</p>
             </div>
           )}
+
+          <div className="editor-history-status" aria-live="polite">{pastRef.current.length} undo step{pastRef.current.length === 1 ? "" : "s"} available · {futureRef.current.length} redo step{futureRef.current.length === 1 ? "" : "s"} <span>{historyVersion >= 0 ? "" : ""}</span></div>
 
           <div className="field notes-field">
             <label>ARCHITECTURE NOTES</label>
