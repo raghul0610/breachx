@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { ArrowLeft, BrainCircuit, LoaderCircle, Workflow, PencilLine } from "lucide-react";
 import { CATALOG } from "../lib/catalog";
-import { writeSubmission } from "../lib/storage";
+import { readSubmission, writeSubmission } from "../lib/storage";
 import type { Node, Edge } from "@xyflow/react";
 import { MarkerType } from "@xyflow/react";
 
 type Generated = { architectureName:string; overview:string; requestFlow:string; designDecisions:string[]; components:{id:string;typeKey:string;label:string;category:string;notes:string}[]; connections:{source:string;target:string;label:string}[] };
 export function ArchitectureGeneratorPage({onBack,onEdit}:{onBack:()=>void;onEdit:()=>void}){
- const [name,setName]=useState("My System Design");
- const [requirements,setRequirements]=useState("");
+ const saved = readSubmission();
+ const [name,setName]=useState(saved?.applicationName ?? "My System Design");
+ const [requirements,setRequirements]=useState(saved?.applicationDescription ?? "");
  const [loading,setLoading]=useState(false);
  const [error,setError]=useState("");
  const [generated,setGenerated]=useState<Generated|null>(null);
