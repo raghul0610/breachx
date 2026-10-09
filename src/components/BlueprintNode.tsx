@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { CategoryIcon, getCategoryVisual } from "./CategoryIcon";
+import "../categoryVisuals.css";
 
 export type BlueprintNodeData = {
   label: string;
