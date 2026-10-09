@@ -36,7 +36,7 @@ export default function App() {
     return (
       <ArchitectureGeneratorPage
         onBack={() => setMode("projects")}
-        onEdit={() => setMode("participant")}
+        onEdit={(projectId) => { setSelectedProjectId(projectId); setMode("participant"); }}
       />
     );
   }
