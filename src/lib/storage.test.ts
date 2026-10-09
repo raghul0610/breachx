@@ -65,14 +65,22 @@ describe("project persistence", () => {
   });
 
   it("duplicates a project as an independent editable draft", () => {
-    const original = createProject({ ...submission("Submitted source"), status: "submitted" });
+    const original = createProject(submission("Submitted source"));
+
+    writeSubmission(
+      { ...readSubmission(original.id)!, status: "submitted" },
+      original.id,
+    );
+
     const copy = duplicateProject(original.id);
 
     expect(copy.id).not.toBe(original.id);
     expect(copy.status).toBe("draft");
     expect(copy.applicationName).toBe("Submitted source (copy)");
     expect(copy.nodes).toEqual(original.nodes);
-    expect(listProjects().find((project) => project.id === original.id)?.status).toBe("submitted");
+    expect(
+      listProjects().find((project) => project.id === original.id)?.status,
+    ).toBe("submitted");
   });
 
   it("renames and deletes only the selected project", () => {
