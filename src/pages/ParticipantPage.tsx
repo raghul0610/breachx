@@ -81,7 +81,7 @@ export function ParticipantPage({
             <ArrowLeft size={14} /> BACK
           </button>
           <div>
-            <strong>BREACH X</strong>
+            <strong>ANCHON</strong>
             <span className="topbar-sub"> // ARCHITECTURE DESIGNER</span>
           </div>
           <span className="status-pill">BLUEPRINT SAVED</span>
@@ -346,7 +346,7 @@ function ParticipantEditor({
           <ArrowLeft size={14} /> HOME
         </button>
         <div>
-          <strong>BREACH X</strong>
+          <strong>ANCHON</strong>
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
         <span className="status-pill">
