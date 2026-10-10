@@ -92,6 +92,7 @@ function readRegistry(): ProjectRegistry | null {
 function writeRegistry(registry: ProjectRegistry) {
   localStorage.setItem(REGISTRY_KEY, JSON.stringify(registry));
   window.dispatchEvent(new Event("breachx-sync"));
+  window.dispatchEvent(new Event("anchon-projects-changed"));
 }
 
 function ensureRegistry(): ProjectRegistry {
@@ -156,7 +157,7 @@ export function createProject(initial?: Partial<DesignSubmission>): Architecture
     applicationName: initial?.applicationName?.trim() || "Untitled Architecture",
     nodes: structuredClone(initial?.nodes ?? template.nodes),
     edges: structuredClone(initial?.edges ?? template.edges),
-    status: "draft",
+    status: initial?.status ?? "draft",
     updatedAt: timestamp,
   };
   writeRegistry({
@@ -220,9 +221,6 @@ export function writeSubmission(value: DesignSubmission, projectId?: string) {
   if (!id) throw new Error("No active project. Create a project before saving.");
   const existing = registry.projects.find((item) => item.id === id);
   if (!existing) throw new Error("That project no longer exists.");
-  if (existing.status === "submitted" && value.status !== "submitted") {
-    throw new Error("Submitted projects are locked. Duplicate the project to continue editing.");
-  }
   const updated: ArchitectureProject = {
     ...existing,
     ...value,
@@ -255,4 +253,27 @@ export function readLogs() {
     metadata: Record<string, unknown>;
     createdAt: string;
   }[];
+}
+
+
+/** Merge cloud rows into the local cache. Cloud wins on matching IDs; local-only projects are retained for first-account migration. */
+export function mergeProjectsFromCloud(cloudProjects: ArchitectureProject[]) {
+  const registry = ensureRegistry();
+  const byId = new Map(registry.projects.map((project) => [project.id, project]));
+  for (const project of cloudProjects) byId.set(project.id, structuredClone(project));
+  const projects = [...byId.values()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const activeProjectId = projects.some((project) => project.id === registry.activeProjectId)
+    ? registry.activeProjectId
+    : (projects[0]?.id ?? null);
+  writeRegistry({ version: 1, projects, activeProjectId });
+}
+
+/** Replace the cache when a different account signs in, preventing cross-account local project leakage. */
+export function replaceProjectsFromCloud(cloudProjects: ArchitectureProject[]) {
+  const projects = cloudProjects.map((project) => structuredClone(project));
+  writeRegistry({
+    version: 1,
+    projects,
+    activeProjectId: projects[0]?.id ?? null,
+  });
 }
