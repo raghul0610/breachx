@@ -80,3 +80,20 @@ If the local Supabase CLI is configured and Docker is available, start only the 
 - Proposed hardening migration passes explicit grants/RLS assertions on the isolated database.
 - Remote migration-history mapping is reviewed and the final strategy explicitly distinguishes verified historical changes from unresolved entries.
 - Supabase Auth provider and redirect settings are independently verified.
+
+## Results from the uploaded production dump review
+
+The complete uploaded PostgreSQL dump was inspected against migrations 001, 002, 003, `20261010070000_create_projects.sql`, and `20261010080000_harden_admin_audit_log_access.sql`. Detailed object-level findings are recorded in `docs/schema-migration-reconciliation-2026-10-10.md`.
+
+The dump corroborates the 14 legacy tables, four enums, legacy constraints/indexes, RLS and current policy definitions, the blueprint submission-lock function/trigger, and the activity-policy replacement. It does **not** contain GRANT/REVOKE/default-privilege statements, the `ensure_rls` event trigger, publication membership, or extension inventory. These are evidence-coverage gaps, not proof that those production objects are absent. A separate ACL/event-trigger/publication/extension export is required before the baseline can be considered complete.
+
+The proposed audit hardening migration is absent from the live dump as expected. The projects migration is absent as expected. Neither should be silently folded into the legacy baseline.
+
+## Current execution status
+
+- Repository-side comparison findings: documented on `backend`.
+- Local checkout synchronization: user confirmed local `backend` and `origin/backend` point to commit `ff5bc6e`; the local dump exists and is 31,492 bytes.
+- Exact normalized production-versus-replay diff: **not run**; no replayed local schema dump is available yet.
+- Isolated Supabase replay: **not run**. The reviewed branch has no `supabase/config.toml`, and execution depends on the user's local Docker/Supabase CLI environment. Do not claim the sequence passed until a disposable local stack is confirmed and the replay/test output is captured.
+- Production schema and migration ledger: unchanged by this work.
+
