@@ -51,7 +51,9 @@ The live `public.blueprints` table has a `blueprint_submission_lock` trigger. It
 
 ### Security
 
-Supabase's security advisor reported `public.admin_audit_logs` as RLS-enabled with no policies. This can be intentional if only trusted server-side code writes/reads audit records. The correct response is to verify the intended trusted access path and grants, not to add an unrestricted client policy.
+Supabase's security advisor reported `public.admin_audit_logs` as RLS-enabled with no policies. A follow-up read-only privilege check found that `anon` and `authenticated` nevertheless had SELECT, INSERT, UPDATE, and DELETE table privileges. RLS with no policies already denies ordinary row access, but the grants are unnecessarily broad and make the security posture harder to reason about.
+
+A proposed migration, `20261010080000_harden_admin_audit_log_access.sql`, now revokes table privileges from PUBLIC, anon, and authenticated and adds an explicit deny-all RLS policy for browser roles. A regression test verifies the grants and policy. This hardening is committed on `backend` but has **not** been applied to production; apply it only after the migration-history baseline is reconciled and the reviewed deployment is approved. Trusted server access via service_role remains separate and must never expose that key to the browser.
 
 ### Performance
 
