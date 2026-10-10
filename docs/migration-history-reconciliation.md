@@ -22,7 +22,7 @@ Confirmed:
 - `public.projects` does not exist in the live schema.
 - Existing legacy tables `public.blueprints`, `public.blueprint_versions`, and `public.activity_logs` do exist.
 - The live public schema inventory reports RLS enabled on all 14 existing public tables.
-- Supabase's security advisor reports `public.admin_audit_logs` has RLS enabled but no policies. This may be intentional for trusted-server-only access, but the intended access path must be explicitly confirmed before changing it. Do not add a permissive client policy as a quick fix.
+- Supabase's security advisor reports `public.admin_audit_logs` has RLS enabled but no policies. A follow-up read-only privilege check found that `anon` and `authenticated` also held table-level SELECT/INSERT/UPDATE/DELETE privileges. The backend branch now contains `20261010080000_harden_admin_audit_log_access.sql`, which revokes browser-role grants and adds an explicit deny-all policy, plus a regression test. This is **not yet applied to production**.
 - The performance advisor reports 10 foreign keys without covering indexes and 7 indexes currently unused. These are informational findings; review workload and query plans before adding/removing indexes.
 
 The presence of the legacy tables is consistent with the legacy foundation having been applied at some point, but it does **not** establish the exact migration sequence or prove that every statement in migrations 001–003 matches production. The root cause of the history discrepancy remains unknown.
@@ -69,7 +69,7 @@ Completed:
 - The isolated GitHub Actions workflow passed its migration and two-user RLS checks against its disposable PostgreSQL setup.
 - The production migration history and live table inventory were rechecked read-only.
 - The new table is confirmed absent from production.
-- The security/performance advisor findings above were recorded for follow-up.
+- The security/performance advisor findings above were recorded. A proposed migration and CI regression test now address the broad browser-role grants on `admin_audit_logs`; production remains unchanged pending baseline reconciliation and approved deployment.
 
 Not completed:
 
