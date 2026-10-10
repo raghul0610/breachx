@@ -23,8 +23,27 @@ on:
       - ".github/workflows/backend-checks.yml"
 
 jobs:
-  frontend:
+  frontend-and-database:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,3 +53,38 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+
+      - name: Bootstrap isolated Supabase-compatible test schema
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          create extension if not exists pgcrypto;
+          create role anon nologin;
+          create role authenticated nologin;
+          create schema auth;
+          create table auth.users (id uuid primary key);
+          create function auth.uid() returns uuid
+            language sql stable
+            as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+          create table public.blueprints (
+            id uuid primary key default gen_random_uuid(),
+            status text not null default 'DRAFT'
+          );
+          create function public.enforce_blueprint_submission_lock()
+          returns trigger language plpgsql as $$
+          begin
+            if old.status = 'SUBMITTED' then
+              raise exception 'Blueprint is already submitted and locked';
+            end if;
+            return new;
+          end
+          $$;
+          create trigger blueprint_submission_lock
+            before update on public.blueprints
+            for each row execute function public.enforce_blueprint_submission_lock();
+          SQL
+      - name: Apply projects migration to ephemeral PostgreSQL
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261010070000_create_projects.sql
+      - name: Assert projects schema and legacy lock
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/projects_migration_assertions.sql
+      - name: Test owner isolation and submitted-project editing
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/projects_rls_behavior.sql
