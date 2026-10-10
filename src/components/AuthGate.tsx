@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import { listProjects, mergeProjectsFromCloud, replaceProjectsFromCloud } from "../lib/storage";
-import { deleteOwnedProject, listOwnedProjects, saveOwnedProjects } from "../lib/projectsRepository";
+import { listOwnedProjects, saveOwnedProjects } from "../lib/projectsRepository";
 import "./AuthGate.css";
 
 const OWNER_KEY = "anchon-cloud-owner-v1";
