@@ -37,6 +37,20 @@ begin
     raise exception 'FAIL: updated_at trigger is missing';
   end if;
 
+  if not has_table_privilege('authenticated', 'public.projects', 'SELECT')
+     or not has_table_privilege('authenticated', 'public.projects', 'INSERT')
+     or not has_table_privilege('authenticated', 'public.projects', 'UPDATE')
+     or not has_table_privilege('authenticated', 'public.projects', 'DELETE') then
+    raise exception 'FAIL: authenticated CRUD grants are incomplete';
+  end if;
+
+  if has_table_privilege('anon', 'public.projects', 'SELECT')
+     or has_table_privilege('anon', 'public.projects', 'INSERT')
+     or has_table_privilege('anon', 'public.projects', 'UPDATE')
+     or has_table_privilege('anon', 'public.projects', 'DELETE') then
+    raise exception 'FAIL: anonymous table privileges were not revoked';
+  end if;
+
   if exists (
     select 1 from pg_trigger
     where tgrelid = 'public.projects'::regclass

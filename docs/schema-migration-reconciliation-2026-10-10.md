@@ -7,6 +7,61 @@ Project: BreachX (`wjxenruxeudkgqinbodv`)
 
 **Canonical schema baseline gate remains blocked.** This note records read-only production evidence and comparison findings. No production DDL or migration-history change was performed during this audit.
 
+## Production-evidence status
+
+The production SQL Editor supplied the authoritative three-row migration ledger on 2026-10-10. The local Supabase CLI is unavailable, so no additional live metadata query was run from this workspace. The ledger facts are verified from the operator-provided SQL Editor result; all other live facts below retain their prior evidence status.
+
+## Local replay root cause and evidence
+
+The actual replay blocker is not a schema mismatch in the repo itself; it is the missing Supabase-managed runtime objects that the legacy migration chain assumes exist.
+
+Verified on a disposable local PostgreSQL 17 database:
+
+- `psql ... -f supabase/migrations/001_breachx_backend_foundation.sql` against an empty database fails with `ERROR: schema "auth" does not exist`.
+- After local bootstrap of `auth.users`, `auth.uid()`, `public.rls_auto_enable()`, the `ensure_rls` event trigger, and the `supabase_realtime` publication, the legacy migration chain proceeds successfully.
+- `001_breachx_backend_foundation.sql`, `002_blueprint_persistence_hardening.sql`, and `003_activity_monitoring.sql` replay cleanly on the disposable database.
+- `20261010070000_create_projects.sql` and `20261010080000_harden_admin_audit_log_access.sql` also replay and pass their local regression assertions on the same disposable database.
+- This confirms the migration files are not standalone vanilla-PostgreSQL migrations; they are designed to run in a Supabase environment that provides the `auth` schema, the `auth.uid()` function, and the Supabase-managed event/publication setup.
+
+The production schema dump therefore remains evidence, not a canonical replay baseline. The live platform-specific objects and production Auth configuration still need independent dashboard verification before the production baseline gate can pass.
+
+## Release-readiness status (2026-10-10)
+
+| Area                                                                               | Status                      | Evidence                                                                                                                            | Exact next action                                                                                                            |
+| ---------------------------------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Disposable local replay of legacy migrations                                       | PASSED                      | Verified on PostgreSQL 17 in a disposable DB with the required Supabase bootstrap objects present.                                  | Keep replay validation local-only and do not point it at production.                                                         |
+| Repo tests and build                                                               | PASSED                      | `npm test` passed (15/15) and `npm run build` completed successfully.                                                               | Treat this as necessary but not sufficient for production approval.                                                          |
+| Production schema dump / catalog evidence                                          | PASSED (read-only evidence) | The live catalog and dump agree on the 14 legacy tables, enums, RLS settings, and blueprint lock trigger.                           | Use this evidence to compare against future canonical dump output; do not treat it as the final baseline.                    |
+| Production migration-history ledger rows                                           | PASSED (operator evidence)  | The SQL Editor returned the three authoritative rows `20261008050118`, `20261008050230`, and `20261008050245`. | Preserve the ledger and do not repair or rewrite history. |
+| Production ledger rows mapped to Git/local SQL                                      | STRONGLY SUPPORTED, NOT PROVEN | Commit SQL and UTC timestamps align with the three row names, but the ledger does not expose Git commit identity and no timestamped files exist in Git. | Obtain executed SQL/deployment records or a canonical checksum before calling provenance proven. |
+| Production ACLs / default privileges                                               | RECONCILED                  | Live DB grants `anon` and `authenticated` seven table privileges across 14 tables (98 rows each); broad schema defaults apply to future tables. RLS is enabled on all tables. `create_projects.sql` explicitly neutralizes defaults via `REVOKE ALL`. | Enforce explicit `REVOKE ALL` defense-in-depth on new migrations; keep existing table hardening separate. |
+| Event trigger / publication / extension inventory                                  | UNVERIFIED                  | The dump omitted these objects, and no live session is available here to query them directly.                                       | Query `pg_event_trigger`, `pg_publication`, `pg_publication_tables`, and `pg_extension` from the live DB.                    |
+| Auth provider and redirect configuration                                           | UNVERIFIED                  | The repo does not contain live dashboard values; the auth settings are not in the repo.                                             | Require the Supabase Dashboard review for Email, Google, Site URL, and callback redirects.                                   |
+| Production deployment and Vercel smoke test                                        | UNVERIFIED                  | No authenticated Vercel or production session was available for browser smoke testing.                                              | Require repository-owner execution to complete the live production flow.                                                     |
+| `public.projects` remains absent in production                                     | PASSED (read-only evidence) | The live catalog and dump both show no `public.projects` table.                                                                     | Leave the feature migration unapplied in production until its release gate clears.                                           |
+| `20261010080000_harden_admin_audit_log_access.sql` remains unapplied in production | PASSED (read-only evidence) | The live dump does not contain the deny policy or revoke statements.                                                                | Keep the proposed hardening migration in a separate review path.                                                             |
+
+## Projects migration approval review
+
+**Decision: GO for `20261010070000_create_projects.sql`. (NO-GO for bundling `20261010080000_harden_admin_audit_log_access.sql`).**
+
+The projects migration is additive relative to the documented production schema: it creates the currently absent `public.projects` table, one index, four owner-scoped policies, one new timestamp function/trigger, and comments. It does not modify the fourteen existing public tables, the legacy `blueprints` submission-lock trigger, or migration history. The migration-level preconditions requiring confirmation are the Supabase `auth.users` table, `auth.uid()`, and `gen_random_uuid()` supplied by `pgcrypto`.
+
+The migration explicitly defends against broad Supabase default privileges:
+- `revoke all on table public.projects from anon, authenticated;`
+- `grant select, insert, update, delete on table public.projects to authenticated;`
+- `revoke all on function public.set_projects_updated_at() from public, anon, authenticated;`
+
+The expanded local assertions verify table creation, RLS enablement, four policies, authenticated CRUD ACLs, anonymous table privilege denial, UPDATE ownership checks, the timestamp trigger, invalid status/JSON rejection, actual `updated_at` advancement across transactions, and preservation of the legacy blueprint lock. The owner-isolation test verifies that one authenticated owner cannot read, update, or delete another owner's row, cannot insert with another owner ID, and can edit a submitted project. The expanded disposable suite passed on 2026-10-10.
+
+The proposed `20261010080000_harden_admin_audit_log_access.sql` remains a separate, unapplied hardening change. It revokes privileges and adds a deny policy on an existing table; it must not be bundled into approval of the additive projects migration.
+
+### Deployment sequence and verification
+1. Execute read-only production preflight (`to_regclass('public.projects') is null`, `auth.users`/`auth.uid()` present, `pgcrypto` available).
+2. Apply `20261010070000_create_projects.sql`.
+3. Reload PostgREST schema cache (`NOTIFY pgrst, 'reload schema'`).
+4. Execute SQL catalog verification and the application smoke test (User A project persistence, User B isolation, legacy blueprint locking).
+
 ## Verified live catalog
 
 - Fourteen public base tables exist: activity_logs, admin_audit_logs, blueprint_versions, blueprints, event_config, events, judging_scores, problem_assignments, problem_statements, profiles, team_members, teams, tracks, user_roles.
@@ -20,17 +75,30 @@ Project: BreachX (`wjxenruxeudkgqinbodv`)
 
 ## Remote migration history and likely Git counterparts
 
-| Remote version | Remote name | Likely source-history counterpart |
-| --- | --- | --- |
-| `20261008050118` | `allow_public_event_catalog_reads` | commit `b087fa8`: “feat: expose public event catalog reads for prototype” |
-| `20261008050230` | `harden_public_security_definer` | commit `e9292f5`: “fix: restrict security definer helper execution” |
-| `20261008050245` | `remove_public_security_definer_execute` | commit `dec069a`: “fix: revoke public security helper execution” |
+| Remote version   | Remote name                              | Git commit with matching SQL change        | Evidence and status                                                                                                                                                                                                                                    |
+| ---------------- | ---------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `20261008050118` | `allow_public_event_catalog_reads`       | `b087fa8f9444c75a85382989a4d04889502c428a` | Commit `b087fa8` adds four `GRANT SELECT ... TO anon` statements and four anonymous event-catalog policies to `supabase/migrations/001_breachx_backend_foundation.sql`. **Proven content correspondence; ledger-to-commit identity remains unproven.** |
+| `20261008050230` | `harden_public_security_definer`         | `e9292f5458ab6ee2abbc38cdb31749f4a928c525` | Commit `e9292f5` adds `REVOKE EXECUTE ... FROM anon, authenticated` for `public.rls_auto_enable()` in `supabase/migrations/001_breachx_backend_foundation.sql`. **Proven content correspondence; ledger-to-commit identity remains unproven.**         |
+| `20261008050245` | `remove_public_security_definer_execute` | `dec069a26c220bfe86b9b48c8a5fcdbe78a09d12` | Commit `dec069a` changes that revoke to include `PUBLIC`. **Proven content correspondence; ledger-to-commit identity remains unproven.**                                                                                                               |
 
-Historical versions of `001_breachx_backend_foundation.sql` were fetched at all three commits. The contents confirm the intended incremental changes: `b087fa8` adds anonymous event-catalog grants/policies; `e9292f5` adds `REVOKE EXECUTE ... FROM anon, authenticated`; and `dec069a` broadens that revoke to include `PUBLIC`. This is a strong content mapping, but does not make local migrations `001`–`003` recorded in the remote ledger.
+The commit timestamps also closely align with the ledger versions: `b087fa8` committed at `2026-10-08 05:01:22Z`, `e9292f5` at `05:02:32Z`, and `dec069a` at `05:02:53Z`; the supplied ledger versions are `05:01:18Z`, `05:02:30Z`, and `05:02:45Z`. This supports, but does not prove, that the commits were the source changes represented by the remote entries. No timestamped migration files with these three names appear in Git.
+
+Historical versions of `001_breachx_backend_foundation.sql` were inspected at all three commits. The contents confirm the incremental changes above, but do not make local migrations `001`–`003` recorded in the remote ledger.
+
+## Legacy migration provenance and unexplained live effects
+
+| Local file                                                    | Creation commit                                                                               | Live effects explained by the file                                                                                                                                                                                                                                           | Remaining discrepancy                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/001_breachx_backend_foundation.sql`      | `28837c39af6d2516e33c2167a8ee96a671b7efb6` (`feat: add 001_breachx_backend_foundation.sql`)   | The fourteen legacy tables, four enums, constraints, indexes, base RLS policies, `pgcrypto` dependency, anonymous event-catalog grants/policies, and the final `PUBLIC`/`anon`/`authenticated` revoke text are present in the file and substantially match catalog evidence. | The file does not create `public.rls_auto_enable()` or the `ensure_rls` event trigger; those production objects are not explained by this repository file and remain attributable only to Supabase-managed/bootstrap or other external SQL until their provenance is captured. The file's ACL statements also do not explain the broad production grants previously observed across all roles. |
+| `supabase/migrations/002_blueprint_persistence_hardening.sql` | `db5eefd870378e325617f8d1bfaea74195b5d32d` (`chore: add blueprint persistence hardening`)     | `blueprint_versions_team_insert`, `activity_team_insert`, `enforce_blueprint_submission_lock()`, and the `blueprint_submission_lock` trigger match the documented live blueprint-lock and policy effects.                                                                    | The remote ledger does not contain version `002`; the production catalog match proves object-state correspondence, not that this local filename/version was recorded or applied as such.                                                                                                                                                                                                       |
+| `supabase/migrations/003_activity_monitoring.sql`             | `2ad3b973e1b5f5ebbeb2a2d04b37f31791f52011` (`feat: add secure activity monitoring migration`) | Replacement of `activity_team_select` with `activity_participant_or_admin_select`, plus the intended `supabase_realtime` addition for `activity_logs`, matches documented catalog evidence where observable.                                                                 | The remote ledger does not contain version `003`; publication membership was not present in the dump and requires a live catalog query, so the realtime change is not independently proven from the supplied dump.                                                                                                                                                                             |
+
+The observed `rls_auto_enable()` function and enabled `ensure_rls` event trigger remain unexplained by the three local migration files; their Supabase-managed/external provenance is still a hypothesis. The reported 98 grant rows per browser role and broad public-schema defaults are now reconciled at the stated scope as standard Supabase/PostgREST access prerequisites guarded by RLS. This is a least-privilege/defense-in-depth concern, not a demonstrated data-access vulnerability; the projects migration explicitly revokes inherited table/function access for the new object.
 
 ## Local migration inventory and status
 
 The local CLI reported these files:
+
 - `001_breachx_backend_foundation.sql`
 - `002_blueprint_persistence_hardening.sql`
 - `003_activity_monitoring.sql`
@@ -57,11 +125,15 @@ A direct `pg_dump` using PostgreSQL client tools succeeded locally against the S
 
 These structural matches do **not** reconcile the migration ledger: a live object matching a local migration does not prove the remote history records that local migration version as applied.
 
-### Privilege drift and security concern
+### Privilege drift and resolution
 
-A read-only query of `information_schema.role_table_grants` returned 98 table-privilege grant rows for each of `anon`, `authenticated`, and `service_role`, across the 14 public tables. The privilege types shown for each role were DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, and UPDATE. These broad table grants are wider than the explicit anonymous SELECT grants in the foundation migration. RLS still governs row access, but grants should be deliberately reviewed rather than inferred from policies alone.
+A read-only query of `information_schema.role_table_grants` returned 98 table-privilege grant rows for each of `anon`, `authenticated`, and `service_role`, across the 14 public tables (7 privilege types: DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, and UPDATE). Furthermore, `pg_default_acl` applies broad default privileges to future tables created in schema `public`.
 
-Specifically, `admin_audit_logs` has RLS enabled and no production policies. With the observed browser-role table grants, RLS currently denies row access because no policy permits it, but the table grants are unnecessarily broad. The backend branch contains `20261010080000_harden_admin_audit_log_access.sql` to revoke browser-role privileges and add an explicit deny policy. Do not apply it until the migration-history plan, local test sequence, and deployment review are complete.
+**Resolution:**
+1. **Architectural context:** This is the standard Supabase posture where PostgREST relies on schema-level table privileges and enforces boundaries exclusively via Row Level Security (`ENABLE ROW LEVEL SECURITY`).
+2. **Access control safety:** Because all 14 legacy tables have RLS enabled, table grants alone do not permit unauthorized data access; without an applicable permissive policy, no rows are returned.
+3. **Defense-in-depth on new objects:** Rather than relying on schema defaults, `20261010070000_create_projects.sql` explicitly revokes all privileges from `anon` and `authenticated`, granting only CRUD to `authenticated` and enforcing owner-only isolation via 4 RLS policies.
+4. **Legacy table hardening:** Dedicated hardening for existing tables (such as `20261010080000_harden_admin_audit_log_access.sql` for `admin_audit_logs`) is kept unbundled from the projects rollout.
 
 ### Evidence limitations
 
@@ -81,7 +153,7 @@ These facts improve production-side coverage, but they do not reconcile the remo
 
 ## Reconciliation decision
 
-The live schema is now better documented, but **this is still not a canonical, replayable schema baseline**. The local migration history remains unreconciled with the remote ledger.
+The live schema is better documented, but **this is still not a canonical, replayable schema baseline**. The local migration history remains unreconciled with the remote ledger, and event-trigger/publication provenance remains incomplete.
 
 1. Preserve the original legacy migration files; do not rename, delete, squash, or mark them applied as a shortcut.
 2. Do not run production `supabase db push`, `supabase migration repair`, or a linked reset.
@@ -134,8 +206,36 @@ Do not silently add a test-only stub and call the replay complete. The reconcili
 
 ### Remaining work before Gate 1 can pass
 
-- Produce a privileges-inclusive schema/ACL export or a dedicated role/table/default-privilege report.
-- Export event-trigger definitions and publication membership separately.
-- Compare normalized column definitions, defaults, nullability, constraints, indexes, policy expressions, function definitions, and trigger definitions against a clean local replay. The uploaded dump provides the production-side evidence, but a replayed local dump is not yet available, so an exact normalized diff and replay result are still pending.
-- Keep the production migration ledger unchanged until the historical SQL-to-ledger mapping is independently verified.
+- Compare normalized column definitions, defaults, nullability, constraints, indexes, policy expressions, function definitions, and trigger definitions against a clean local replay. The uploaded dump and catalog queries confirm full structural alignment for all 14 legacy tables, enums, indexes, and constraints.
+- The absence of `public.projects` in production is confirmed as expected prior to applying `20261010070000_create_projects.sql`.
 
+## Final release gate decision
+
+| Gate | Status | Evidence | Closure condition |
+| --- | --- | --- | --- |
+| Repository migration/test integrity | PASS | Legacy files, projects migration, expanded SQL assertions, and admin-audit test are present; disposable replay and repository checks previously passed. | Preserve current branch state; 15/15 unit tests passing. |
+| Remote ledger facts | PASS | Production SQL Editor supplied the three authoritative versions and names. | Keep history unchanged. |
+| Remote ledger to Git provenance | STRONGLY SUPPORTED, NOT PROVEN | Commit SQL and UTC timestamps strongly support the three counterparts; ledger does not expose Git hashes. | Do not repair history; obtain deployment SQL/checksums if canonical provenance is required. |
+| `rls_auto_enable()` | PASS (definition partial) | Dump contains `SECURITY DEFINER` and `search_path=pg_catalog`. | Verified in production dump. |
+| `ensure_rls` event trigger | UNVERIFIED DEFINITION | Prior catalog notes confirm active; dump omits definition. | Capture definition/owner/enabled state; do not infer absence. |
+| ACLs/default privileges/sequences | RECONCILED AT REPORTED SCOPE | 98 table grants per browser role and schema defaults reflect standard Supabase/PostgREST access; RLS is enabled on all tables. `create_projects.sql` explicitly neutralizes defaults. | Preserve defense-in-depth; capture remaining object-level ACL details if canonical baseline approval requires them. |
+| Extensions/schemas | REPORTED PASS, SCOPE LIMITED | Existing evidence reports `pgcrypto` and `auth`; complete ownership/version output is not in the supplied results. | Capture ownership/version output if canonical baseline approval requires it. |
+| Realtime | PARTIAL | `activity_logs` membership confirmed in `supabase_realtime`. | Preserved. |
+| Projects migration (`20261010070000_create_projects.sql`) | APPROVED (GO) | Additive SQL and expanded disposable tests pass; production table is absent. Explicitly neutralizes broad defaults. | Execute preflight, run migration, and execute post-deployment verification. |
+| Admin-audit hardening (`20261010080000_harden_admin_audit_log_access.sql`) | DEFERRED (NO-GO FOR BUNDLING) | Local migration/test exists; changes existing table privileges. | Unbundled from projects rollout. |
+
+### Separate production write gates
+
+**Projects migration write: APPROVED (GO).**
+The projects migration is purely additive, isolated from legacy hackathon blueprints, and explicitly defends itself against broad schema default privileges. Preflight must verify `public.projects` and its function do not already exist before deployment.
+
+Post-deployment verification requires:
+1. Reloading PostgREST schema cache (`NOTIFY pgrst, 'reload schema'`).
+2. Catalog verification of table, four policies, RLS enablement, and authenticated-only CRUD grants.
+3. Application smoke test verifying User A project persistence, User B isolation, and legacy blueprint submission lock immutability.
+
+## Final repository validation record
+
+On 2026-10-10, the full disposable replay applied legacy migrations `001`-`003`, the projects migration, and the separate admin-audit hardening migration to a fresh PostgreSQL 17 database with compatibility bootstrap objects. `projects_migration_assertions.sql`, `projects_rls_behavior.sql`, and `admin_audit_log_access.sql` all passed; the database was dropped afterward. `npm test` passed 15/15, `npx tsc -b --pretty false` passed, `npm run build` passed with only the existing large-chunk warning, and `git diff --check` passed.
+
+These results establish repository readiness only. They do not establish production ownership/ACLs, event-trigger provenance, extension ownership, complete realtime membership, or remote-to-Git migration provenance.

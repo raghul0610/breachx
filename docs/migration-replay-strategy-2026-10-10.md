@@ -92,8 +92,75 @@ The proposed audit hardening migration is absent from the live dump as expected.
 ## Current execution status
 
 - Repository-side comparison findings: documented on `backend`.
-- Local checkout synchronization: user confirmed local `backend` and `origin/backend` point to commit `ff5bc6e`; the local dump exists and is 31,492 bytes.
-- Exact normalized production-versus-replay diff: **not run**; no replayed local schema dump is available yet.
-- PostgreSQL-only replay: **not run yet** from this assistant environment because the user's local PostgreSQL server is not remotely executable through the connected tools. The user does not use Docker; no Docker steps should be requested. A local disposable PostgreSQL replay can be driven by the owner using the existing PostgreSQL 17 installation, while repository-side CI remains separate evidence.
+- Local checkout synchronization: confirmed local `backend` tracks `origin/backend` at `ab06740`.
+- PostgreSQL-only replay of 001–003 succeeds from empty state with the required compatibility bootstrap; this is not claimed to be a full Supabase-stack replay.
+- Local replay on a disposable PostgreSQL 17 database: **PASSED** for the legacy chain and the additive migration assertions, when the required Supabase-compatible bootstrap objects are present.
+- Verified root cause: the migrations assume a Supabase-managed `auth` schema, `auth.uid()`, `public.rls_auto_enable()`, the `ensure_rls` event trigger, and the `supabase_realtime` publication. A bare PostgreSQL install does not provide those objects, so the first migration failure on an empty local database is `ERROR: schema "auth" does not exist`; the next failure is `ERROR: function public.rls_auto_enable() does not exist` unless the bootstrap is supplied.
+- Exact normalized production-versus-replay diff: **BLOCKED** as a canonical production baseline because the live dashboard ACL, provider URLs, remote migration ledger, and production read-only access remain externally verified only.
+- Production metadata status: **PARTIAL but privilege-reconciled**. The production SQL Editor supplied the authoritative three-row migration ledger and live privilege results: `anon` and `authenticated` each have seven table privilege types across 14 public tables, broad public-schema defaults apply to future objects, and RLS is enabled on all 14 tables. Event-trigger definition, complete publication membership, and post-deployment application behavior remain unverified here.
 - Production schema and migration ledger: unchanged by this work.
 
+## Migration-history reconciliation result
+
+- `20261008050118_allow_public_event_catalog_reads` has a strong content/timing counterpart in commit `b087fa8f9444c75a85382989a4d04889502c428a`, which adds the four anonymous event-catalog grants and policies to `supabase/migrations/001_breachx_backend_foundation.sql`.
+- `20261008050230_harden_public_security_definer` has a strong content/timing counterpart in commit `e9292f5458ab6ee2abbc38cdb31749f4a928c525`, which adds the `anon`/`authenticated` execute revoke for `public.rls_auto_enable()` to that same legacy file.
+- `20261008050245_remove_public_security_definer_execute` has a strong content/timing counterpart in commit `dec069a26c220bfe86b9b48c8a5fcdbe78a09d12`, which broadens that revoke to `PUBLIC`.
+- The three ledger rows themselves are **verified** from the operator-provided SQL Editor result. Their mapping to those Git commits is **strongly supported but not proven** because the ledger rows do not include Git commit IDs or executed SQL bodies.
+- These are content correspondences, not proof that the remote ledger rows point to those Git commits or that local files `001`–`003` were recorded as applied. No files named after the three remote versions exist in Git.
+- Legacy file creation is separately proven by `28837c39af6d2516e33c2167a8ee96a671b7efb6` for `001`, `db5eefd870378e325617f8d1bfaea74195b5d32d` for `002`, and `2ad3b973e1b5f5ebbeb2a2d04b37f31791f52011` for `003`.
+- `rls_auto_enable()`, `ensure_rls`, their production grants, and the broad observed ACL state remain unexplained by local migration SQL; treat Supabase-managed/external provenance as a hypothesis pending live definitions and ACL evidence.
+
+## Release-readiness split
+
+### Repository-verifiable
+
+- PASSED: Local replay of legacy migrations on a disposable PostgreSQL 17 database, with the required Supabase bootstrap objects in place.
+- PASSED: Local regression assertions for projects and admin audit-log hardening, including authenticated CRUD ACLs, anonymous denial, constraints, timestamp advancement across transactions, owner isolation, and legacy blueprint-lock preservation.
+- PASSED: `npm test` and `npm run build` from the repo.
+- PASSED: `public.projects` absent from production evidence and `20261010070000_create_projects.sql` left unapplied.
+- PASSED: `20261010080000_harden_admin_audit_log_access.sql` absent from production evidence and left unapplied.
+
+### Requires authenticated dashboard or production read-only access
+
+- STRONGLY SUPPORTED, NOT PROVEN: Remote migration ledger mapping against repository Git commits; the ledger rows themselves are verified.
+- PASSED AT REPORTED SCOPE: Production ACL/default-privilege reconciliation for the observed broad grants and RLS state; this is not a claim that every object ACL has been independently captured.
+- UNVERIFIED: Event trigger and publication membership audit.
+- UNVERIFIED: Extension inventory and ownership review.
+- UNVERIFIED: Supabase Auth provider and redirect verification.
+- UNVERIFIED: Vercel browser smoke test and deployment review.
+
+## Exact next action required for production release
+
+1. Complete the live preflight for the projects migration and obtain explicit human approval for the controlled write.
+2. Preserve the authoritative migration ledger and do not repair or rewrite history.
+3. Capture remaining event-trigger, publication, extension-ownership, and function-ACL evidence if canonical baseline approval requires it.
+4. Verify Email/Google/Site URL/redirect settings in the Dashboard.
+5. After an approved deployment, complete the catalog and application smoke tests before calling the release stage complete.
+
+The exact read-only production queries for migration history, object preconditions, Auth/extension dependencies, ACLs/default privileges, RLS policies, triggers, function grants, event triggers, and realtime publication membership are maintained in `docs/backend-release-gates.md`. Production access is still unavailable in this workspace beyond the operator-supplied ledger and privilege results, so no additional live query result is being claimed. After an approved deployment, confirm PostgREST visibility with an authenticated Preview request to `/rest/v1/projects`.
+
+## Projects migration approval decision
+
+The projects migration is **ready for controlled human-approved deployment, not yet verified after deployment**. Local replay and the existing assertions pass, the live privilege discrepancy is reconciled at the reported scope, and the SQL is additive to the documented fourteen-table production schema. It creates only the new projects objects and preserves the legacy blueprint submission-lock behavior. It has no destructive statements, but it relies on `auth.users`, `auth.uid()`, and `gen_random_uuid()`/`pgcrypto`, and its `create table` and trigger/function definitions require a preflight for name collisions.
+
+The expanded disposable tests now demonstrate table/RLS/policy structure, authenticated CRUD ACLs, anonymous denial, invalid JSON/status rejection, timestamp advancement across transactions, owner isolation, and legacy blueprint-lock preservation. The reported production ACL/default-privilege discrepancy is resolved as a Supabase/RLS architecture issue with explicit defense-in-depth in the projects migration. Event-trigger/publication completeness and the application post-deployment smoke test remain open.
+
+Before approval, complete the live preflight and obtain human approval for the controlled projects write. Keep `20261010080000_harden_admin_audit_log_access.sql` separate and unapplied. After an approved deployment, verify PostgREST can see `public.projects` and repeat the Preview Google-sign-in project-load smoke test.
+
+## Final acceptance decision
+
+**Repository-side status: PASS. Production release status: CONTROLLED GO for the projects migration, pending preflight, human approval, and post-deployment verification.**
+
+The authoritative ledger rows are verified from the SQL Editor. Their Git counterparts are strongly supported by exact SQL deltas and close UTC timestamps, but not proven because the ledger exposes neither commit IDs nor executed SQL. The production dump verifies the `rls_auto_enable()` body, `SECURITY DEFINER`, and `search_path=pg_catalog`; it does not establish owner, effective function ACL, `ensure_rls` definition, extension ownership, default privileges, or complete publication membership. The prior catalog evidence confirms `activity_logs` is in `supabase_realtime`, but does not close the full publication comparison.
+
+The projects migration is **ready for controlled human-approved deployment**: its additive design and expanded disposable tests pass, `public.projects` remains absent from production, and the reported privilege discrepancy is reconciled at the stated scope. The admin-audit hardening migration is **separate and blocked**; it must not be bundled with the projects write. The deployment gate still requires a live preflight, human approval of the target/backup/forward-fix plan, and post-deployment catalog plus application checks.
+
+## Final command results
+
+- Full disposable PostgreSQL 17 replay of `001`-`003`, projects, and separate admin-audit migrations plus all SQL assertions: **PASS**.
+- `npm test`: **PASS**, 15/15 tests.
+- `npx tsc -b --pretty false`: **PASS**.
+- `npm run build`: **PASS**, with only the existing Vite chunk-size warning.
+- `git diff --check`: **PASS**.
+
+No production DDL, migration-history edit, merge, push, commit, or deployment was performed. The stage is therefore **repository PASS / controlled projects GO pending preflight and post-deployment verification**; the admin-audit migration remains separate NO-GO for bundling.
