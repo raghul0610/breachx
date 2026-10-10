@@ -118,6 +118,12 @@ The user supplied the complete 2,142-line PostgreSQL 17.11 dump (31,492 bytes in
 7. The proposed audit hardening migration `20261010080000_harden_admin_audit_log_access.sql` has not been applied: its deny policy and explicit browser-role revoke are not in the dump. This is expected and must remain a separately tested forward migration.
 8. `20261010070000_create_projects.sql` is also absent from the dump, as expected for the current production schema.
 
+### Newly confirmed clean-replay blocker
+
+The current `001_breachx_backend_foundation.sql` ends with `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable()`, but that file does not define `public.rls_auto_enable()` and does not create the `ensure_rls` event trigger. Production has both the function and enabled event trigger, so those objects came from outside the checked-in 001–003 sequence (or from unrecorded SQL). A fresh plain PostgreSQL replay of migration 001 will therefore fail at the final revoke unless the function is provisioned first.
+
+Do not silently add a test-only stub and call the replay complete. The reconciliation decision must establish whether the helper/event trigger belongs in a reviewed baseline/reconciliation migration or is intentionally platform-provisioned. Preserve the production trigger behavior and the restricted SECURITY DEFINER grants. This is a concrete reason Gate 1 and the full legacy replay remain blocked.
+
 ### Migration-by-migration comparison
 
 - **001 foundation:** the table/enum/index/constraint/RLS/policy definitions are substantially represented in the dump. The public event-catalog grants and SECURITY DEFINER execute revocation appear as policy/object state where applicable, but ACL statements are not in this dump; the revocation cannot be certified from this file alone.
