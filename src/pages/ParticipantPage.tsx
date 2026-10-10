@@ -256,7 +256,6 @@ function ParticipantEditor({
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-      if (submitted) return;
 
       const typeKey = event.dataTransfer.getData(
         "application/breachx-component",
@@ -275,7 +274,7 @@ function ParticipantEditor({
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      if (submitted) return;
+
       pushHistory();
 
       setEdges((current) =>
@@ -297,14 +296,14 @@ function ParticipantEditor({
   );
 
   const onReconnect = useCallback((oldEdge: Edge, connection: Connection) => {
-    if (submitted) return;
+
     pushHistory();
     setEdges((current) => reconnectEdge(oldEdge, connection, current));
   }, [setEdges, submitted, pushHistory]);
 
   const handleNodesChange = useCallback(
     (changes: Parameters<typeof onNodesChange>[0]) => {
-      if (submitted) return;
+
       const startsDrag = changes.some((change) => change.type === "position" && change.dragging === true);
       const endsDrag = changes.some((change) => change.type === "position" && change.dragging === false);
       if (startsDrag && !dragHistoryOpen.current) {
@@ -396,7 +395,7 @@ function ParticipantEditor({
   };
 
   const removeSelected = useCallback(() => {
-    if (submitted) return;
+
     const selectedNodeIds = new Set(nodesRef.current.filter((node) => node.selected || node.id === selectedId).map((node) => node.id));
     const selectedEdgeIds = new Set(edgesRef.current.filter((edge) => edge.selected || edge.id === selectedEdgeId).map((edge) => edge.id));
     if (selectedNodeIds.size === 0 && selectedEdgeIds.size === 0) return;
@@ -492,7 +491,7 @@ function ParticipantEditor({
             rows={3}
             value={applicationDescription}
             onChange={(event) => setApplicationDescription(event.target.value)}
-            disabled={submitted}
+            
           />
         </div>
       </section>
@@ -517,7 +516,7 @@ function ParticipantEditor({
               }}
               onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }}
               aria-pressed={selectedCatalogTypeKey === item.typeKey}
-              disabled={submitted}
+              
             >
               <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={14} /></span><span>{item.label}</span></span>
               <small>{item.category}</small>
@@ -652,12 +651,12 @@ function ParticipantEditor({
                   value={catalogNotes}
                   onChange={(event) => setCatalogNotes(event.target.value)}
                   placeholder="Why are you adding this component? Add a reminder or design decision."
-                  disabled={submitted}
+                  
                 />
               </div>
               <button
                 className="primary-btn catalog-add-btn"
-                disabled={submitted}
+                
                 onClick={() => addCatalogNode(selectedCatalogItem, undefined, catalogNotes)}
               >
                 <PlusCircle size={14} /> ADD COMPONENT TO CANVAS
@@ -677,7 +676,7 @@ function ParticipantEditor({
                 <label>COMPONENT LABEL</label>
                 <input
                   value={selected.data.label}
-                  disabled={submitted}
+                  
                   onChange={(event) => updateSelected("label", event.target.value)}
                 />
               </div>
@@ -686,12 +685,12 @@ function ParticipantEditor({
                 <textarea
                   rows={5}
                   value={selected.data.notes ?? ""}
-                  disabled={submitted}
+                  
                   onChange={(event) => updateSelected("notes", event.target.value)}
                   placeholder="Explain why this component exists."
                 />
               </div>
-              <button className="danger-btn" disabled={submitted} onClick={removeSelected}>
+              <button className="danger-btn"  onClick={removeSelected}>
                 <Trash2 size={13} /> DELETE COMPONENT
               </button>
             </>
@@ -699,7 +698,7 @@ function ParticipantEditor({
             <div className="catalog-inspector">
               <div className="catalog-inspector-title"><div className="catalog-component-icon"><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION</div><h3>Directed connection</h3></div></div>
               <p className="catalog-summary">This connection carries flow from <strong>{nodes.find((node) => node.id === selectedEdge.source)?.data.label ?? selectedEdge.source}</strong> to <strong>{nodes.find((node) => node.id === selectedEdge.target)?.data.label ?? selectedEdge.target}</strong>.</p>
-              <button className="danger-btn" disabled={submitted} onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
+              <button className="danger-btn"  onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
             </div>
           ) : (
             <div className="empty-inspector">
@@ -715,7 +714,7 @@ function ParticipantEditor({
             <label>ARCHITECTURE NOTES</label>
             <textarea
               rows={12}
-              disabled={submitted}
+              
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
               placeholder="Describe request flow, scaling, security boundaries, caching, queues, persistence and failure handling."
