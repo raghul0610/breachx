@@ -44,3 +44,29 @@ The owner's Windows CLI command `npx supabase db dump --linked --schema public` 
 5. Keep the projects migration out of production until baseline reconciliation and local tests pass.
 
 Do not run production DDL, `supabase db push`, `supabase migration repair`, or a linked reset as a shortcut. This note authorizes no production changes.
+
+
+## Follow-up read-only catalog capture (2026-10-10)
+
+A second read-only capture was performed through the Supabase SQL connector after Docker Desktop proved unavailable. It does not require a local container and did not execute DDL.
+
+- Reconfirmed all 14 public base tables have RLS enabled.
+- Captured all public column definitions, defaults, nullability, primary/foreign/unique/check constraints, public indexes, enum labels, RLS policies, and the `blueprint_submission_lock` trigger.
+- Reconfirmed the trigger calls `public.enforce_blueprint_submission_lock()`; preserve this behavior.
+- Reconfirmed `public.admin_audit_logs` currently has no RLS policies. The separate hardening migration described in `docs/production-schema-inventory-2026-10-10.md` must remain unapplied until the baseline/reconciliation and deployment review are complete.
+- Reconfirmed remote history has exactly the three timestamped versions listed above.
+
+## Reconciliation decision
+
+The live catalog is now better documented, but **this is still not a canonical, replayable schema baseline**. Catalog query output is not a substitute for a schema dump because object reconstruction can miss database-level details such as ownership, grants, comments, publication configuration, function bodies, event triggers, extension state, and dependency ordering unless explicitly captured and reviewed.
+
+The legacy migration problem is now stated precisely:
+
+1. `001_breachx_backend_foundation.sql` is a bootstrap migration that creates the original 14-table model and related objects. The current live schema includes later changes that were not all tracked under its local filename.
+2. The remote migration ledger contains only `20261008050118`, `20261008050230`, and `20261008050245`; it does not contain local versions `001`, `002`, or `003`.
+3. Git history strongly maps those three remote entries to incremental edits of the legacy foundation SQL, but this is not sufficient evidence to claim that local `001`–`003` are recorded/applied in a replay-safe way.
+4. Therefore, do not rename, delete, squash, or mark the legacy migrations applied; do not use `supabase migration repair`; and do not run `supabase db push` against production.
+5. Keep `20261010070000_create_projects.sql` out of production. Live `public.projects` is absent.
+6. A proper canonical baseline remains pending one of these safe paths: (a) a successful `supabase db pull`/dump using Docker/Podman, or (b) PostgreSQL client tools using an authenticated direct database connection. The resulting SQL must be non-empty and reviewed against the captured catalog before any baseline or migration-ledger strategy is committed.
+
+This follow-up improves the evidence and narrows the unresolved work, but it intentionally does not mark Gate 1 passed. No production DDL, data, or migration metadata was changed.
