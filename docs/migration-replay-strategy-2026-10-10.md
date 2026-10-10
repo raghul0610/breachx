@@ -34,9 +34,9 @@ The only safe next step is to establish a reproducible, disposable local replay 
 
 1. Synchronize the local checkout to the reviewed `origin/backend` without deleting untracked artifacts.
 2. Inspect `git status` and confirm the local schema dump remains present.
-3. Start an isolated local Supabase stack (or a disposable PostgreSQL instance with the required Supabase `auth` schema, roles, and functions). Never point this test at the linked production project.
-4. Replay migrations 001, 002, and 003 in order against an empty disposable database. Treat any failure as a blocker; do not use `IF NOT EXISTS` wrappers or manual catalog edits to hide ordering errors.
-5. Compare the resulting local catalog and normalized schema-only dump with the production dump. Record each difference with object name, production definition, replay definition, and disposition (expected drift, unexplained drift, or proposed fix).
+3. Use the existing local PostgreSQL 17 server to create a disposable empty database. No Docker is used. Bootstrap only the compatibility objects the SQL needs (roles, `auth.users`, `auth.uid()`, and `supabase_realtime` publication if supported); keep the bootstrap separate from application migrations and document that it is not a full Supabase environment. Never point test commands at the linked production project.
+4. Replay migrations 001, 002, and 003 in order against the empty disposable database. Treat any failure as a blocker; do not use `IF NOT EXISTS` wrappers or manual catalog edits to hide ordering errors.
+5. Capture the local PostgreSQL catalog and normalized schema dump, then compare it with production evidence. Record each difference with object name, production definition, replay definition, and disposition (expected drift, unexplained drift, or proposed fix). Note that the uploaded production dump omitted ACLs, event-trigger definitions, publication membership, and extension inventory; separate read-only catalog queries have now confirmed live `ensure_rls` and `activity_logs` publication membership.
 6. Test `20261010080000_harden_admin_audit_log_access.sql` separately on a copy of the replayed database. Assert browser roles have no table privileges and cannot read or write audit rows, and service_role retains the required trusted-server access.
 7. Test `20261010070000_create_projects.sql` only as a separate additive feature migration. Do not include it in the canonical legacy baseline comparison.
 
@@ -70,13 +70,13 @@ supabase --version
 supabase status
 ```
 
-If the local Supabase CLI is configured and Docker is available, start only the local stack and inspect its status before running any reset or migration command. The local stack must show local endpoints; stop and investigate if any command indicates a linked/remote target. The repository currently has no checked-in `supabase/config.toml` on the reviewed branch, so local Supabase CLI replay cannot be assumed to work until configuration is added/recovered and reviewed. Do not invent a config file or run `supabase init` over existing files blindly.
+The user uses PostgreSQL 17 directly and does not use Docker. The reviewed branch has no checked-in `supabase/config.toml`, so do not assume a Supabase CLI stack can be started. Use a disposable local PostgreSQL database with a documented compatibility bootstrap, and label the result PostgreSQL-only validation—not a full Supabase-stack replay. Do not invent a config file or run `supabase init` over existing files blindly.
 
 ## Exit criteria for Gate 1
 
 - Local branch equals reviewed `origin/backend` and local untracked audit artifacts are preserved.
 - Complete normalized schema diff is committed with no unexplained differences.
-- Local replay of 001–003 succeeds from empty state.
+- PostgreSQL-only replay of 001–003 succeeds from empty state with the compatibility bootstrap documented; this is not claimed to be a full Supabase-stack test.
 - Proposed hardening migration passes explicit grants/RLS assertions on the isolated database.
 - Remote migration-history mapping is reviewed and the final strategy explicitly distinguishes verified historical changes from unresolved entries.
 - Supabase Auth provider and redirect settings are independently verified.
@@ -94,6 +94,6 @@ The proposed audit hardening migration is absent from the live dump as expected.
 - Repository-side comparison findings: documented on `backend`.
 - Local checkout synchronization: user confirmed local `backend` and `origin/backend` point to commit `ff5bc6e`; the local dump exists and is 31,492 bytes.
 - Exact normalized production-versus-replay diff: **not run**; no replayed local schema dump is available yet.
-- Isolated Supabase replay: **not run**. The reviewed branch has no `supabase/config.toml`, and execution depends on the user's local Docker/Supabase CLI environment. Do not claim the sequence passed until a disposable local stack is confirmed and the replay/test output is captured.
+- PostgreSQL-only replay: **not run yet** from this assistant environment because the user's local PostgreSQL server is not remotely executable through the connected tools. The user does not use Docker; no Docker steps should be requested. A local disposable PostgreSQL replay can be driven by the owner using the existing PostgreSQL 17 installation, while repository-side CI remains separate evidence.
 - Production schema and migration ledger: unchanged by this work.
 
