@@ -134,7 +134,6 @@ function ParticipantEditor({
   useEffect(() => { edgesRef.current = edges; }, [edges]);
 
   useEffect(() => {
-    if (submitted) return;
     setSaveStatus("saving");
     const timeout = window.setTimeout(() => {
       try {
@@ -145,7 +144,7 @@ function ParticipantEditor({
           edges,
           notes,
           viewport,
-          status: "draft",
+          status: submitted ? "submitted" : "draft",
           updatedAt: new Date().toISOString(),
         }, projectId);
         setSaveStatus("saved");
@@ -168,7 +167,7 @@ function ParticipantEditor({
   }, []);
 
   const undo = useCallback(() => {
-    if (submitted || pastRef.current.length === 0) return;
+    if (pastRef.current.length === 0) return;
     const previous = pastRef.current[pastRef.current.length - 1];
     pastRef.current = pastRef.current.slice(0, -1);
     futureRef.current = [...futureRef.current, {
@@ -188,7 +187,7 @@ function ParticipantEditor({
   }, [setNodes, setEdges, submitted]);
 
   const redo = useCallback(() => {
-    if (submitted || futureRef.current.length === 0) return;
+    if (futureRef.current.length === 0) return;
     const next = futureRef.current[futureRef.current.length - 1];
     futureRef.current = futureRef.current.slice(0, -1);
     pastRef.current = [...pastRef.current.slice(-49), {
@@ -217,7 +216,6 @@ function ParticipantEditor({
   const selectedCatalogItem = CATALOG.find((item) => item.typeKey === selectedCatalogTypeKey);
   const selectedKnowledge = selectedCatalogItem ? getComponentKnowledge(selectedCatalogItem) : null;
   const canSubmit =
-    !submitted &&
     applicationName.trim().length > 0 &&
     applicationDescription.trim().length > 0 &&
     nodes.length >= 3 &&
@@ -228,7 +226,7 @@ function ParticipantEditor({
     position?: { x: number; y: number },
     componentNotes = "",
   ) => {
-    if (submitted) return;
+    
 
     pushHistory();
     const id = crypto.randomUUID();
@@ -321,15 +319,16 @@ function ParticipantEditor({
 
   const handleEdgesChange = useCallback(
     (changes: Parameters<typeof onEdgesChange>[0]) => {
-      if (!submitted) onEdgesChange(changes);
+      onEdgesChange(changes);
     },
     [onEdgesChange, submitted],
   );
 
   const save = async (submissionStatus: "draft" | "submitted") => {
-    if (submitted) return;
+    const wasSubmitted = submitted;
+    const effectiveStatus = wasSubmitted ? "submitted" : submissionStatus;
 
-    if (submissionStatus === "submitted" && !canSubmit) {
+    if (effectiveStatus === "submitted" && !canSubmit) {
       alert(
         "Submission requires an application description, at least 3 components and 2 connections.",
       );
@@ -348,7 +347,7 @@ function ParticipantEditor({
         edges,
         notes,
         viewport: currentViewport,
-        status: submissionStatus,
+        status: effectiveStatus,
         updatedAt: new Date().toISOString(),
       };
 
@@ -356,16 +355,16 @@ function ParticipantEditor({
       setSaveStatus("saved");
       setSaveError("");
       logActivity(
-        submissionStatus === "submitted"
+        effectiveStatus === "submitted"
           ? "DESIGN_SUBMITTED"
           : "DESIGN_SAVED",
         { nodes: nodes.length, edges: edges.length },
       );
 
-      if (submissionStatus === "submitted") {
+      if (effectiveStatus === "submitted") {
         setSubmitted(true);
-        alert("Blueprint saved. You can now generate a suggested architecture or export your design as a PDF.");
-        onSubmitted();
+        alert(wasSubmitted ? "Submitted project changes saved." : "Blueprint saved. You can now generate a suggested architecture or export your design as a PDF.");
+        if (!wasSubmitted) onSubmitted();
       } else {
         alert("Draft saved.");
       }
@@ -382,7 +381,7 @@ function ParticipantEditor({
   const handleExportPdf = () => exportArchitecturePdf(applicationName, applicationDescription, notes, nodes, edges);
 
   const updateSelected = (field: "label" | "notes", value: string) => {
-    if (!selectedId || submitted) return;
+    if (!selectedId) return;
     const currentNode = nodesRef.current.find((node) => node.id === selectedId);
     if (!currentNode || currentNode.data[field] === value) return;
     pushHistory();
@@ -428,7 +427,7 @@ function ParticipantEditor({
         setEdges((current) => current.map((edge) => ({ ...edge, selected: false })));
         return;
       }
-      if (submitted || !canvasHasFocus) return;
+      if (!canvasHasFocus) return;
       const modifier = event.ctrlKey || event.metaKey;
       if (modifier && event.key.toLowerCase() === "z") {
         event.preventDefault();
@@ -469,7 +468,7 @@ function ParticipantEditor({
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
         <span className="status-pill">
-          {submitted ? "SUBMITTED" : saveStatus === "saving" ? "SAVING…" : saveStatus === "error" ? "SAVE ERROR" : "SAVED LOCALLY"}
+          {submitted ? "SUBMITTED · EDITABLE" : saveStatus === "saving" ? "SAVING…" : saveStatus === "error" ? "SAVE ERROR" : "SAVING TO CLOUD"}
         </span>
       </header>
 
@@ -483,7 +482,7 @@ function ParticipantEditor({
           <input
             value={applicationName}
             onChange={(event) => setApplicationName(event.target.value)}
-            disabled={submitted}
+            
           />
         </div>
 
@@ -508,7 +507,7 @@ function ParticipantEditor({
             <button
               key={item.typeKey}
               className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`}
-              draggable={!submitted}
+              draggable={true}
               onDragStart={(event) => {
                 event.dataTransfer.setData(
                   "application/breachx-component",
@@ -548,14 +547,14 @@ function ParticipantEditor({
             </div>
 
             <div className="toolbar-actions">
-              <button onClick={undo} disabled={submitted || pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
-              <button onClick={redo} disabled={submitted || futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
+              <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
+              <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
               <button onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
               <button
-                onClick={() => save("draft")}
-                disabled={persisting || submitted}
+                onClick={() => save(submitted ? "submitted" : "draft")}
+                disabled={persisting}
               >
-                <Save size={13} /> {persisting ? "SAVING…" : "SAVE DRAFT"}
+                <Save size={13} /> {persisting ? "SAVING…" : submitted ? "SAVE CHANGES" : "SAVE DRAFT"}
               </button>
               <button
                 className="primary-btn compact"
@@ -563,7 +562,7 @@ function ParticipantEditor({
                 onClick={() => save("submitted")}
               >
                 <Send size={13} />{" "}
-                {submitted ? "SUBMITTED" : "SAVE BLUEPRINT & CONTINUE"}
+                {submitted ? "UPDATE SUBMITTED PROJECT" : "SAVE BLUEPRINT & CONTINUE"}
               </button>
             </div>
           </div>
