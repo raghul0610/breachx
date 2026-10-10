@@ -75,6 +75,18 @@ describe("project persistence", () => {
     expect(listProjects().find((project) => project.id === original.id)?.status).toBe("submitted");
   });
 
+  it("preserves submitted status while editing a submitted project", () => {
+    const original = createProject({ ...submission("Submitted"), status: "submitted" });
+    writeSubmission({
+      ...submission("Updated submitted project"),
+      status: "submitted",
+    }, original.id);
+
+    const saved = readSubmission(original.id);
+    expect(saved?.applicationName).toBe("Updated submitted project");
+    expect(saved?.status).toBe("submitted");
+  });
+
   it("renames and deletes only the selected project", () => {
     const first = createProject(submission("First"));
     const second = createProject(submission("Second"));
