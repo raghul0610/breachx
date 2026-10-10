@@ -5,7 +5,7 @@ Project: BreachX (`wjxenruxeudkgqinbodv`)
 
 ## Status
 
-**Canonical schema baseline gate remains blocked.** This note is catalog-derived evidence, not a complete Supabase CLI/pg_dump schema baseline. No production DDL or migration-history change was performed during this audit.
+**Canonical schema baseline gate remains blocked.** This note records read-only production evidence and comparison findings. No production DDL or migration-history change was performed during this audit.
 
 ## Verified live catalog
 
@@ -16,6 +16,7 @@ Project: BreachX (`wjxenruxeudkgqinbodv`)
 - `blueprints.blueprint_submission_lock` rejects updates after submission and rejects changes to event/team/assignment ownership.
 - The enabled `ensure_rls` event trigger invokes `public.rls_auto_enable()`; the function is SECURITY DEFINER with search_path set to pg_catalog. Observed EXECUTE grants are limited to postgres and service_role.
 - Anonymous event-catalog SELECT policies exist for events, event_config, tracks, and active problem_statements.
+- `activity_logs` is included in `supabase_realtime`.
 
 ## Remote migration history and likely Git counterparts
 
@@ -25,48 +26,57 @@ Project: BreachX (`wjxenruxeudkgqinbodv`)
 | `20261008050230` | `harden_public_security_definer` | commit `e9292f5`: “fix: restrict security definer helper execution” |
 | `20261008050245` | `remove_public_security_definer_execute` | commit `dec069a`: “fix: revoke public security helper execution” |
 
-Historical versions of `001_breachx_backend_foundation.sql` were fetched at all three commits. The contents confirm the intended incremental changes: `b087fa8` adds the anonymous event-catalog grants/policies; `e9292f5` adds `REVOKE EXECUTE ... FROM anon, authenticated`; and `dec069a` broadens that revoke to include `PUBLIC`. The subjects and exact SQL changes align with the three remote migration names. This establishes a strong content mapping, but the Supabase migration ledger itself still does not contain the legacy local migrations `001`–`003`, and the precise SQL stored/applied for each remote version has not been independently extracted from the ledger.
+Historical versions of `001_breachx_backend_foundation.sql` were fetched at all three commits. The contents confirm the intended incremental changes: `b087fa8` adds anonymous event-catalog grants/policies; `e9292f5` adds `REVOKE EXECUTE ... FROM anon, authenticated`; and `dec069a` broadens that revoke to include `PUBLIC`. This is a strong content mapping, but does not make local migrations `001`–`003` recorded in the remote ledger.
 
-Other tracked migrations are `002_blueprint_persistence_hardening.sql` (commit `db5eefd`), `003_activity_monitoring.sql` (commit `2ad3b97`), and `20261010070000_create_projects.sql` (commit `805df8b`).
+## Local migration inventory and status
 
-The CLI showed local versions 001, 002, 003, and 20261010070000, while remote history has only the three timestamped entries. The first three remote entries likely reflect incremental edits folded into the current legacy `001` file. This explains part of the mismatch but does not fully reconcile the ledger or the status of migrations 002 and 003.
+The local CLI reported these files:
+- `001_breachx_backend_foundation.sql`
+- `002_blueprint_persistence_hardening.sql`
+- `003_activity_monitoring.sql`
+- `20261010070000_create_projects.sql`
 
-## Dump attempt and limitation
+The remote ledger contains only the three timestamped versions above. It does not contain versions `001`, `002`, or `003`. The projects migration is local-only and must remain unapplied in production.
 
-The owner's Windows CLI command `npx supabase db dump --linked --schema public` failed because Docker/Podman is unavailable. The generated `artifacts/schema-audit/production-public-schema.sql` is zero bytes and is not a valid dump. Neither `psql` nor `pg_dump` is on PATH. Catalog inspection is useful evidence but not a substitute for a complete schema dump.
+The backend branch also contains `20261010080000_harden_admin_audit_log_access.sql`, a proposed hardening migration. The user's local migration listing did not show this file at audit time, so the local checkout and GitHub branch inventory need to be synchronized and checked before any local testing or commit. The proposed hardening migration has not been applied to production.
 
-## Required before Gate 1 can pass
+## Schema dump validation
 
-1. Obtain a complete schema dump using Supabase CLI with Docker/Podman, or PostgreSQL client tools with a safe direct connection; verify the output is non-empty and review it.
-2. Compare the dump against current `001`–`003` and the historical versions of `001` at commits `b087fa8`, `e9292f5`, and `dec069a`.
-3. Document a reviewed baseline plan that does not falsely mark unapplied migrations as applied.
-4. Test the complete migration sequence on an isolated local Supabase stack before production deployment.
-5. Keep the projects migration out of production until baseline reconciliation and local tests pass.
+A direct `pg_dump` using PostgreSQL client tools succeeded locally against the Supabase Session Pooler. The resulting file is `artifacts/schema-audit/production-public-schema.sql`, 31,492 bytes. The user verified its PostgreSQL dump-complete marker. It contains 14 `public` tables, four enums, two functions, the blueprint submission-lock trigger, RLS statements and policies. This is a valid schema-only dump candidate; it has not been committed.
 
-Do not run production DDL, `supabase db push`, `supabase migration repair`, or a linked reset as a shortcut. This note authorizes no production changes.
+## Comparison findings
 
+### Core object structure
 
-## Follow-up read-only catalog capture (2026-10-10)
+- Live table inventory matches the 14 tables created by the legacy foundation migration.
+- The four live enums match the enum definitions in `001_breachx_backend_foundation.sql`.
+- The nine named secondary indexes from the foundation migration are present in the live catalog, in addition to primary-key and unique-constraint indexes.
+- The live policy inventory is consistent with the intended sequence: the foundation policies and anonymous event-catalog policies, the two additional policies from `002`, and the activity read-policy replacement from `003`. Live `activity_logs` has `activity_participant_or_admin_select` and `activity_team_insert`; the old `activity_team_select` policy is absent.
+- The live `blueprint_submission_lock` trigger and `enforce_blueprint_submission_lock()` function exist. Preserve their behavior.
+- The live `rls_auto_enable()` function is SECURITY DEFINER with `search_path=pg_catalog`; its observed execution grants are restricted to trusted roles.
 
-A second read-only capture was performed through the Supabase SQL connector after Docker Desktop proved unavailable. It does not require a local container and did not execute DDL.
+These structural matches do **not** reconcile the migration ledger: a live object matching a local migration does not prove the remote history records that local migration version as applied.
 
-- Reconfirmed all 14 public base tables have RLS enabled.
-- Captured all public column definitions, defaults, nullability, primary/foreign/unique/check constraints, public indexes, enum labels, RLS policies, and the `blueprint_submission_lock` trigger.
-- Reconfirmed the trigger calls `public.enforce_blueprint_submission_lock()`; preserve this behavior.
-- Reconfirmed `public.admin_audit_logs` currently has no RLS policies. The separate hardening migration described in `docs/production-schema-inventory-2026-10-10.md` must remain unapplied until the baseline/reconciliation and deployment review are complete.
-- Reconfirmed remote history has exactly the three timestamped versions listed above.
+### Privilege drift and security concern
+
+A read-only query of `information_schema.role_table_grants` returned 98 table-privilege grant rows for each of `anon`, `authenticated`, and `service_role`, across the 14 public tables. The privilege types shown for each role were DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, and UPDATE. These broad table grants are wider than the explicit anonymous SELECT grants in the foundation migration. RLS still governs row access, but grants should be deliberately reviewed rather than inferred from policies alone.
+
+Specifically, `admin_audit_logs` has RLS enabled and no production policies. With the observed browser-role table grants, RLS currently denies row access because no policy permits it, but the table grants are unnecessarily broad. The backend branch contains `20261010080000_harden_admin_audit_log_access.sql` to revoke browser-role privileges and add an explicit deny policy. Do not apply it until the migration-history plan, local test sequence, and deployment review are complete.
+
+### Evidence limitations
+
+The dump was validated by the user in their local PowerShell session, but its contents are not stored in this repository and were not independently parsed line-by-line in this review. The live catalog queries independently corroborate the listed table, enum, policy, index, trigger, function, and grant findings. Before approving a canonical baseline, compare the complete dump and all definitions, including column types/defaults/nullability, constraints, function bodies, grants, extensions, event triggers, publications, and comments.
 
 ## Reconciliation decision
 
-The live catalog is now better documented, but **this is still not a canonical, replayable schema baseline**. Catalog query output is not a substitute for a schema dump because object reconstruction can miss database-level details such as ownership, grants, comments, publication configuration, function bodies, event triggers, extension state, and dependency ordering unless explicitly captured and reviewed.
+The live schema is now better documented, but **this is still not a canonical, replayable schema baseline**. The local migration history remains unreconciled with the remote ledger.
 
-The legacy migration problem is now stated precisely:
+1. Preserve the original legacy migration files; do not rename, delete, squash, or mark them applied as a shortcut.
+2. Do not run production `supabase db push`, `supabase migration repair`, or a linked reset.
+3. Keep `20261010070000_create_projects.sql` out of production; live `public.projects` is absent.
+4. Synchronize the local backend checkout with the reviewed backend branch and inspect the file inventory before local testing.
+5. Review the full dump against the current and historical migrations, document all differences, then test the proposed migration strategy on an isolated local Supabase stack.
+6. Verify Supabase Auth providers and URL configuration separately; these remain unverified.
+7. Only after review and isolated testing should a separate production migration plan be approved.
 
-1. `001_breachx_backend_foundation.sql` is a bootstrap migration that creates the original 14-table model and related objects. The current live schema includes later changes that were not all tracked under its local filename.
-2. The remote migration ledger contains only `20261008050118`, `20261008050230`, and `20261008050245`; it does not contain local versions `001`, `002`, or `003`.
-3. Git history strongly maps those three remote entries to incremental edits of the legacy foundation SQL, but this is not sufficient evidence to claim that local `001`–`003` are recorded/applied in a replay-safe way.
-4. Therefore, do not rename, delete, squash, or mark the legacy migrations applied; do not use `supabase migration repair`; and do not run `supabase db push` against production.
-5. Keep `20261010070000_create_projects.sql` out of production. Live `public.projects` is absent.
-6. A proper canonical baseline remains pending one of these safe paths: (a) a successful `supabase db pull`/dump using Docker/Podman, or (b) PostgreSQL client tools using an authenticated direct database connection. The resulting SQL must be non-empty and reviewed against the captured catalog before any baseline or migration-ledger strategy is committed.
-
-This follow-up improves the evidence and narrows the unresolved work, but it intentionally does not mark Gate 1 passed. No production DDL, data, or migration metadata was changed.
+No production DDL, data, or migration metadata was changed during this audit.
