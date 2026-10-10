@@ -72,8 +72,23 @@ export async function saveOwnedProject(project: ArchitectureProject): Promise<vo
   if (error) throw error;
 }
 
+function stableJson(value: unknown): string {
+  const normalize = (item: unknown): unknown => {
+    if (Array.isArray(item)) return item.map(normalize);
+    if (item && typeof item === "object") {
+      return Object.fromEntries(
+        Object.entries(item as Record<string, unknown>)
+          .sort(([left], [right]) => left.localeCompare(right))
+          .map(([key, child]) => [key, normalize(child)]),
+      );
+    }
+    return item;
+  };
+  return JSON.stringify(normalize(value));
+}
+
 function sameProjectContent(a: ArchitectureProject, b: ArchitectureProject): boolean {
-  return JSON.stringify({
+  return stableJson({
     applicationName: a.applicationName,
     applicationDescription: a.applicationDescription,
     nodes: a.nodes,
@@ -82,7 +97,7 @@ function sameProjectContent(a: ArchitectureProject, b: ArchitectureProject): boo
     workload: a.workload ?? null,
     viewport: a.viewport ?? null,
     status: a.status,
-  }) === JSON.stringify({
+  }) === stableJson({
     applicationName: b.applicationName,
     applicationDescription: b.applicationDescription,
     nodes: b.nodes,
