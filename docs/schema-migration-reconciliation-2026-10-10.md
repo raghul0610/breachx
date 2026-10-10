@@ -25,7 +25,7 @@ Project: BreachX (`wjxenruxeudkgqinbodv`)
 | `20261008050230` | `harden_public_security_definer` | commit `e9292f5`: “fix: restrict security definer helper execution” |
 | `20261008050245` | `remove_public_security_definer_execute` | commit `dec069a`: “fix: revoke public security helper execution” |
 
-These commits modify `001_breachx_backend_foundation.sql`; their subjects align strongly with the remote migration names. This is a likely mapping, not proof of exact SQL equality. The exact SQL recorded for each remote version still needs to be confirmed against the historical file at each commit.
+Historical versions of `001_breachx_backend_foundation.sql` were fetched at all three commits. The contents confirm the intended incremental changes: `b087fa8` adds the anonymous event-catalog grants/policies; `e9292f5` adds `REVOKE EXECUTE ... FROM anon, authenticated`; and `dec069a` broadens that revoke to include `PUBLIC`. The subjects and exact SQL changes align with the three remote migration names. This establishes a strong content mapping, but the Supabase migration ledger itself still does not contain the legacy local migrations `001`–`003`, and the precise SQL stored/applied for each remote version has not been independently extracted from the ledger.
 
 Other tracked migrations are `002_blueprint_persistence_hardening.sql` (commit `db5eefd`), `003_activity_monitoring.sql` (commit `2ad3b97`), and `20261010070000_create_projects.sql` (commit `805df8b`).
 
