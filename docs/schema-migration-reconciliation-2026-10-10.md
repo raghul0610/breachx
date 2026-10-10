@@ -80,3 +80,44 @@ The live schema is now better documented, but **this is still not a canonical, r
 7. Only after review and isolated testing should a separate production migration plan be approved.
 
 No production DDL, data, or migration metadata was changed during this audit.
+
+## Full dump comparison addendum (uploaded dump reviewed)
+
+The user supplied the complete 2,142-line PostgreSQL 17.11 dump (31,492 bytes in the local repository; uploaded representation 32,919 bytes after formatting). The dump was inspected against migrations 001–003 and the two timestamped migrations in this branch. This is a textual/structural comparison, not a restore test.
+
+### Objects positively represented in the dump
+
+- Four enum types and all fourteen legacy public tables.
+- Two functions: `enforce_blueprint_submission_lock()` and `rls_auto_enable()`.
+- The `blueprint_submission_lock` table trigger.
+- Nine named secondary indexes from migration 001.
+- Primary keys, unique constraints, check constraints, and foreign keys for the legacy tables.
+- RLS enabled statements and the current policies, including `activity_participant_or_admin_select`, `activity_team_insert`, the two `blueprint_versions` policies, and anonymous event-catalog policies.
+- No `public.projects` table, consistent with the production catalog inspection and the decision to keep migration `20261010070000_create_projects.sql` unapplied.
+
+### Confirmed differences / coverage gaps
+
+1. **The dump does not contain any GRANT, REVOKE, or ALTER DEFAULT PRIVILEGES statements.** Therefore it cannot validate production ACLs or explain the 98-grant-row-per-role finding. The dump may have been created with ACLs excluded; the invocation/options were not included in the file, so the exact cause is unknown. Capture a separate ACL report or regenerate a dump with privileges included before declaring the baseline complete.
+2. **The dump does not include the live `ensure_rls` event trigger**, although read-only catalog inspection previously found it enabled and linked to `rls_auto_enable()`. The dump contains the function but no `CREATE EVENT TRIGGER` statement. Treat this as a dump-coverage gap until a full database-level export or dedicated catalog query documents event triggers. Do not infer the trigger is absent in production.
+3. **The dump contains no publication membership statement** for `supabase_realtime`. Catalog inspection found `activity_logs` in that publication. Capture publication and publication-table membership separately; do not infer that realtime membership is absent.
+4. **No CREATE EXTENSION statement appears.** This dump cannot establish extension inventory or ownership. Capture `pg_extension` separately.
+5. The dump contains only the two public functions and one table trigger listed above. This matches the observed public function/table-trigger inventory, but does not by itself capture event-trigger inventory or function ACLs.
+6. The dump includes the legacy schema objects, but it cannot establish the remote migration ledger or which exact historical SQL was executed. The remote history mismatch remains unresolved.
+7. The proposed audit hardening migration `20261010080000_harden_admin_audit_log_access.sql` has not been applied: its deny policy and explicit browser-role revoke are not in the dump. This is expected and must remain a separately tested forward migration.
+8. `20261010070000_create_projects.sql` is also absent from the dump, as expected for the current production schema.
+
+### Migration-by-migration comparison
+
+- **001 foundation:** the table/enum/index/constraint/RLS/policy definitions are substantially represented in the dump. The public event-catalog grants and SECURITY DEFINER execute revocation appear as policy/object state where applicable, but ACL statements are not in this dump; the revocation cannot be certified from this file alone.
+- **002 blueprint persistence hardening:** the dump contains `blueprint_versions_team_insert`, `activity_team_insert`, and the `enforce_blueprint_submission_lock()` function/trigger with the expected lock and immutable-ownership checks.
+- **003 activity monitoring:** the dump contains `activity_participant_or_admin_select`, with the previous `activity_team_select` policy absent. The publication membership change cannot be verified from this dump and needs a separate publication query.
+- **20261010070000 projects:** no corresponding table, index, policy, or trigger is in the dump; this is expected and is a production safety invariant.
+- **20261010080000 audit hardening:** the dedicated deny policy and explicit revoke are absent, consistent with this being a pending proposed migration.
+
+### Remaining work before Gate 1 can pass
+
+- Produce a privileges-inclusive schema/ACL export or a dedicated role/table/default-privilege report.
+- Export event-trigger definitions and publication membership separately.
+- Compare normalized column definitions, defaults, nullability, constraints, indexes, policy expressions, function definitions, and trigger definitions against a clean local replay. The uploaded dump provides the production-side evidence, but a replayed local dump is not yet available, so an exact normalized diff and replay result are still pending.
+- Keep the production migration ledger unchanged until the historical SQL-to-ledger mapping is independently verified.
+
