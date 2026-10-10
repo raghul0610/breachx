@@ -67,6 +67,18 @@ Specifically, `admin_audit_logs` has RLS enabled and no production policies. Wit
 
 The dump was validated by the user in their local PowerShell session, but its contents are not stored in this repository and were not independently parsed line-by-line in this review. The live catalog queries independently corroborate the listed table, enum, policy, index, trigger, function, and grant findings. Before approving a canonical baseline, compare the complete dump and all definitions, including column types/defaults/nullability, constraints, function bodies, grants, extensions, event triggers, publications, and comments.
 
+## Additional live ACL, event-trigger, publication, and extension audit (read-only)
+
+A follow-up read-only query completed after reviewing the uploaded dump:
+
+- `anon`, `authenticated`, and `service_role` each have 98 table-grant rows across all 14 public tables, covering DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, and UPDATE.
+- `pg_default_acl` has defaults for the `public` schema owned by both `postgres` and `supabase_admin` that grant table/function/sequence privileges to browser roles (`anon` and `authenticated`) and `service_role`. This explains why a schema-only dump without ACLs cannot represent effective privilege posture. Review defaults separately from existing table grants; do not change them during this reconciliation pass.
+- Five extensions are installed: `pg_stat_statements 1.11`, `pgcrypto 1.3`, `plpgsql 1.0`, `supabase_vault 0.3.1`, and `uuid-ossp 1.1`.
+- Seven enabled event triggers were observed: `ensure_rls`, `issue_graphql_placeholder`, `issue_pg_cron_access`, `issue_pg_graphql_access`, `issue_pg_net_access`, `pgrst_ddl_watch`, and `pgrst_drop_watch`. The five `issue_*` / PostgREST event triggers are platform-managed; don't attempt to recreate them in the application baseline. `ensure_rls` invokes `public.rls_auto_enable()`, which remains SECURITY DEFINER with `search_path=pg_catalog`.
+- The `supabase_realtime` publication contains `public.activity_logs`.
+
+These facts improve production-side coverage, but they do not reconcile the remote migration ledger and do not prove a clean replay. The production catalog has only been queried read-only; no schema, grants, default privileges, or migration history were modified.
+
 ## Reconciliation decision
 
 The live schema is now better documented, but **this is still not a canonical, replayable schema baseline**. The local migration history remains unreconciled with the remote ledger.
