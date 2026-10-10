@@ -3,10 +3,11 @@ import { LandingPage } from "./pages/LandingPage";
 import { ParticipantPage } from "./pages/ParticipantPage";
 import { ArchitectureGeneratorPage } from "./pages/ArchitectureGeneratorPage";
 import { ProjectDashboard } from "./components/ProjectDashboard";
+import { AuthGate } from "./components/AuthGate";
 
 type AppMode = "home" | "projects" | "participant" | "generator";
 
-export default function App() {
+function AppContent() {
   const [mode, setMode] = useState<AppMode>("home");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
@@ -47,4 +48,9 @@ export default function App() {
       onOpenGenerator={() => setMode("generator")}
     />
   );
+}
+
+
+export default function App() {
+  return <AuthGate><AppContent /></AuthGate>;
 }
