@@ -8,12 +8,12 @@ This checklist is the release contract for PR #6. The operator uses PostgreSQL 1
 
 **The three legacy hackathon migration files have been removed from the `backend` branch because they are not part of the current standalone application. This is a repository cleanup only. It did not drop or alter any production tables, policies, functions, triggers, grants, data, or migration-history rows.** The live Supabase project still has the legacy hackathon schema documented in `backend-production-baseline.md`; its eventual retirement, if desired, is a separate reviewed database change.
 
-The latest pre-cleanup GitHub Actions run passed for commit `9a0307a7e86f17c1b627843f37c7191f3770aa74`. That run tested the projects and audit-log migrations against disposable PostgreSQL, with a minimal Supabase-compatible test schema. The current cleanup changes the CI fixtures and SQL assertions, so the workflow must pass again before this repository gate is marked complete.
+Post-cleanup GitHub Actions verification **PASSED** for branch head `e3f1503effb3845068b49bf9ead10445c05ba878` (PR #6 workflow run [38101418404](https://github.com/raghul0610/breachx/actions/runs/38101418404)). The updated workflow and SQL assertions are now validated by CI.
 
 - Current migration files retained: `20261010070000_create_projects.sql` and `20261010080000_harden_admin_audit_log_access.sql`.
 - `20261010070000_create_projects.sql` and its ownership/RLS behavior are tested in disposable PostgreSQL. This does not authorize a production write.
 - `20261010080000_harden_admin_audit_log_access.sql` remains separate and **NO-GO for production** until independently reviewed and explicitly approved.
-- The canonical production schema baseline, remote-ledger-to-Git provenance, event-trigger definition, complete publication membership, extension ownership, Auth settings, and deployed application behavior remain incomplete or unverified.
+- The canonical production schema baseline and remote-ledger-to-Git provenance remain incomplete. A new read-only live catalog pass confirmed the enabled `ensure_rls` event trigger, the seven event-trigger inventory entries, `supabase_realtime` membership for `public.activity_logs`, five installed extensions, the existing `blueprint_submission_lock` trigger/function, and the absence of `public.projects`. Supabase Auth provider/redirect settings and deployed application behavior remain unverified.
 
 **Release decision: NO-GO for production migration or deployment at this stage.** Keep the remote migration ledger unchanged. Do not run `supabase db push`, `supabase migration repair`, a linked reset, or production DDL while reconciliation remains open.
 
