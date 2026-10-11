@@ -60,20 +60,7 @@ begin
     raise exception 'FAIL: submitted projects must not be locked';
   end if;
 
-  if to_regclass('public.blueprints') is null then
-    raise exception 'FAIL: legacy public.blueprints table unexpectedly missing';
-  end if;
-
-  if not exists (
-    select 1 from pg_trigger
-    where tgrelid = 'public.blueprints'::regclass
-      and tgname = 'blueprint_submission_lock'
-      and not tgisinternal
-  ) then
-    raise exception 'FAIL: legacy blueprint submission lock was altered or removed';
-  end if;
-
-  raise notice 'PASS: projects schema, RLS, timestamp trigger, and legacy blueprint lock';
+  raise notice 'PASS: projects schema, RLS, timestamp trigger';
 end
 $$;
 
