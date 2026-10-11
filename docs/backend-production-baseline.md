@@ -1,51 +1,36 @@
 # ANCHON backend: production baseline and migration reconciliation
 
-Capture date: 2026-10-10 UTC  
+Capture updated: 2026-10-11  
 Supabase project: `BreachX` / `wjxenruxeudkgqinbodv`  
 Observed status: `ACTIVE_HEALTHY`; region `ap-northeast-2`; PostgreSQL `17.11.0.003`.
 
 ## Safety status
 
-The initial inspection was read-only. On 2026-10-11, after explicit operator authorization, only `20261010070000_create_projects.sql` was applied to production through the Supabase migration tool. Postflight catalog checks are recorded in `docs/backend-release-gates.md`. No production data was inserted, updated, or deleted by the migration. The admin-audit hardening migration was not applied.
+Only `supabase/migrations/20261010070000_create_projects.sql` was applied to production, after explicit operator authorization on 2026-10-11. Supabase recorded it as `20261011013453` / `create_projects`. Postflight catalog verification is complete. The admin-audit hardening migration remains unapplied. No migration-history repair, production reset, or `supabase db push` was performed.
 
-This document is a catalog-derived inventory, **not** a canonical `supabase db pull`/schema dump. Generate and review that baseline locally before any production deployment.
+This document is a catalog-derived inventory, **not** a canonical CLI schema dump. The CLI-generated baseline remains outstanding and must be reviewed before any further production deployment.
 
-## Migration-history reconciliation
+## Current production inventory
 
-The remote migration history returned these entries:
+All 15 observed public tables have RLS enabled:
 
-- `20261008050118` — `allow_public_event_catalog_reads`
-- `20261008050230` — `harden_public_security_definer`
-- `20261008050245` — `remove_public_security_definer_execute`
-
-The historical repository state included `001_breachx_backend_foundation.sql`, `002_blueprint_persistence_hardening.sql`, and `003_activity_monitoring.sql`. These three hackathon-specific files have since been removed from the `backend` branch because they are outside the current standalone application's scope. Their deletion is not a database migration: the production tables and objects listed in this document were not dropped or altered, and the remote migration ledger was not repaired.
-
-The remote filenames/versions still do not match the historical local filenames. Migration 002's prior statement that it was applied to production is not matched by a corresponding remote ledger version. This establishes migration-history drift, but does not prove how it occurred.
-
-**Do not** run `supabase migration repair`, `supabase db push`, or manually insert migration-history rows until the live schema has been captured and each migration reconciled against the actual objects.
-
-## Current public schema inventory
-
-All 14 observed public tables have RLS enabled:
-
-| Table | Columns | Policies | Notes |
-|---|---:|---:|---|
-| `activity_logs` | 7 | 2 | Activity trail |
-| `admin_audit_logs` | 9 | 0 | RLS enabled; verify intended trusted-server access |
-| `blueprint_versions` | 10 | 2 | Version history |
-| `blueprints` | 12 | 3 | Legacy hackathon submissions; submission-lock trigger exists |
-| `event_config` | 6 | 2 | Event submission settings |
-| `events` | 7 | 2 | Public catalog read policies |
-| `judging_scores` | 14 | 3 | Judge scoring |
-| `problem_assignments` | 6 | 1 | Team assignment |
-| `problem_statements` | 7 | 2 | Active problem catalog |
-| `profiles` | 4 | 2 | References Auth users |
-| `team_members` | 3 | 1 | Team membership |
-| `teams` | 4 | 1 | Event teams |
-| `tracks` | 6 | 2 | Event tracks |
-| `user_roles` | 3 | 1 | PARTICIPANT/ADMIN/JUDGE |
-
-At the 2026-10-10 capture time, no `public.projects` table existed. It was subsequently created on 2026-10-11 by the explicitly authorized projects migration. Current read-only verification confirms the table, index, function, RLS policies, grants, and timestamp trigger exist.
+| Table | Notes |
+|---|---|
+| `activity_logs` | In `supabase_realtime` publication |
+| `admin_audit_logs` | RLS enabled; no client policy; hardening migration not applied |
+| `blueprint_versions` | Legacy hackathon version history |
+| `blueprints` | Legacy hackathon submissions; submission-lock trigger remains |
+| `event_config` | Legacy event settings |
+| `events` | Public catalog policies |
+| `judging_scores` | Legacy judging data |
+| `problem_assignments` | Legacy team/problem assignments |
+| `problem_statements` | Legacy problem catalog |
+| `profiles` | References Auth users |
+| `projects` | Standalone owner-scoped persistence; created by approved migration |
+| `team_members` | Legacy membership |
+| `teams` | Legacy teams |
+| `tracks` | Legacy tracks |
+| `user_roles` | PARTICIPANT/ADMIN/JUDGE |
 
 Observed public enums:
 - `blueprint_status`: `DRAFT`, `SUBMITTED`
@@ -54,80 +39,61 @@ Observed public enums:
 - `user_role`: `PARTICIPANT`, `ADMIN`, `JUDGE`
 
 Observed public functions:
-- `enforce_blueprint_submission_lock()` — not SECURITY DEFINER
+- `enforce_blueprint_submission_lock()` — SECURITY INVOKER
 - `rls_auto_enable()` — SECURITY DEFINER
+- `set_projects_updated_at()` — SECURITY INVOKER
 
-Observed row counts: `auth.users` 0, `profiles` 0, `events` 1, `tracks` 3, `problem_statements` 3, `teams` 0, `blueprints` 0, `blueprint_versions` 0, `activity_logs` 0, `admin_audit_logs` 0.
+Observed non-internal table triggers:
+- `blueprints.blueprint_submission_lock` → `enforce_blueprint_submission_lock()`
+- `projects.projects_set_updated_at` → `set_projects_updated_at()`
+
+Enabled event triggers observed: `ensure_rls`, `issue_graphql_placeholder`, `issue_pg_cron_access`, `issue_pg_graphql_access`, `issue_pg_net_access`, `pgrst_ddl_watch`, `pgrst_drop_watch`.
+
+Extensions observed: `pg_stat_statements 1.11`, `pgcrypto 1.3`, `plpgsql 1.0`, `supabase_vault 0.3.1`, `uuid-ossp 1.1`.
+
+Publication `supabase_realtime` is not configured for all tables; the observed membership is `public.activity_logs`.
+
+## Projects migration: postflight
+
+Verified by read-only catalog queries after the approved migration:
+- `public.projects`, `projects_owner_updated_at_idx`, `public.set_projects_updated_at()`, and `projects_set_updated_at` trigger exist.
+- RLS is enabled and four owner-scoped policies exist for SELECT, INSERT, UPDATE, and DELETE.
+- Authenticated has SELECT/INSERT/UPDATE/DELETE table privileges; anon has none of those table privileges.
+- Existing `blueprints.blueprint_submission_lock` trigger remains present.
+- The live migration ledger contains the three earlier entries plus `20261011013453` / `create_projects`; no history repair occurred.
+
+Operator-reported deployed smoke tests passed: project persistence survived refresh, and a second account could not access the first account's private projects. These are user-confirmed browser results, not independently executed by this audit. The operator had also confirmed the deployed Google sign-in flow worked.
+
+## Migration-history reconciliation
+
+The remote ledger entries `20261008050118`, `20261008050230`, and `20261008050245` do not match the old local migration filenames. Previous SQL/timestamp comparison strongly supports mappings to commits `b087fa8`, `e9292f5`, and `dec069a`, but does not prove the exact SQL executed in production. The old `001`–`003` migration files were removed from the current `backend` branch as out of scope; this repository deletion did not drop production objects.
+
+The local project migration filename version `20261010070000` differs from the Supabase-generated ledger version `20261011013453` because it was applied through the Supabase migration tool under the name `create_projects`. Preserve both facts; do not repair the ledger to force the filenames to match.
+
+See [schema migration reconciliation](schema-migration-reconciliation-2026-10-10.md) for the detailed ledger and catalog findings.
 
 ## Canonical baseline procedure
 
-Run from the repository root after installing the Supabase CLI and Docker, and make sure you are on branch `backend`:
+The next task is still to generate and review the canonical schema baseline locally. The connected database tools can inspect catalog metadata, but that is not a substitute for the CLI-generated dump.
 
-1. `supabase login`
-2. `supabase link --project-ref wjxenruxeudkgqinbodv`
-3. Review the linked project before executing any database command.
-4. Capture the live schema using the CLI's supported pull workflow, e.g. `supabase db pull`. Read the generated migration and inspect `git diff`; do not overwrite or delete the existing migration files.
-5. Compare the generated SQL with the remote migration history and live catalog. Explain each difference before considering a repair.
+From the repository root, on branch `backend`:
 
-Because the remote history and repository history differ, treat the first `db pull` output as a reconciliation artifact for review—not permission to push it back to production.
+1. Preserve all unrelated/untracked artifacts; do not delete or stage them as part of this task.
+2. Check the installed Supabase CLI version and confirm the linked project is `wjxenruxeudkgqinbodv`.
+3. Authenticate with `supabase login` if required, then use the supported `supabase db pull` workflow to produce a candidate schema/reconciliation artifact.
+4. Review command output and `git diff` before accepting or moving generated files. Do not overwrite existing migrations blindly.
+5. Compare the dump against the live inventory and four-row remote ledger. Document differences and exact CLI version/output before deciding how to represent the baseline in Git.
 
-## Authentication configuration review
+Do not run `supabase db push`, `supabase migration repair`, a linked reset, or further production DDL during this task. Do not apply `20261010080000_harden_admin_audit_log_access.sql` without separate explicit authorization.
 
-Repository review found:
-- `src/lib/supabase.ts` initializes the client with `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
-- `src/lib/db.ts` calls `supabase.auth.getUser()` and uses it as a guard for some hackathon data access.
-- No complete sign-in/sign-up UI, Google OAuth flow, or auth-state subscription was found in the inspected files.
-- `auth.users` had zero rows at capture time.
+## Status
 
-The available project connector did not expose provider settings. Verify manually in Supabase Dashboard > Authentication:
-- Email provider enabled and email confirmation behavior.
-- Google provider enabled and Google OAuth client ID/secret configured.
-- Site URL and allowed redirect URLs for local development and production.
-- Password/reset and callback flows.
-- Do not expose service-role keys or Google OAuth client secrets in Vite/browser environment variables. Only the publishable/anon key belongs in the browser.
-
-## New projects table design
-
-Migration `20261010070000_create_projects.sql` is additive:
-- New `public.projects` table references `auth.users(id)` through `owner_id`.
-- Graph `nodes` and `edges` are JSONB arrays; optional `workload` and `viewport` are JSONB objects.
-- Valid status is `draft` or `submitted`; application name must be non-empty.
-- RLS grants authenticated users owner-only SELECT/INSERT/UPDATE/DELETE.
-- UPDATE checks both the existing row and the resulting owner, preventing ownership transfer.
-- `updated_at` is maintained by a trigger.
-- No anon policy exists.
-- Submitted projects remain editable by their owner.
-- The projects migration does not modify the existing production hackathon `blueprints` table or `blueprint_submission_lock`. Those live objects remain in the production inventory; retiring them is a separate database decision.
-
-## Local testing gates
-
-Use a disposable local Supabase database. Do not test by inserting rows into production.
-
-1. Start local services: `supabase start`.
-2. Apply migrations to the local database: `supabase db reset` (only in the local environment; this rebuilds the local database).
-3. Run the catalog assertions in `supabase/tests/projects_migration_assertions.sql`.
-4. Add two local Auth users and test RLS:
-   - User A can create/read/update/delete A's project.
-   - User B cannot read/update/delete A's project.
-   - A cannot insert a row owned by B or transfer ownership to B.
-   - Anonymous requests cannot read or mutate projects.
-   - Invalid status and invalid JSON shapes are rejected.
-   - A submitted project remains editable and its `updated_at` changes.
-   - Do not include hackathon blueprint behavior in the standalone projects CI suite; the production object remains untouched by this migration.
-5. Inspect the local schema diff and ensure only intended project objects were added.
-6. Run the repository's build/typecheck/test scripts and review all diffs.
-7. Only after local checks pass and migration drift is explained, plan a separate production deployment.
-
-## Current status
-
-- [x] Read-only production catalog inspection
-- [x] Remote vs local migration-history discrepancy documented
-- [x] Auth code path inspected
-- [x] Additive project migration authored
-- [x] Schema assertion test authored
-- [ ] Canonical CLI baseline generated and reviewed locally
-- [ ] Dashboard Auth provider settings verified
-- [ ] Migration executed and tested on disposable/local Supabase
-- [ ] Two-user RLS tests passed
-- [x] Projects migration applied to production after explicit operator approval (2026-10-11)
-- [ ] Post-deployment PostgREST schema visibility and real application CRUD/two-user RLS smoke tests
+- [x] Read-only production catalog inventory refreshed after projects migration
+- [x] Remote migration ledger captured with four rows
+- [x] Project table/RLS/grants/index/function/trigger postflight verified
+- [x] Operator-reported deployed persistence and two-account isolation tests recorded
+- [x] Migration-history discrepancy documented without repairing history
+- [ ] Canonical CLI schema baseline generated and reviewed locally
+- [ ] Exact provenance of the first three remote migration entries proven by execution records/checksums
+- [ ] Current-branch migration replay and normalized schema diff completed
+- [ ] Final PR #6 review and release decision completed
