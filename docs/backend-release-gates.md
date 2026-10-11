@@ -4,22 +4,18 @@ This checklist is the release contract for PR #6. The operator uses PostgreSQL 1
 
 **Production safety:** do not run `supabase db push`, `supabase migration repair`, a linked reset, or the proposed audit-log hardening migration against production until the schema baseline and history reconciliation have been reviewed. Do not mark a gate complete based on a catalog inventory or isolated PostgreSQL test.
 
-## Verified local replay status (2026-10-10)
+## Current repository and production status (updated 2026-10-11)
 
-**Local PostgreSQL replay is verified. The production canonical baseline remains incomplete for history/provenance and platform-object reasons, while the projects migration has a controlled GO at the reported privilege scope.**
+**The three legacy hackathon migration files have been removed from the `backend` branch because they are not part of the current standalone application. This is a repository cleanup only. It did not drop or alter any production tables, policies, functions, triggers, grants, data, or migration-history rows.** The live Supabase project still has the legacy hackathon schema documented in `backend-production-baseline.md`; its eventual retirement, if desired, is a separate reviewed database change.
 
-- Empty local replay of `001_breachx_backend_foundation.sql` fails immediately with `ERROR: schema "auth" does not exist`.
-- After creating the Supabase-compatible bootstrap objects (`auth.users`, `auth.uid()`, `public.rls_auto_enable()`, the `ensure_rls` event trigger, and `supabase_realtime`), the legacy chain replays successfully:
-  - `001_breachx_backend_foundation.sql`
-  - `002_blueprint_persistence_hardening.sql`
-  - `003_activity_monitoring.sql`
-- The additive follow-on migrations also pass on the same disposable database:
-  - `20261010070000_create_projects.sql`
-  - `20261010080000_harden_admin_audit_log_access.sql`
-- Project assertions and admin-audit assertions both pass in the local disposable database.
-- Therefore the root cause is an environment dependency, not a repo logic regression: the repository migration set assumes Supabase-managed objects that are not part of a plain PostgreSQL install. The canonical production baseline remains incomplete because Git provenance, event-trigger definition, complete publication membership, extension ownership, Auth settings, and post-deployment application behavior are not fully evidenced.
+The latest pre-cleanup GitHub Actions run passed for commit `9a0307a7e86f17c1b627843f37c7191f3770aa74`. That run tested the projects and audit-log migrations against disposable PostgreSQL, with a minimal Supabase-compatible test schema. The current cleanup changes the CI fixtures and SQL assertions, so the workflow must pass again before this repository gate is marked complete.
 
-**Production-evidence status (2026-10-10): Privilege reconciliation complete.** Live database queries confirm that the live database grants `anon` and `authenticated` seven table privileges (`SELECT`, `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`, `REFERENCES`, `TRIGGER` — 98 rows each) across all 14 public tables, and broad default privileges (`ALTER DEFAULT PRIVILEGES IN SCHEMA public ...`) apply to future objects. RLS is active on all 14 tables, so row isolation is preserved and no data-access vulnerability exists from grants alone. `20261010070000_create_projects.sql` explicitly neutralizes these defaults by revoking all privileges from `anon` and `authenticated` before granting only necessary CRUD to `authenticated`.
+- Current migration files retained: `20261010070000_create_projects.sql` and `20261010080000_harden_admin_audit_log_access.sql`.
+- `20261010070000_create_projects.sql` and its ownership/RLS behavior are tested in disposable PostgreSQL. This does not authorize a production write.
+- `20261010080000_harden_admin_audit_log_access.sql` remains separate and **NO-GO for production** until independently reviewed and explicitly approved.
+- The canonical production schema baseline, remote-ledger-to-Git provenance, event-trigger definition, complete publication membership, extension ownership, Auth settings, and deployed application behavior remain incomplete or unverified.
+
+**Release decision: NO-GO for production migration or deployment at this stage.** Keep the remote migration ledger unchanged. Do not run `supabase db push`, `supabase migration repair`, a linked reset, or production DDL while reconciliation remains open.
 
 ## Production privilege reconciliation and resolution
 
@@ -48,7 +44,7 @@ This checklist is the release contract for PR #6. The operator uses PostgreSQL 1
 
 - `20261010070000_create_projects.sql` adds only `public.projects`, its owner/updated-at index, four RLS policies, the `set_projects_updated_at()` function and trigger, and comments. It does not alter legacy tables, blueprint submission locking, existing policies, or migration history.
 - The migration explicitly neutralizes broad schema default privileges via `REVOKE ALL ON TABLE public.projects FROM anon, authenticated`, granting only authenticated CRUD and strictly scoping all access through `auth.uid() = owner_id`.
-- The catalog assertions cover table creation, RLS enablement, four policies, the UPDATE ownership expressions, authenticated CRUD ACLs, anonymous table privilege denial, the timestamp trigger, and preservation of the legacy blueprint lock. The behavioral test covers cross-owner read/update/delete isolation, owner editing of submitted projects, spoofed-owner insert rejection, anonymous read denial, invalid status/JSON rejection, actual `updated_at` advancement across transactions, and an actual submitted-blueprint lock attempt.
+- The catalog assertions cover the projects table, RLS, four owner-scoped policies, UPDATE ownership expressions, authenticated CRUD ACLs, anonymous privilege denial, and the timestamp trigger. The behavioral test covers cross-owner read/update/delete isolation, owner editing of submitted projects, spoofed-owner insert rejection, anonymous read denial, invalid status/JSON rejection, and actual `updated_at` advancement across transactions. Hackathon blueprint-lock checks have been removed from this standalone application's CI scope.
 - The expanded disposable PostgreSQL 17 suite passed on 2026-10-10. All 15 repo unit tests and TypeScript build pass cleanly.
 - `20261010080000_harden_admin_audit_log_access.sql` remains unbundled and unapplied for this deployment; it changes existing table privileges and will be deployed in a separate security release.
 
@@ -170,7 +166,7 @@ The migration-ledger and privilege results have been supplied by the production 
   - `20261008050118_allow_public_event_catalog_reads`
   - `20261008050230_harden_public_security_definer`
   - `20261008050245_remove_public_security_definer_execute`
-- The repository has legacy SQL files `001_breachx_backend_foundation.sql`, `002_blueprint_persistence_hardening.sql`, and `003_activity_monitoring.sql`, plus timestamped projects and audit-log hardening migrations. Their relationship to remote history is not established.
+- The `backend` branch no longer contains legacy hackathon SQL files `001_breachx_backend_foundation.sql`, `002_blueprint_persistence_hardening.sql`, or `003_activity_monitoring.sql`. Their historical relationship to the remote migration ledger remains unresolved; deleting them from this branch did not alter production schema objects or migration history.
 - Git provides strong content counterparts for the three ledger rows: `b087fa8f9444c75a85382989a4d04889502c428a`, `e9292f5458ab6ee2abbc38cdb31749f4a928c525`, and `dec069a26c220bfe86b9b48c8a5fcdbe78a09d12`, respectively. The corresponding SQL changes are edits to legacy `001_breachx_backend_foundation.sql`, not timestamped migration files, so this is not proof that the remote ledger recorded local versions `001`–`003`.
 - Production currently does not have `public.projects`. Do not apply the projects migration to production during this baseline task.
 
@@ -180,7 +176,7 @@ The migration-ledger and privilege results have been supplied by the production 
 2. Use the existing PostgreSQL 17 installation and a dedicated disposable database. Never point test commands at the production Supabase host. Preserve unrelated untracked files.
 3. Capture the live migration ledger using the existing authenticated Supabase connection (already verified): the ledger currently contains only `20261008050118`, `20261008050230`, and `20261008050245`.
 4. Run read-only catalog queries for ACLs/default privileges, event-trigger definitions, publication membership, extensions, functions, triggers, policies, constraints, and indexes. The live catalog has now confirmed the `ensure_rls` event trigger and `activity_logs` publication membership; these were omitted from the uploaded dump.
-5. Replay `001_breachx_backend_foundation.sql`, `002_blueprint_persistence_hardening.sql`, and `003_activity_monitoring.sql` against an empty disposable PostgreSQL database only after bootstrapping the minimum Supabase-compatible `auth` schema/functions and roles needed by these migrations. Record any compatibility shim explicitly; a plain PostgreSQL replay is not a full Supabase environment.
+5. Do not treat historical replay notes for migrations `001`–`003` as validation of the current branch: those files were removed as hackathon-only. If historical production reconciliation is resumed, use a separately reviewed archival/reconciliation artifact rather than restoring these files to the standalone migration chain.
 6. Test `20261010080000_harden_admin_audit_log_access.sql` separately on the disposable database. Test `20261010070000_create_projects.sql` separately as an additive feature migration. Do not apply either to production during reconciliation.
 7. Compare the replay catalog against production evidence and document every difference. Never accept migration-history repair as a shortcut, and never mark legacy migrations applied merely because their objects exist.
 
@@ -215,7 +211,7 @@ Do this after Gate 1's replay strategy and compatibility setup are reviewed. No 
 
 1. Use a newly created disposable PostgreSQL database on the existing local PostgreSQL 17 server. Verify the database name and server host before running any reset/drop command.
 2. Bootstrap the minimum compatibility objects required by Supabase migrations (roles, `auth.users`, `auth.uid()`, and `supabase_realtime` publication where supported). Keep this bootstrap separate from production migrations and document its limitations.
-3. Apply the legacy migrations in order, then run the projects migration and audit-log hardening migration in separate test runs. Capture the first failure exactly; fix the root cause on `backend`, not by editing production or repairing its ledger.
+3. Apply only the retained projects migration and the separately gated audit-log hardening migration to disposable PostgreSQL CI. Do not replay deleted hackathon migrations as part of this application's current CI.
 4. Run repository tests and build in CI or the existing local Node environment:
    ```powershell
    npm ci
@@ -249,7 +245,7 @@ Production URL currently recorded: `https://breachx-ashy.vercel.app`.
 - [ ] Test email sign-up, confirmation (if enabled), sign-in, sign-out, password reset, Google OAuth, and correct redirect URLs.
 - [ ] Create a project as User A, refresh, edit it, and verify it persists in Supabase.
 - [ ] Sign in as User B and verify User A's project is not visible or mutable. Sign back in as User A and confirm the project remains.
-- [ ] Verify standalone submitted projects remain editable and legacy hackathon blueprint submission locking is unchanged.
+- [ ] Verify standalone submitted projects remain editable. Legacy blueprint locking is outside this application's current CI scope.
 - [ ] Inspect browser console, network responses, Supabase logs, and Vercel runtime/build logs for errors.
 
 **Release decision:** keep PR #6 unmerged and do not apply production DDL until Gates 1 and 3 pass, Auth settings are verified, and CI/review is green. After deployment, complete the real-flow smoke test before calling the work done.
@@ -270,7 +266,7 @@ The connected GitHub/Supabase tools have been used for read-only production cata
 | ACLs/default privileges/sequences | Catalog queries (`role_table_grants`, `pg_default_acl`) | RECONCILED | Broad table grants (98 rows each to anon/authenticated) and public schema defaults reflect Supabase architecture. RLS is enabled on all tables, preserving isolation. `create_projects.sql` neutralizes defaults via explicit `REVOKE ALL`. | Reconciled. Defense-in-depth enforced in new migrations. |
 | Extensions and schemas | Dump omission | UNVERIFIED | Blocks dependency/ownership certification. | Query `pg_extension`, `pg_namespace`, and extension ownership. |
 | Realtime publication | Prior catalog note confirms `activity_logs`; dump omits membership | PASS (activity_logs only) | Full publication reconciliation remains open. | Query all `supabase_realtime` members and compare with `003`. |
-| Projects migration (`20261010070000_create_projects.sql`) | Local migration, expanded disposable tests, production absence evidence | APPROVED (GO) | Structurally additive, neutralizes broad defaults, passes all disposable and regression suites. Ready for deployment with preflight. | Execute preflight, run migration, and execute post-deployment verification. |
+| Projects migration (`20261010070000_create_projects.sql`) | Disposable CI tests; production baseline/history still incomplete | CONDITIONAL — NO PRODUCTION WRITE | Repository-level schema and RLS checks can pass, but this is not sufficient to authorize deployment while the canonical baseline and migration-history reconciliation remain unresolved. | Complete and review canonical baseline/history reconciliation, verify Auth settings, then obtain explicit production-write approval. |
 | Admin-audit hardening migration (`20261010080000_harden_admin_audit_log_access.sql`) | Local migration/test, production absence evidence | DEFERRED (NO-GO FOR BUNDLING) | Modifies existing table privileges; must not be bundled with projects release. | Schedule for separate security maintenance cycle. |
 | Google auth and cloud project loading | Frontend code plus Preview smoke test requirement | UNVERIFIED | Blocks end-to-end release sign-off. | Owner verifies provider/redirect settings and authenticated `GET /rest/v1/projects`. |
 
@@ -467,9 +463,11 @@ where tgrelid = 'public.projects'::regclass and not tgisinternal;
    - Confirm attempting to read/update User A's project ID via API returns no rows or 404/403.
 5. **Legacy Blueprint Integrity:** Access a hackathon event as a participant. Confirm blueprint draft saving still works, and submitting a blueprint invokes `enforce_blueprint_submission_lock()` such that submitted blueprints remain immutable.
 
-### Final repository validation record (2026-10-10)
+### Repository validation record
 
-- Full disposable replay: **PASS**. Applied `001`, `002`, `003`, `20261010070000_create_projects.sql`, and `20261010080000_harden_admin_audit_log_access.sql` to a fresh PostgreSQL 17 database with compatibility bootstrap objects, then ran all three SQL assertion files successfully.
+- Pre-cleanup GitHub Actions run `38101182984`: **PASS** on commit `9a0307a7e86f17c1b627843f37c7191f3770aa74`. It applied only the two timestamped migrations to ephemeral PostgreSQL and ran the projects and audit-log assertions. The older local replay record below is historical evidence, not the current branch's migration chain.
+- Post-cleanup CI status: pending; do not mark this cleanup validated until GitHub Actions passes on the updated branch.
+- No production DDL, data, or migration metadata was changed by this repository cleanup.
 - `npm test`: **PASS**, 3 test files and 15 tests.
 - `npx tsc -b --pretty false`: **PASS**.
 - `npm run build`: **PASS**. Vite emitted only the existing chunk-size warning for the 718 kB JavaScript bundle.
