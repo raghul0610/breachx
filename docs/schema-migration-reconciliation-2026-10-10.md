@@ -245,6 +245,22 @@ On 2026-10-10, a historical disposable replay applied legacy migrations `001`–
 These results establish repository readiness only. They do not establish production ownership/ACLs, event-trigger provenance, extension ownership, complete realtime membership, or remote-to-Git migration provenance.
 
 
+## Remote ledger-to-Git mapping review (read-only, 2026-10-11)
+
+A commit-level comparison now provides strong evidence for mapping the three remote migration ledger entries to historical SQL changes:
+
+| Remote version / name | Matching historical Git commit | Observed SQL diff |
+| --- | --- | --- |
+| `20261008050118` / `allow_public_event_catalog_reads` | [`b087fa8f9444c75a85382989a4d04889502c428a`](https://github.com/raghul0610/breachx/commit/b087fa8f9444c75a85382989a4d04889502c428a), committed 2026-10-08 05:01:22Z | Adds anonymous SELECT grants and policies for `events`, `event_config`, `tracks`, and active `problem_statements`. |
+| `20261008050230` / `harden_public_security_definer` | [`e9292f5458ab6ee2abbc38cdb31749f4a928c525`](https://github.com/raghul0610/breachx/commit/e9292f5458ab6ee2abbc38cdb31749f4a928c525), committed 2026-10-08 05:02:32Z | Revokes EXECUTE on `public.rls_auto_enable()` from `anon` and `authenticated`. |
+| `20261008050245` / `remove_public_security_definer_execute` | [`dec069a26c220bfe86b9b48c8a5fcdbe78a09d12`](https://github.com/raghul0610/breachx/commit/dec069a26c220bfe86b9b48c8a5fcdbe78a09d12), committed 2026-10-08 05:02:53Z | Extends the function EXECUTE revocation to `PUBLIC`, `anon`, and `authenticated`. |
+
+The commit times closely align with the remote version timestamps (respectively 4 seconds, 2 seconds, and 8 seconds after the ledger versions), and the diffs align semantically with the ledger names. All three changes modified the historical `001_breachx_backend_foundation.sql` in Git; they are not three separate timestamped migration files in the current branch.
+
+**Assessment: STRONGLY SUPPORTED mapping, not execution-proven provenance.** The remote ledger provides version/name metadata, not the Git SHA or SQL checksum that was executed. The commit diff establishes what changed in Git, but does not independently prove the exact SQL submitted to production. Close this gap only if a deployment record, captured executed SQL, or canonical checksum is available. Do not reconstruct migration files and mark them applied merely from timestamp alignment.
+
+This review was read-only. No migration metadata or production objects were changed.
+
 ## Post-cleanup live catalog verification (read-only, 2026-10-11)
 
 Post-cleanup CI passed for backend head `e3f1503effb3845068b49bf9ead10445c05ba878` (PR #6 run [38101418404](https://github.com/raghul0610/breachx/actions/runs/38101418404)). A subsequent read-only Supabase connector inspection confirmed:
