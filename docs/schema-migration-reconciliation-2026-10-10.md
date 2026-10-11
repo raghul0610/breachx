@@ -261,6 +261,16 @@ The commit times closely align with the remote version timestamps (respectively 
 
 This review was read-only. No migration metadata or production objects were changed.
 
+### Live ACL corroboration for the mapped changes (read-only, 2026-10-11)
+
+Additional live catalog queries corroborate the expected object state:
+
+- `public.rls_auto_enable()` is SECURITY DEFINER with `search_path=pg_catalog`.
+- Its effective function ACL is `{postgres=X/postgres,service_role=X/postgres}`: `PUBLIC`, `anon`, and `authenticated` do not have EXECUTE; `service_role` and `postgres` do.
+- The four anonymous SELECT policies introduced by the public-catalog change are present on `events`, `event_config`, `tracks`, and `problem_statements`.
+
+This verifies current effective ACL/policy state consistent with the mapped Git diffs. It still does not prove the exact SQL text or checksum submitted to production. No writes were performed.
+
 ## Post-cleanup live catalog verification (read-only, 2026-10-11)
 
 Post-cleanup CI passed for backend head `e3f1503effb3845068b49bf9ead10445c05ba878` (PR #6 run [38101418404](https://github.com/raghul0610/breachx/actions/runs/38101418404)). A subsequent read-only Supabase connector inspection confirmed:
