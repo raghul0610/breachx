@@ -9,6 +9,7 @@ import {
   setActiveProject,
   type ArchitectureProject,
 } from "../lib/storage";
+import { deleteOwnedProject } from "../lib/projectsRepository";
 import "./ProjectDashboard.css";
 
 export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void; onOpenProject: (projectId: string) => void }) {
@@ -71,11 +72,15 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
     }
   };
 
-  const remove = (project: ArchitectureProject) => {
+  const remove = async (project: ArchitectureProject) => {
     if (!window.confirm(`Delete "${project.applicationName}"? This cannot be undone.`)) return;
     try {
-      deleteProject(project.id);
-      refresh();
+      void deleteOwnedProject(project.id).then(() => {
+        deleteProject(project.id);
+        refresh();
+      }).catch((cause: unknown) => {
+        setError(cause instanceof Error ? cause.message : "Could not delete this project from the cloud.");
+      });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not delete this project.");
     }
@@ -93,7 +98,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
           <div>
             <div className="section-kicker"><Workflow size={13} /> YOUR ARCHITECTURES</div>
             <h1>PROJECT WORKSPACE</h1>
-            <p>Keep each system design separate. Your projects are saved in this browser.</p>
+            <p>Keep each system design separate. Your private projects sync to your account across devices.</p>
           </div>
           <button className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> NEW PROJECT</button>
         </section>
@@ -110,7 +115,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
             {projects.map((project) => (
               <article className="project-card panel" key={project.id}>
                 <div className="project-card-top">
-                  <span className={`project-status ${project.status === "submitted" ? "is-submitted" : ""}`}>{project.status === "submitted" ? "SUBMITTED · READ ONLY" : "DRAFT"}</span>
+                  <span className={`project-status ${project.status === "submitted" ? "is-submitted" : ""}`}>{project.status === "submitted" ? "SUBMITTED · EDITABLE" : "DRAFT"}</span>
                   <span className="project-count">{project.nodes.length} components · {project.edges.length} connections</span>
                 </div>
                 <h2>{project.applicationName}</h2>
@@ -126,7 +131,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
             ))}
           </section>
         )}
-        <p className="project-storage-note">Local-first storage: projects remain in this browser on this device. Cloud sync is not part of this phase.</p>
+        <p className="project-storage-note">Cloud persistence is enabled. If a save fails, the cloud-sync banner at the top will show the error.</p>
       </main>
     </div>
   );
