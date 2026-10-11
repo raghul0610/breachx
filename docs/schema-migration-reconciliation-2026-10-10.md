@@ -11,7 +11,7 @@ Project: BreachX (`wjxenruxeudkgqinbodv`)
 
 The production SQL Editor supplied the authoritative three-row migration ledger on 2026-10-10. The local Supabase CLI is unavailable, so no additional live metadata query was run from this workspace. The ledger facts are verified from the operator-provided SQL Editor result; all other live facts below retain their prior evidence status.
 
-## Local replay root cause and evidence
+## Historical local replay evidence (2026-10-10; not the current branch chain)
 
 The actual replay blocker is not a schema mismatch in the repo itself; it is the missing Supabase-managed runtime objects that the legacy migration chain assumes exist.
 
@@ -53,7 +53,7 @@ The migration explicitly defends against broad Supabase default privileges:
 - `grant select, insert, update, delete on table public.projects to authenticated;`
 - `revoke all on function public.set_projects_updated_at() from public, anon, authenticated;`
 
-The expanded local assertions verify table creation, RLS enablement, four policies, authenticated CRUD ACLs, anonymous table privilege denial, UPDATE ownership checks, the timestamp trigger, invalid status/JSON rejection, actual `updated_at` advancement across transactions, and preservation of the legacy blueprint lock. The owner-isolation test verifies that one authenticated owner cannot read, update, or delete another owner's row, cannot insert with another owner ID, and can edit a submitted project. The expanded disposable suite passed on 2026-10-10.
+The historical expanded assertions verified projects schema/RLS/ACL behavior and, at that time, also checked legacy blueprint locking. The blueprint-specific fixture and assertions have since been removed from the current standalone application's CI scope. The previous pass result applies to the pre-cleanup test suite only; current CI must rerun after cleanup.
 
 The proposed `20261010080000_harden_admin_audit_log_access.sql` remains a separate, unapplied hardening change. It revokes privileges and adds a deny policy on an existing table; it must not be bundled into approval of the additive projects migration.
 
@@ -152,7 +152,7 @@ A follow-up read-only query completed after reviewing the uploaded dump:
 - Seven enabled event triggers were observed: `ensure_rls`, `issue_graphql_placeholder`, `issue_pg_cron_access`, `issue_pg_graphql_access`, `issue_pg_net_access`, `pgrst_ddl_watch`, and `pgrst_drop_watch`. The five `issue_*` / PostgREST event triggers are platform-managed; don't attempt to recreate them in the application baseline. `ensure_rls` invokes `public.rls_auto_enable()`, which remains SECURITY DEFINER with `search_path=pg_catalog`.
 - The `supabase_realtime` publication contains `public.activity_logs`.
 
-These facts improve production-side coverage, but they do not reconcile the remote migration ledger and do not prove a clean replay. The production catalog has only been queried read-only; no schema, grants, default privileges, or migration history were modified.
+These facts improve production-side coverage, but they do not reconcile the remote migration ledger. The production catalog was queried read-only; no schema, grants, default privileges, or migration history were modified. The legacy migration files described in the historical comparison below have since been removed from the `backend` branch as hackathon-only; this does not remove their corresponding live database objects.
 
 ## Reconciliation decision
 
@@ -195,7 +195,7 @@ The user supplied the complete 2,142-line PostgreSQL 17.11 dump (31,492 bytes in
 
 ### Newly confirmed clean-replay blocker
 
-The current `001_breachx_backend_foundation.sql` ends with `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable()`, but that file does not define `public.rls_auto_enable()` and does not create the `ensure_rls` event trigger. Production has both the function and enabled event trigger, so those objects came from outside the checked-in 001–003 sequence (or from unrecorded SQL). A fresh plain PostgreSQL replay of migration 001 will therefore fail at the final revoke unless the function is provisioned first.
+The historical `001_breachx_backend_foundation.sql` ended with `REVOKE EXECUTE ON FUNCTION public.rls_auto_enable()`, but did not define `public.rls_auto_enable()` or create the `ensure_rls` event trigger. Production has both the function and enabled event trigger, so their provenance was not explained by the historical checked-in 001–003 sequence (or may reflect unrecorded SQL). Those legacy files have since been removed from the `backend` branch. This historical finding remains relevant to production provenance, but is not a reason to restore the hackathon files to the standalone migration chain.
 
 Do not silently add a test-only stub and call the replay complete. The reconciliation decision must establish whether the helper/event trigger belongs in a reviewed baseline/reconciliation migration or is intentionally platform-provisioned. Preserve the production trigger behavior and the restricted SECURITY DEFINER grants. This is a concrete reason Gate 1 and the full legacy replay remain blocked.
 
@@ -216,7 +216,7 @@ Do not silently add a test-only stub and call the replay complete. The reconcili
 
 | Gate                                                                       | Status                         | Evidence                                                                                                                                                                              | Closure condition                                                                                                   |
 | -------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Repository migration/test integrity                                        | PASS                           | Legacy files, projects migration, expanded SQL assertions, and admin-audit test are present; disposable replay and repository checks previously passed.                               | Preserve current branch state; 15/15 unit tests passing.                                                            |
+| Repository migration/test integrity                                        | PENDING POST-CLEANUP CI        | Projects migration, project assertions, and admin-audit test remain; three legacy hackathon migrations and blueprint-only test fixtures were removed from `backend`. Historical replay results predate cleanup. | Require GitHub Actions success on the post-cleanup branch head. |
 | Remote ledger facts                                                        | PASS                           | Production SQL Editor supplied the three authoritative versions and names.                                                                                                            | Keep history unchanged.                                                                                             |
 | Remote ledger to Git provenance                                            | STRONGLY SUPPORTED, NOT PROVEN | Commit SQL and UTC timestamps strongly support the three counterparts; ledger does not expose Git hashes.                                                                             | Do not repair history; obtain deployment SQL/checksums if canonical provenance is required.                         |
 | `rls_auto_enable()`                                                        | PASS (definition partial)      | Dump contains `SECURITY DEFINER` and `search_path=pg_catalog`.                                                                                                                        | Verified in production dump.                                                                                        |
@@ -224,22 +224,22 @@ Do not silently add a test-only stub and call the replay complete. The reconcili
 | ACLs/default privileges/sequences                                          | RECONCILED AT REPORTED SCOPE   | 98 table grants per browser role and schema defaults reflect standard Supabase/PostgREST access; RLS is enabled on all tables. `create_projects.sql` explicitly neutralizes defaults. | Preserve defense-in-depth; capture remaining object-level ACL details if canonical baseline approval requires them. |
 | Extensions/schemas                                                         | REPORTED PASS, SCOPE LIMITED   | Existing evidence reports `pgcrypto` and `auth`; complete ownership/version output is not in the supplied results.                                                                    | Capture ownership/version output if canonical baseline approval requires it.                                        |
 | Realtime                                                                   | PARTIAL                        | `activity_logs` membership confirmed in `supabase_realtime`.                                                                                                                          | Preserved.                                                                                                          |
-| Projects migration (`20261010070000_create_projects.sql`)                  | APPROVED (GO)                  | Additive SQL and expanded disposable tests pass; production table is absent. Explicitly neutralizes broad defaults.                                                                   | Execute preflight, run migration, and execute post-deployment verification.                                         |
+| Projects migration (`20261010070000_create_projects.sql`)                  | CONDITIONAL — NO PRODUCTION WRITE | Disposable tests cover schema/RLS, but canonical baseline and migration-history provenance remain unresolved. Production table was absent at capture time. | Finish baseline/history reconciliation and obtain explicit production-write approval. |
 | Admin-audit hardening (`20261010080000_harden_admin_audit_log_access.sql`) | DEFERRED (NO-GO FOR BUNDLING)  | Local migration/test exists; changes existing table privileges.                                                                                                                       | Unbundled from projects rollout.                                                                                    |
 
 ### Separate production write gates
 
-**Projects migration write: APPROVED (GO).**
-The projects migration is purely additive, isolated from legacy hackathon blueprints, and explicitly defends itself against broad schema default privileges. Preflight must verify `public.projects` and its function do not already exist before deployment.
+**Projects migration write: NO-GO pending remaining release gates.**
+The projects migration is additive and explicitly defends itself against broad schema default privileges, but repository tests alone do not resolve production baseline and migration-history provenance. Do not deploy until those gates are reviewed and explicit approval is given.
 
 Post-deployment verification requires:
 
 1. Reloading PostgREST schema cache (`NOTIFY pgrst, 'reload schema'`).
 2. Catalog verification of table, four policies, RLS enablement, and authenticated-only CRUD grants.
-3. Application smoke test verifying User A project persistence, User B isolation, and legacy blueprint submission lock immutability.
+3. Application smoke test verifying User A project persistence and User B isolation. Legacy blueprint behavior is outside the standalone application's CI scope and must not be changed as part of this migration.
 
 ## Final repository validation record
 
-On 2026-10-10, the full disposable replay applied legacy migrations `001`-`003`, the projects migration, and the separate admin-audit hardening migration to a fresh PostgreSQL 17 database with compatibility bootstrap objects. `projects_migration_assertions.sql`, `projects_rls_behavior.sql`, and `admin_audit_log_access.sql` all passed; the database was dropped afterward. `npm test` passed 15/15, `npx tsc -b --pretty false` passed, `npm run build` passed with only the existing large-chunk warning, and `git diff --check` passed.
+On 2026-10-10, a historical disposable replay applied legacy migrations `001`–`003`, the projects migration, and the separate admin-audit hardening migration to ephemeral PostgreSQL with compatibility bootstrap objects. This replay is not the current repository migration chain: the three legacy files and their blueprint-only CI fixtures were subsequently removed from `backend`. The latest pre-cleanup GitHub Actions run passed on commit `9a0307a7e86f17c1b627843f37c7191f3770aa74`; the updated CI must pass again before this cleanup is considered validated. No production DDL, data, or migration metadata was changed.
 
 These results establish repository readiness only. They do not establish production ownership/ACLs, event-trigger provenance, extension ownership, complete realtime membership, or remote-to-Git migration provenance.
