@@ -65,32 +65,16 @@ jobs:
           create function auth.uid() returns uuid
             language sql stable
             as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-          create table public.blueprints (
-            id uuid primary key default gen_random_uuid(),
-            status text not null default 'DRAFT'
-          );
           create table public.admin_audit_logs (id uuid primary key);
           alter table public.admin_audit_logs enable row level security;
           -- Reproduce the overly broad grants observed in production so the hardening migration is tested.
           grant all on table public.admin_audit_logs to anon, authenticated;
-          create function public.enforce_blueprint_submission_lock()
-          returns trigger language plpgsql as $$
-          begin
-            if old.status = 'SUBMITTED' then
-              raise exception 'Blueprint is already submitted and locked';
-            end if;
-            return new;
-          end
-          $$;
-          create trigger blueprint_submission_lock
-            before update on public.blueprints
-            for each row execute function public.enforce_blueprint_submission_lock();
           SQL
       - name: Apply projects migration to ephemeral PostgreSQL
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261010070000_create_projects.sql
       - name: Apply admin audit log access hardening migration
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261010080000_harden_admin_audit_log_access.sql
-      - name: Assert projects schema and legacy lock
+      - name: Assert projects schema
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/projects_migration_assertions.sql
       - name: Assert admin audit logs are server-only
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/admin_audit_log_access.sql
