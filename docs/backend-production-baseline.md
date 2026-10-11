@@ -18,12 +18,9 @@ The remote migration history returned these entries:
 - `20261008050230` — `harden_public_security_definer`
 - `20261008050245` — `remove_public_security_definer_execute`
 
-The repository's `main` branch contains:
+The historical repository state included `001_breachx_backend_foundation.sql`, `002_blueprint_persistence_hardening.sql`, and `003_activity_monitoring.sql`. These three hackathon-specific files have since been removed from the `backend` branch because they are outside the current standalone application's scope. Their deletion is not a database migration: the production tables and objects listed in this document were not dropped or altered, and the remote migration ledger was not repaired.
 
-- `supabase/migrations/001_breachx_backend_foundation.sql`
-- `supabase/migrations/002_blueprint_persistence_hardening.sql`
-
-The local filenames/versions do not match the remote history. Migration 002 says it was applied to production, but that filename/version is not in the remote history list. This establishes migration-history drift, but does not prove how it occurred.
+The remote filenames/versions still do not match the historical local filenames. Migration 002's prior statement that it was applied to production is not matched by a corresponding remote ledger version. This establishes migration-history drift, but does not prove how it occurred.
 
 **Do not** run `supabase migration repair`, `supabase db push`, or manually insert migration-history rows until the live schema has been captured and each migration reconciled against the actual objects.
 
@@ -100,7 +97,7 @@ Migration `20261010070000_create_projects.sql` is additive:
 - `updated_at` is maintained by a trigger.
 - No anon policy exists.
 - Submitted projects remain editable by their owner.
-- Existing hackathon `blueprints` and `blueprint_submission_lock` are not modified.
+- The projects migration does not modify the existing production hackathon `blueprints` table or `blueprint_submission_lock`. Those live objects remain in the production inventory; retiring them is a separate database decision.
 
 ## Local testing gates
 
@@ -116,7 +113,7 @@ Use a disposable local Supabase database. Do not test by inserting rows into pro
    - Anonymous requests cannot read or mutate projects.
    - Invalid status and invalid JSON shapes are rejected.
    - A submitted project remains editable and its `updated_at` changes.
-   - Existing `blueprints` submission-lock behavior remains unchanged.
+   - Do not include hackathon blueprint behavior in the standalone projects CI suite; the production object remains untouched by this migration.
 5. Inspect the local schema diff and ensure only intended project objects were added.
 6. Run the repository's build/typecheck/test scripts and review all diffs.
 7. Only after local checks pass and migration drift is explained, plan a separate production deployment.
