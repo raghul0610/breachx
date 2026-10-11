@@ -16,17 +16,17 @@ The Supabase browser client reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISH
 
 Open the BreachX project (`wjxenruxeudkgqinbodv`) and inspect Authentication → Sign In / Providers and URL Configuration.
 
-- [ ] Email provider enabled.
-- [ ] Email confirmation policy matches the intended onboarding flow.
-- [ ] Google provider enabled.
-- [ ] Google OAuth client ID and secret configured in Supabase provider settings.
-- [ ] Google Cloud OAuth redirect URI matches the callback URI shown by Supabase.
-- [ ] Site URL set to the intended production origin: `https://breachx-ashy.vercel.app`.
-- [ ] Exact local development origin allowlisted (normally `http://localhost:5173/**` when using Vite's default port).
-- [ ] Production origin and app redirect paths allowlisted.
+- [x] Email provider and Google OAuth settings verified by the operator in the Supabase Dashboard (2026-10-11).
+- [x] Site URL and allowed redirect URLs saved and verified by the operator (2026-10-11).
+- [x] Google provider enabled (operator-confirmed; 2026-10-11).
+- [x] Google OAuth client configuration saved in Supabase provider settings (operator-confirmed; 2026-10-11).
+- [ ] Verify email confirmation, password-reset, and Google callback behavior with real accounts.
+- [x] Site URL and allowed redirect URLs saved (operator-confirmed; 2026-10-11).
+- [ ] Confirm the local development origin is allowlisted if local auth testing is required.
+- [x] Production origin and redirect allowlist saved (operator-confirmed; 2026-10-11).
 - [ ] Email confirmation and password-reset links return to the app.
 - [ ] No service-role key or OAuth client secret is present in any `VITE_*` variable.
-- [ ] Enable leaked-password protection after reviewing the expected sign-in UX. The live Supabase Security Advisor reported this protection as disabled on 2026-10-11; this setting has not been changed.
+- [x] Leaked-password protection recorded as a known plan limitation: the operator confirms it requires Supabase Pro. Leave disabled on the current plan; it is not a release gate for this deployment.
 
 The app currently sets sign-up, password-reset, and Google OAuth redirect targets to `window.location.origin`. Keep the Site URL and allowed redirect URLs aligned with that behavior; if client-side routes are introduced, update the target and allowlist together.
 
@@ -41,7 +41,7 @@ The app currently sets sign-up, password-reset, and Google OAuth redirect target
 - [ ] Switch back to User A and confirm the original project remains.
 - [ ] Check browser console, network responses, and Supabase logs for errors.
 
-These checks require the actual Supabase Dashboard and deployed app session. Do not mark them complete based on source inspection or the `auth.users` row count.
+Provider and redirect settings above are operator-confirmed, not independently read through the connector. Real-flow checks still require the deployed app session; do not mark them complete based on source inspection or the `auth.users` row count.
 
 
 ## Live security-advisor findings (read-only, 2026-10-11)
@@ -51,4 +51,4 @@ The Supabase Security Advisor returned two findings:
 - **WARN — Leaked Password Protection Disabled:** compromised-password checking against HaveIBeenPwned.org is disabled. Review and enable this in Auth password-security settings as a separate configuration change; no setting was changed during this review.
 - **INFO — RLS Enabled No Policy:** `public.admin_audit_logs` has RLS enabled and no policies. This aligns with the documented intention that browser clients cannot read or write audit logs. Verify the trusted server-side write path separately; do not add a broad client policy merely to silence the advisory.
 
-The advisor output does not expose the Email/Google provider credentials or URL configuration. Those still require a Dashboard review. This finding is not proof that sign-in flows work.
+The advisor output does not expose Email/Google provider credentials or URL configuration; the operator subsequently confirmed that providers and redirect URLs were saved. This does not prove that the end-to-end flows or project persistence work.
