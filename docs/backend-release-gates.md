@@ -461,7 +461,7 @@ where tgrelid = 'public.projects'::regclass and not tgisinternal;
 4. **Cross-Owner Isolation:** Open a private/incognito browser session and sign in as User B.
    - Verify User A's project is not listed.
    - Confirm attempting to read/update User A's project ID via API returns no rows or 404/403.
-5. **Legacy Blueprint Integrity:** Access a hackathon event as a participant. Confirm blueprint draft saving still works, and submitting a blueprint invokes `enforce_blueprint_submission_lock()` such that submitted blueprints remain immutable.
+5. **Legacy production objects (out of current release scope):** The existing catalog evidence records the blueprint submission-lock trigger. Do not change or retire it as part of the standalone projects release; a live hackathon-flow smoke test is not a gate for this application.
 
 ### Repository validation record
 
