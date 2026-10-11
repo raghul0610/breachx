@@ -243,3 +243,21 @@ Post-deployment verification requires:
 On 2026-10-10, a historical disposable replay applied legacy migrations `001`–`003`, the projects migration, and the separate admin-audit hardening migration to ephemeral PostgreSQL with compatibility bootstrap objects. This replay is not the current repository migration chain: the three legacy files and their blueprint-only CI fixtures were subsequently removed from `backend`. The latest pre-cleanup GitHub Actions run passed on commit `9a0307a7e86f17c1b627843f37c7191f3770aa74`; the updated CI must pass again before this cleanup is considered validated. No production DDL, data, or migration metadata was changed.
 
 These results establish repository readiness only. They do not establish production ownership/ACLs, event-trigger provenance, extension ownership, complete realtime membership, or remote-to-Git migration provenance.
+
+
+## Post-cleanup live catalog verification (read-only, 2026-10-11)
+
+Post-cleanup CI passed for backend head `e3f1503effb3845068b49bf9ead10445c05ba878` (PR #6 run [38101418404](https://github.com/raghul0610/breachx/actions/runs/38101418404)). A subsequent read-only Supabase connector inspection confirmed:
+
+- Remote migration versions remain exactly `20261008050118`, `20261008050230`, and `20261008050245`; no history was changed.
+- `public.projects` and `public.set_projects_updated_at()` are absent. `auth.users`, `auth.uid()`, and `gen_random_uuid()` are present.
+- All 14 legacy public tables remain and have RLS enabled. The legacy `blueprints` table remains.
+- The `blueprint_submission_lock` trigger remains on `public.blueprints` and calls `public.enforce_blueprint_submission_lock()`. The function body rejects updates after submission and rejects changes to event/team/assignment ownership. Preserve this live behavior; removing the repository migrations did not drop it.
+- The enabled event-trigger inventory contains seven entries: `ensure_rls`, `issue_graphql_placeholder`, `issue_pg_cron_access`, `issue_pg_graphql_access`, `issue_pg_net_access`, `pgrst_ddl_watch`, and `pgrst_drop_watch`. The `ensure_rls` trigger invokes `public.rls_auto_enable()`; that function is SECURITY DEFINER with `search_path=pg_catalog`.
+- `supabase_realtime` is not configured for all tables; the catalog reports `public.activity_logs` as its current member.
+- Installed extensions reported by `pg_extension`: `pg_stat_statements 1.11`, `pgcrypto 1.3`, `plpgsql 1.0`, `supabase_vault 0.3.1`, and `uuid-ossp 1.1`.
+- Live RLS policies were enumerated and align with the legacy event/team/blueprint application schema. The full catalog output should remain audit evidence, not a replacement for a canonical schema-and-ACL baseline.
+
+This narrows the outstanding baseline work, but it does not prove the remote migration ledger maps to checked-in SQL. The exact executed SQL/checksum provenance remains unverified. Supabase Auth provider/site URL/redirect settings and deployed application persistence/isolation smoke tests remain unverified. The projects migration is still not authorized for production, and `20261010080000_harden_admin_audit_log_access.sql` remains NO-GO for production.
+
+No production DDL, data writes, grants, publication changes, or migration-history changes were performed during this inspection.
