@@ -6,7 +6,7 @@ Observed status: `ACTIVE_HEALTHY`; region `ap-northeast-2`; PostgreSQL `17.11.0.
 
 ## Safety status
 
-The inspection that informed this document was read-only. No production DDL or data was changed. The new projects migration is intended to be tested locally first and must not be applied to production until the gates below pass.
+The initial inspection was read-only. On 2026-10-11, after explicit operator authorization, only `20261010070000_create_projects.sql` was applied to production through the Supabase migration tool. Postflight catalog checks are recorded in `docs/backend-release-gates.md`. No production data was inserted, updated, or deleted by the migration. The admin-audit hardening migration was not applied.
 
 This document is a catalog-derived inventory, **not** a canonical `supabase db pull`/schema dump. Generate and review that baseline locally before any production deployment.
 
@@ -45,7 +45,7 @@ All 14 observed public tables have RLS enabled:
 | `tracks` | 6 | 2 | Event tracks |
 | `user_roles` | 3 | 1 | PARTICIPANT/ADMIN/JUDGE |
 
-No `public.projects` table existed at capture time.
+At the 2026-10-10 capture time, no `public.projects` table existed. It was subsequently created on 2026-10-11 by the explicitly authorized projects migration. Current read-only verification confirms the table, index, function, RLS policies, grants, and timestamp trigger exist.
 
 Observed public enums:
 - `blueprint_status`: `DRAFT`, `SUBMITTED`
@@ -129,4 +129,5 @@ Use a disposable local Supabase database. Do not test by inserting rows into pro
 - [ ] Dashboard Auth provider settings verified
 - [ ] Migration executed and tested on disposable/local Supabase
 - [ ] Two-user RLS tests passed
-- [ ] Production deployment approved and performed (not done)
+- [x] Projects migration applied to production after explicit operator approval (2026-10-11)
+- [ ] Post-deployment PostgREST schema visibility and real application CRUD/two-user RLS smoke tests
