@@ -21,6 +21,9 @@ const MAX_GENERATOR_BODY_BYTES = 16 * 1024;
 const RATE_WINDOW_SECONDS = 60;
 const USER_REQUESTS_PER_WINDOW = 8;
 const IP_REQUESTS_PER_WINDOW = 20;
+const PROVIDER_TIMEOUT_MS = 20_000;
+const AUTH_TIMEOUT_MS = 5_000;
+const LIMITER_TIMEOUT_MS = 3_000;
 const DEVELOPMENT_LIMITS = new Map<string, { count: number; resetAt: number }>();
 
 function reply(res: ApiResponse, status: number, message: string, headers?: Record<string, string>) {
@@ -29,7 +32,7 @@ function reply(res: ApiResponse, status: number, message: string, headers?: Reco
 }
 
 function header(req: ApiRequest, name: string): string {
-  const value = req.headers[name.toLowerCase()];
+  const value = req.headers?.[name.toLowerCase()];
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
@@ -42,10 +45,16 @@ function byteLength(value: string): number {
 }
 
 function getIpAddress(req: ApiRequest): string {
+  // On Vercel, x-real-ip is set by the platform and is preferred over the
+  // client-supplied x-forwarded-for chain.
   const realIp = header(req, "x-real-ip").trim();
   if (realIp) return realIp.slice(0, 128);
   const forwarded = header(req, "x-forwarded-for").split(",")[0]?.trim();
   return (forwarded || "unknown").slice(0, 128);
+}
+
+function requiresSharedLimiter(): boolean {
+  return process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 }
 
 async function sharedRateLimit(key: string, limit: number): Promise<RateLimitResult> {
@@ -53,9 +62,10 @@ async function sharedRateLimit(key: string, limit: number): Promise<RateLimitRes
   const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!redisUrl || !redisToken) {
-    if (process.env.NODE_ENV === "production" || process.env.VERCEL === "1") {
-      throw new Error("RATE_LIMIT_STORE_UNAVAILABLE");
-    }
+    // Fail closed wherever this runs as a deployed function: never call the paid
+    // provider without shared, cross-instance abuse controls.
+    if (requiresSharedLimiter()) throw new Error("RATE_LIMIT_STORE_UNAVAILABLE");
+
     const now = Date.now();
     const existing = DEVELOPMENT_LIMITS.get(key);
     const current = !existing || existing.resetAt <= now
@@ -88,7 +98,7 @@ async function sharedRateLimit(key: string, limit: number): Promise<RateLimitRes
       "Content-Type": "application/json",
     },
     body: JSON.stringify(["EVAL", script, 1, key, RATE_WINDOW_SECONDS]),
-    signal: AbortSignal.timeout(3_000),
+    signal: AbortSignal.timeout(LIMITER_TIMEOUT_MS),
   });
   if (!response.ok) throw new Error("RATE_LIMIT_STORE_UNAVAILABLE");
 
@@ -102,6 +112,20 @@ async function sharedRateLimit(key: string, limit: number): Promise<RateLimitRes
   return { allowed: count <= limit, retryAfterSeconds: Math.max(1, ttl) };
 }
 
+function limitKey(scope: "ip" | "user", value: string): string {
+  return `anchon:ai:minute:${scope}:${encodeURIComponent(value)}`;
+}
+
+/**
+ * Enforces method, content type, request size, authentication and abuse controls
+ * for the AI endpoints. Returns the verified Supabase user ID, or null when a
+ * response has already been sent.
+ *
+ * Order matters: cheap, local rejections run before any network call, the
+ * per-IP limit runs before token verification so unauthenticated floods cannot
+ * amplify into unbounded Supabase Auth requests, and the per-user limit runs
+ * once an identity is established.
+ */
 export async function authorizeAndRateLimit(
   req: ApiRequest,
   res: ApiResponse,
@@ -112,23 +136,39 @@ export async function authorizeAndRateLimit(
     return null;
   }
 
-  const declaredLength = Number(header(req, "content-length"));
-  if (header(req, "content-length") && (!Number.isFinite(declaredLength) || declaredLength < 0)) {
-    reply(res, 400, "Invalid Content-Length header.");
+  // Content type is checked before body shape so a non-JSON request reports 415
+  // rather than a misleading 400 about the parsed body.
+  const contentType = header(req, "content-type").toLowerCase();
+  if (!contentType.includes("application/json") && !contentType.includes("+json")) {
+    reply(res, 415, "Content-Type must be application/json.");
     return null;
   }
-  if (declaredLength > maxBodyBytes) {
-    reply(res, 413, "Request body is too large.");
-    return null;
+
+  const declaredLengthHeader = header(req, "content-length");
+  if (declaredLengthHeader) {
+    const declaredLength = Number(declaredLengthHeader);
+    if (!Number.isFinite(declaredLength) || declaredLength < 0) {
+      reply(res, 400, "Invalid Content-Length header.");
+      return null;
+    }
+    if (declaredLength > maxBodyBytes) {
+      reply(res, 413, "Request body is too large.");
+      return null;
+    }
   }
+
   if (req.body === undefined || !isRecord(req.body)) {
     reply(res, 400, "A JSON object request body is required.");
     return null;
   }
-  let serialized: string;
+  let serialized: string | undefined;
   try {
     serialized = JSON.stringify(req.body);
   } catch {
+    reply(res, 400, "Invalid JSON request body.");
+    return null;
+  }
+  if (typeof serialized !== "string") {
     reply(res, 400, "Invalid JSON request body.");
     return null;
   }
@@ -137,9 +177,18 @@ export async function authorizeAndRateLimit(
     return null;
   }
 
-  const contentType = header(req, "content-type").toLowerCase();
-  if (contentType && !contentType.includes("application/json") && !contentType.includes("+json")) {
-    reply(res, 415, "Content-Type must be application/json.");
+  // Per-IP limit first: this bounds anonymous abuse and auth-failure floods so
+  // that invalid tokens cannot amplify into unbounded Supabase Auth requests.
+  try {
+    const ipLimit = await sharedRateLimit(limitKey("ip", getIpAddress(req)), IP_REQUESTS_PER_WINDOW);
+    if (!ipLimit.allowed) {
+      reply(res, 429, "Too many AI requests. Try again shortly.", {
+        "Retry-After": String(ipLimit.retryAfterSeconds),
+      });
+      return null;
+    }
+  } catch {
+    reply(res, 503, "AI protection is temporarily unavailable. Try again shortly.");
     return null;
   }
 
@@ -164,8 +213,15 @@ export async function authorizeAndRateLimit(
   try {
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-      global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5_000) }) },
+      global: {
+        fetch: (input, init) => fetch(input, {
+          ...init,
+          signal: init?.signal ?? AbortSignal.timeout(AUTH_TIMEOUT_MS),
+        }),
+      },
     });
+    // The token is the only accepted source of identity. A user ID supplied in
+    // the request body is never trusted.
     const { data, error } = await supabase.auth.getUser(match[1]);
     if (error || !data.user?.id) {
       reply(res, 401, "Your session is invalid or expired. Sign in again.");
@@ -178,25 +234,31 @@ export async function authorizeAndRateLimit(
   }
 
   try {
-    const ipKey = `anchon:ai:minute:ip:${encodeURIComponent(getIpAddress(req))}`;
-    const userKey = `anchon:ai:minute:user:${encodeURIComponent(userId)}`;
-    const ipLimit = await sharedRateLimit(ipKey, IP_REQUESTS_PER_WINDOW);
-    if (!ipLimit.allowed) {
-      reply(res, 429, "Too many AI requests. Try again shortly.", { "Retry-After": String(ipLimit.retryAfterSeconds) });
-      return null;
-    }
-    const userLimit = await sharedRateLimit(userKey, USER_REQUESTS_PER_WINDOW);
+    const userLimit = await sharedRateLimit(limitKey("user", userId), USER_REQUESTS_PER_WINDOW);
     if (!userLimit.allowed) {
-      reply(res, 429, "AI request limit reached. Try again in a minute.", { "Retry-After": String(userLimit.retryAfterSeconds) });
+      reply(res, 429, "AI request limit reached. Try again in a minute.", {
+        "Retry-After": String(userLimit.retryAfterSeconds),
+      });
       return null;
     }
   } catch {
-    // Fail closed in production: do not call the paid provider without shared abuse controls.
     reply(res, 503, "AI protection is temporarily unavailable. Try again shortly.");
     return null;
   }
 
   return { userId };
+}
+
+/**
+ * Maps a provider exception to a safe status and message. Upstream response
+ * bodies, stack traces and credentials are never echoed to the client.
+ */
+export function describeProviderFailure(error: unknown): { status: number; message: string } {
+  const name = error instanceof Error ? error.name : "";
+  if (name === "TimeoutError" || name === "AbortError") {
+    return { status: 504, message: "The AI provider timed out. Try again shortly." };
+  }
+  return { status: 502, message: "The AI provider failed. Try again shortly." };
 }
 
 export function validateEvaluationPayload(body: Record<string, unknown>): string | null {
@@ -265,4 +327,5 @@ export const AI_REQUEST_LIMITS = {
   generatorBodyBytes: MAX_GENERATOR_BODY_BYTES,
   requestsPerUserPerMinute: USER_REQUESTS_PER_WINDOW,
   requestsPerIpPerMinute: IP_REQUESTS_PER_WINDOW,
+  providerTimeoutMs: PROVIDER_TIMEOUT_MS,
 } as const;

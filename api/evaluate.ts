@@ -1,10 +1,18 @@
 import { ARCHITECTURE_PRINCIPLES, SYSTEM_DESIGN_FUNDAMENTALS } from "../src/lib/architecturePrinciples.js";
 import { CATALOG } from "../src/lib/catalog.js";
-import { AI_REQUEST_LIMITS, authorizeAndRateLimit, validateEvaluationPayload } from "./_shared/security.js";
+import {
+  AI_REQUEST_LIMITS,
+  authorizeAndRateLimit,
+  describeProviderFailure,
+  validateEvaluationPayload,
+} from "./_shared/security.js";
 
 declare const process: { env: Record<string, string | undefined> };
 
-export const config = { api: { bodyParser: { sizeLimit: "64kb" } } };
+// Bounds the serverless invocation. The authoritative request-size limit is
+// enforced in authorizeAndRateLimit; `api.bodyParser` is a Next.js-only option
+// and is not honoured by the standalone Vercel Node runtime used here.
+export const config = { maxDuration: 30 };
 
 type NodeSummary = {
   id: string;
@@ -79,10 +87,7 @@ function json(res: any, status: number, body: unknown) {
 }
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== "POST") {
-    return json(res, 405, { error: "Method not allowed" });
-  }
-
+  // Method, content type, size, auth and abuse controls all live in the shared module.
   const authorized = await authorizeAndRateLimit(req, res, AI_REQUEST_LIMITS.evaluationBodyBytes);
   if (!authorized) return;
 
@@ -190,7 +195,7 @@ Component-vocabulary rules:
         },
       },
     }),
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(AI_REQUEST_LIMITS.providerTimeoutMs),
   });
 
   if (!response.ok) {
@@ -248,7 +253,8 @@ Component-vocabulary rules:
     assessments: [],
     model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
   });
-  } catch {
-    return json(res, 502, { error: "Architecture review failed. Try again shortly." });
+  } catch (error) {
+    const { status, message } = describeProviderFailure(error);
+    return json(res, status, { error: message });
   }
 }
