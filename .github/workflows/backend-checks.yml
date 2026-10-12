@@ -5,6 +5,9 @@ on:
     branches:
       - backend
     paths:
+      - "api/**"
+      - "tests/**"
+      - ".env.example"
       - "src/**"
       - "supabase/**"
       - "package.json"
@@ -14,6 +17,9 @@ on:
       - ".github/workflows/backend-checks.yml"
   pull_request:
     paths:
+      - "api/**"
+      - "tests/**"
+      - ".env.example"
       - "src/**"
       - "supabase/**"
       - "package.json"
