@@ -1,12 +1,18 @@
 import { CATALOG } from "../src/lib/catalog.js";
+import { AI_REQUEST_LIMITS, authorizeAndRateLimit, describeProviderFailure, validateGeneratorPayload } from "./_shared/security.js";
 declare const process: { env: Record<string, string | undefined> };
+// Bounds the serverless invocation. The authoritative request-size limit is
+// enforced in authorizeAndRateLimit; `api.bodyParser` is a Next.js-only option
+// and is not honoured by the standalone Vercel Node runtime used here.
+export const config = { maxDuration: 30 };
 const send=(res:any,status:number,body:unknown)=>res.status(status).setHeader("Content-Type","application/json").json(body);
 export default async function handler(req:any,res:any){
- if(req.method!=="POST")return send(res,405,{error:"Method not allowed"});
+ // Method, content type, size, auth and abuse controls all live in the shared module.
+ const authorized=await authorizeAndRateLimit(req,res,AI_REQUEST_LIMITS.generatorBodyBytes);if(!authorized)return;
+ const body=req.body as Record<string,unknown>;const validationError=validateGeneratorPayload(body);if(validationError)return send(res,400,{error:validationError});
+ const {name,requirements}=body as {name:string;requirements:string};
  const key=process.env.OPENROUTER_API_KEY;
  if(!key)return send(res,503,{error:"Architecture generation is not configured on the server."});
- const {name,requirements}=req.body??{};
- if(typeof name!=="string"||name.trim().length<2||typeof requirements!=="string"||requirements.trim().length<20)return send(res,400,{error:"Enter an application name and at least 20 characters of requirements."});
  const catalog=CATALOG.map(x=>({typeKey:x.typeKey,label:x.label,category:x.category}));
  const schema={type:"object",additionalProperties:false,properties:{
   architectureName:{type:"string"},overview:{type:"string"},requestFlow:{type:"string"},designDecisions:{type:"array",items:{type:"string"}},
@@ -14,7 +20,7 @@ export default async function handler(req:any,res:any){
   connections:{type:"array",maxItems:48,items:{type:"object",additionalProperties:false,properties:{source:{type:"string"},target:{type:"string"},label:{type:"string"}},required:["source","target","label"]}}
  },required:["architectureName","overview","requestFlow","designDecisions","components","connections"]};
  try{
-  const response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json","HTTP-Referer":process.env.APP_URL??"https://breachx-ashy.vercel.app","X-Title":"Breach X Architecture Generator"},body:JSON.stringify({model:process.env.OPENROUTER_MODEL??"openrouter/free",temperature:0.2,messages:[{role:"system",content:"Design a practical architecture from requirements. Use only component typeKey values in this catalog: "+JSON.stringify(catalog)+". Return a coherent directed graph with a primary request path. Avoid unnecessary complexity. Connections must refer to component IDs. Explain each component in notes and key tradeoffs in designDecisions. Catalog: "+JSON.stringify(catalog)},{role:"user",content:JSON.stringify({name,requirements})}],provider:{require_parameters:true},response_format:{type:"json_schema",json_schema:{name:"architecture",strict:true,schema}}})});
+  const response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json","HTTP-Referer":process.env.APP_URL??"https://breachx-ashy.vercel.app","X-Title":"Breach X Architecture Generator"},body:JSON.stringify({model:process.env.OPENROUTER_MODEL??"openrouter/free",temperature:0.2,messages:[{role:"system",content:"Design a practical architecture from requirements. Use only component typeKey values in this catalog: "+JSON.stringify(catalog)+". Return a coherent directed graph with a primary request path. Avoid unnecessary complexity. Connections must refer to component IDs. Explain each component in notes and key tradeoffs in designDecisions. Catalog: "+JSON.stringify(catalog)},{role:"user",content:JSON.stringify({name,requirements})}],provider:{require_parameters:true},response_format:{type:"json_schema",json_schema:{name:"architecture",strict:true,schema}}}),signal:AbortSignal.timeout(AI_REQUEST_LIMITS.providerTimeoutMs)});
   if(!response.ok)return send(res,502,{error:"The architecture provider failed. Check server configuration and try again."});
   const payload=await response.json();const raw=payload?.choices?.[0]?.message?.content;if(typeof raw!=="string")return send(res,502,{error:"No architecture was returned."});
   const parsed=JSON.parse(raw);const catalogByType=new Map(CATALOG.map(x=>[x.typeKey,x]));const used=new Set<string>();
@@ -23,5 +29,5 @@ export default async function handler(req:any,res:any){
   const ids=new Set(components.map((n:any)=>n.id));const connections=(Array.isArray(parsed.connections)?parsed.connections:[]).filter((e:any)=>ids.has(e.source)&&ids.has(e.target)&&e.source!==e.target).slice(0,48).map((e:any)=>({source:e.source,target:e.target,label:String(e.label||"").slice(0,80)}));
   if(connections.length<2)return send(res,502,{error:"The generated architecture did not contain enough valid connections."});
   return send(res,200,{architectureName:String(parsed.architectureName||name).slice(0,120),overview:String(parsed.overview||""),requestFlow:String(parsed.requestFlow||""),designDecisions:Array.isArray(parsed.designDecisions)?parsed.designDecisions.slice(0,8).map((v:unknown)=>String(v).slice(0,500)):[],components,connections});
- }catch{return send(res,502,{error:"Could not generate a valid architecture. Please try again."})}
+ }catch(error){const{status}=describeProviderFailure(error);return send(res,status,{error:status===504?"The architecture provider timed out. Please try again.":"Could not generate a valid architecture. Please try again."})}
 }

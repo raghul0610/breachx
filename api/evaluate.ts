@@ -1,7 +1,18 @@
 import { ARCHITECTURE_PRINCIPLES, SYSTEM_DESIGN_FUNDAMENTALS } from "../src/lib/architecturePrinciples.js";
 import { CATALOG } from "../src/lib/catalog.js";
+import {
+  AI_REQUEST_LIMITS,
+  authorizeAndRateLimit,
+  describeProviderFailure,
+  validateEvaluationPayload,
+} from "./_shared/security.js";
 
 declare const process: { env: Record<string, string | undefined> };
+
+// Bounds the serverless invocation. The authoritative request-size limit is
+// enforced in authorizeAndRateLimit; `api.bodyParser` is a Next.js-only option
+// and is not honoured by the standalone Vercel Node runtime used here.
+export const config = { maxDuration: 30 };
 
 type NodeSummary = {
   id: string;
@@ -76,19 +87,22 @@ function json(res: any, status: number, body: unknown) {
 }
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== "POST") {
-    return json(res, 405, { error: "Method not allowed" });
-  }
+  // Method, content type, size, auth and abuse controls all live in the shared module.
+  const authorized = await authorizeAndRateLimit(req, res, AI_REQUEST_LIMITS.evaluationBodyBytes);
+  if (!authorized) return;
+
+  const body = req.body as Record<string, unknown>;
+  const validationError = validateEvaluationPayload(body);
+  if (validationError) return json(res, 400, { error: validationError });
 
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     return json(res, 503, { error: "OPENROUTER_API_KEY is not configured on the server." });
   }
 
-  const body = req.body ?? {};
-  const application = body.application;
-  const nodes: NodeSummary[] = Array.isArray(body.nodes) ? body.nodes : [];
-  const edges: EdgeSummary[] = Array.isArray(body.edges) ? body.edges : [];
+  const application = body.application as { name: string; description: string };
+  const nodes = body.nodes as NodeSummary[];
+  const edges = body.edges as EdgeSummary[];
   const notes = typeof body.notes === "string" ? body.notes : "";
   const workload = body.workload && typeof body.workload === "object" ? body.workload : {};
   const graphAnalysis = body.graphAnalysis && typeof body.graphAnalysis === "object" ? body.graphAnalysis : {};
@@ -155,6 +169,7 @@ Component-vocabulary rules:
 
   const user = JSON.stringify({ application, workload, nodes, edges, notes, graphAnalysis });
 
+  try {
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -180,14 +195,11 @@ Component-vocabulary rules:
         },
       },
     }),
+    signal: AbortSignal.timeout(AI_REQUEST_LIMITS.providerTimeoutMs),
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    return json(res, 502, {
-      error: "Architecture review provider failed.",
-      details: errorText.slice(0, 1000),
-    });
+    return json(res, 502, { error: "Architecture review provider failed. Try again shortly." });
   }
 
   const payload = await response.json();
@@ -204,7 +216,12 @@ Component-vocabulary rules:
     return json(res, 502, { error: "Provider returned invalid structured output." });
   }
 
-  const validPrincipleIds = new Set<string>([\n    ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),\n    ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),\n  ]);\n\n  const validFindings = (Array.isArray(review.recommendations) ? review.recommendations : [])
+  const validPrincipleIds = new Set<string>([
+    ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),
+    ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),
+  ]);
+
+  const validFindings = (Array.isArray(review.recommendations) ? review.recommendations : [])
     .filter((finding: any) => {
       const nodeEvidence = Array.isArray(finding.evidenceNodeIds) ? finding.evidenceNodeIds : [];
       const edgeEvidence = Array.isArray(finding.evidenceEdgeIds) ? finding.evidenceEdgeIds : [];
@@ -236,4 +253,8 @@ Component-vocabulary rules:
     assessments: [],
     model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
   });
+  } catch (error) {
+    const { status, message } = describeProviderFailure(error);
+    return json(res, status, { error: message });
+  }
 }

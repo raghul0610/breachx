@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, BrainCircuit, LoaderCircle, Workflow, PencilLine } from "lucide-react";
 import { CATALOG } from "../lib/catalog";
+import { supabase } from "../lib/supabase";
 import { createProject, readSubmission } from "../lib/storage";
 import type { Node, Edge } from "@xyflow/react";
 import { MarkerType } from "@xyflow/react";
@@ -16,7 +17,9 @@ export function ArchitectureGeneratorPage({onBack,onEdit}:{onBack:()=>void;onEdi
  async function generate(){
   setLoading(true);setError("");setGenerated(null);
   try{
-   const response=await fetch("/api/generate-architecture",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,requirements})});
+   const {data:{session}}=await supabase.auth.getSession();
+   if(!session?.access_token)throw new Error("Sign in again to use AI architecture generation.");
+   const response=await fetch("/api/generate-architecture",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({name,requirements})});
    const data=await response.json();
    if(!response.ok)throw new Error(data.error||"Could not generate architecture.");
    setGenerated(data as Generated);
