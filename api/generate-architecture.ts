@@ -9,8 +9,6 @@ export default async function handler(req:any,res:any){
  const {name,requirements}=body as {name:string;requirements:string};
  const key=process.env.OPENROUTER_API_KEY;
  if(!key)return send(res,503,{error:"Architecture generation is not configured on the server."});
- const {name,requirements}=req.body??{};
- if(typeof name!=="string"||name.trim().length<2||typeof requirements!=="string"||requirements.trim().length<20)return send(res,400,{error:"Enter an application name and at least 20 characters of requirements."});
  const catalog=CATALOG.map(x=>({typeKey:x.typeKey,label:x.label,category:x.category}));
  const schema={type:"object",additionalProperties:false,properties:{
   architectureName:{type:"string"},overview:{type:"string"},requestFlow:{type:"string"},designDecisions:{type:"array",items:{type:"string"}},
