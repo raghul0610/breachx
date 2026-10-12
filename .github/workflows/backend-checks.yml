@@ -9,6 +9,7 @@ on:
     paths:
       - "api/**"
       - "tests/**"
+      - "types/**"
       - ".env.example"
       - "src/**"
       - "supabase/**"
@@ -21,6 +22,7 @@ on:
     paths:
       - "api/**"
       - "tests/**"
+      - "types/**"
       - ".env.example"
       - "src/**"
       - "supabase/**"
