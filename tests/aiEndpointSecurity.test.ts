@@ -125,12 +125,30 @@ describe("AI endpoint security", () => {
   it("returns 429 when a user exceeds the shared per-minute AI limit", async () => {
     for (let index = 0; index < 8; index += 1) {
       const { res } = response();
-      await evaluateHandler(request(validEvaluation), res);
+      if (index % 2 === 0) {
+        await evaluateHandler(request(validEvaluation), res);
+      } else {
+        await generateHandler(request(validGenerator), res);
+      }
     }
     const { res, state } = response();
     await evaluateHandler(request(validEvaluation), res);
     expect(state.statusCode).toBe(429);
     expect(state.headers["retry-after"]).toBeDefined();
+  });
+
+
+  it("fails closed in production when the shared limiter is not configured", async () => {
+    process.env.VERCEL = "1";
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    const mockedFetch = vi.mocked(fetch);
+    const req = request(validGenerator);
+    const { res, state } = response();
+    await generateHandler(req, res);
+    expect(state.statusCode).toBe(503);
+    expect(JSON.stringify(state.body)).toContain("AI protection");
+    expect(mockedFetch).not.toHaveBeenCalled();
   });
 
   it("handles provider failures without leaking provider response details", async () => {
