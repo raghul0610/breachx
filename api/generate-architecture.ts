@@ -1,5 +1,5 @@
 import { CATALOG } from "../src/lib/catalog.js";
-import { AI_REQUEST_LIMITS, authorizeAndRateLimit, validateGeneratorPayload } from "./_shared/security";
+import { AI_REQUEST_LIMITS, authorizeAndRateLimit, validateGeneratorPayload } from "./_shared/security.js";
 declare const process: { env: Record<string, string | undefined> };
 export const config = { api: { bodyParser: { sizeLimit: "16kb" } } };
 const send=(res:any,status:number,body:unknown)=>res.status(status).setHeader("Content-Type","application/json").json(body);
