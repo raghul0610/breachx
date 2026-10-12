@@ -1,8 +1,12 @@
 import { CATALOG } from "../src/lib/catalog.js";
+import { AI_REQUEST_LIMITS, authorizeAndRateLimit, validateGeneratorPayload } from "./_shared/security";
 declare const process: { env: Record<string, string | undefined> };
 const send=(res:any,status:number,body:unknown)=>res.status(status).setHeader("Content-Type","application/json").json(body);
 export default async function handler(req:any,res:any){
  if(req.method!=="POST")return send(res,405,{error:"Method not allowed"});
+ const authorized=await authorizeAndRateLimit(req,res,AI_REQUEST_LIMITS.generatorBodyBytes);if(!authorized)return;
+ const body=req.body as Record<string,unknown>;const validationError=validateGeneratorPayload(body);if(validationError)return send(res,400,{error:validationError});
+ const {name,requirements}=body as {name:string;requirements:string};
  const key=process.env.OPENROUTER_API_KEY;
  if(!key)return send(res,503,{error:"Architecture generation is not configured on the server."});
  const {name,requirements}=req.body??{};
@@ -14,7 +18,7 @@ export default async function handler(req:any,res:any){
   connections:{type:"array",maxItems:48,items:{type:"object",additionalProperties:false,properties:{source:{type:"string"},target:{type:"string"},label:{type:"string"}},required:["source","target","label"]}}
  },required:["architectureName","overview","requestFlow","designDecisions","components","connections"]};
  try{
-  const response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json","HTTP-Referer":process.env.APP_URL??"https://breachx-ashy.vercel.app","X-Title":"Breach X Architecture Generator"},body:JSON.stringify({model:process.env.OPENROUTER_MODEL??"openrouter/free",temperature:0.2,messages:[{role:"system",content:"Design a practical architecture from requirements. Use only component typeKey values in this catalog: "+JSON.stringify(catalog)+". Return a coherent directed graph with a primary request path. Avoid unnecessary complexity. Connections must refer to component IDs. Explain each component in notes and key tradeoffs in designDecisions. Catalog: "+JSON.stringify(catalog)},{role:"user",content:JSON.stringify({name,requirements})}],provider:{require_parameters:true},response_format:{type:"json_schema",json_schema:{name:"architecture",strict:true,schema}}})});
+  const response=await fetch("https://openrouter.ai/api/v1/chat/completions",{method:"POST",headers:{Authorization:"Bearer "+key,"Content-Type":"application/json","HTTP-Referer":process.env.APP_URL??"https://breachx-ashy.vercel.app","X-Title":"Breach X Architecture Generator"},body:JSON.stringify({model:process.env.OPENROUTER_MODEL??"openrouter/free",temperature:0.2,messages:[{role:"system",content:"Design a practical architecture from requirements. Use only component typeKey values in this catalog: "+JSON.stringify(catalog)+". Return a coherent directed graph with a primary request path. Avoid unnecessary complexity. Connections must refer to component IDs. Explain each component in notes and key tradeoffs in designDecisions. Catalog: "+JSON.stringify(catalog)},{role:"user",content:JSON.stringify({name,requirements})}],provider:{require_parameters:true},response_format:{type:"json_schema",json_schema:{name:"architecture",strict:true,schema}}}),signal:AbortSignal.timeout(20_000)});
   if(!response.ok)return send(res,502,{error:"The architecture provider failed. Check server configuration and try again."});
   const payload=await response.json();const raw=payload?.choices?.[0]?.message?.content;if(typeof raw!=="string")return send(res,502,{error:"No architecture was returned."});
   const parsed=JSON.parse(raw);const catalogByType=new Map(CATALOG.map(x=>[x.typeKey,x]));const used=new Set<string>();
