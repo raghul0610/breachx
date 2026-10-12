@@ -23,7 +23,7 @@ The Supabase verifier also accepts the existing `VITE_SUPABASE_URL` and `VITE_SU
 - A valid Supabase access token is required in `Authorization: Bearer <access-token>`. The server calls Supabase Auth `getUser(token)`; it does not trust a user ID supplied in the request.
 - Evaluation payloads are limited to 64 KiB, 100 nodes, 200 edges, bounded text fields, unique node IDs, and edges whose endpoints exist in the submitted graph.
 - Generation payloads are limited to 16 KiB; names are at most 120 characters and requirements at most 8,000 characters.
-- A shared atomic Redis sliding-window counter enforces at most 8 AI requests per user per minute and 20 per IP per minute across both endpoints. A 429 response includes `Retry-After`.
+- A shared atomic Redis fixed-window counter enforces at most 8 AI requests per user per minute and 20 per IP per minute across both endpoints. A 429 response includes `Retry-After`.
 - Supabase verification and provider requests have timeouts. Provider errors are returned generically without echoing upstream error bodies.
 - The OpenRouter key is read only from server-side `process.env`. It is never included in browser requests or responses.
 
