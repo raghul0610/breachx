@@ -1,5 +1,6 @@
 import { ARCHITECTURE_PRINCIPLES, SYSTEM_DESIGN_FUNDAMENTALS } from "../src/lib/architecturePrinciples.js";
 import { CATALOG } from "../src/lib/catalog.js";
+import { AI_REQUEST_LIMITS, authorizeAndRateLimit, validateEvaluationPayload } from "./_shared/security";
 
 declare const process: { env: Record<string, string | undefined> };
 
@@ -80,12 +81,18 @@ export default async function handler(req: any, res: any) {
     return json(res, 405, { error: "Method not allowed" });
   }
 
+  const authorized = await authorizeAndRateLimit(req, res, AI_REQUEST_LIMITS.evaluationBodyBytes);
+  if (!authorized) return;
+
+  const body = req.body as Record<string, unknown>;
+  const validationError = validateEvaluationPayload(body);
+  if (validationError) return json(res, 400, { error: validationError });
+
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     return json(res, 503, { error: "OPENROUTER_API_KEY is not configured on the server." });
   }
 
-  const body = req.body ?? {};
   const application = body.application;
   const nodes: NodeSummary[] = Array.isArray(body.nodes) ? body.nodes : [];
   const edges: EdgeSummary[] = Array.isArray(body.edges) ? body.edges : [];
@@ -155,6 +162,7 @@ Component-vocabulary rules:
 
   const user = JSON.stringify({ application, workload, nodes, edges, notes, graphAnalysis });
 
+  try {
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -180,14 +188,11 @@ Component-vocabulary rules:
         },
       },
     }),
+    signal: AbortSignal.timeout(20_000),
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    return json(res, 502, {
-      error: "Architecture review provider failed.",
-      details: errorText.slice(0, 1000),
-    });
+    return json(res, 502, { error: "Architecture review provider failed. Try again shortly." });
   }
 
   const payload = await response.json();
@@ -236,4 +241,7 @@ Component-vocabulary rules:
     assessments: [],
     model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
   });
+  } catch {
+    return json(res, 502, { error: "Architecture review failed. Try again shortly." });
+  }
 }
