@@ -1,5 +1,7 @@
 name: Backend checks
 
+# Cover serverless AI routes and their abuse-control tests in pull-request CI.
+
 on:
   push:
     branches:
