@@ -1,6 +1,6 @@
 import { ARCHITECTURE_PRINCIPLES, SYSTEM_DESIGN_FUNDAMENTALS } from "../src/lib/architecturePrinciples.js";
 import { CATALOG } from "../src/lib/catalog.js";
-import { AI_REQUEST_LIMITS, authorizeAndRateLimit, validateEvaluationPayload } from "./_shared/security";
+import { AI_REQUEST_LIMITS, authorizeAndRateLimit, validateEvaluationPayload } from "./_shared/security.js";
 
 declare const process: { env: Record<string, string | undefined> };
 
