@@ -4,6 +4,8 @@ import { AI_REQUEST_LIMITS, authorizeAndRateLimit, validateEvaluationPayload } f
 
 declare const process: { env: Record<string, string | undefined> };
 
+export const config = { api: { bodyParser: { sizeLimit: "64kb" } } };
+
 type NodeSummary = {
   id: string;
   typeKey: string;
