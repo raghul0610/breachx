@@ -211,7 +211,12 @@ Component-vocabulary rules:
     return json(res, 502, { error: "Provider returned invalid structured output." });
   }
 
-  const validPrincipleIds = new Set<string>([\n    ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),\n    ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),\n  ]);\n\n  const validFindings = (Array.isArray(review.recommendations) ? review.recommendations : [])
+  const validPrincipleIds = new Set<string>([
+    ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),
+    ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),
+  ]);
+
+  const validFindings = (Array.isArray(review.recommendations) ? review.recommendations : [])
     .filter((finding: any) => {
       const nodeEvidence = Array.isArray(finding.evidenceNodeIds) ? finding.evidenceNodeIds : [];
       const edgeEvidence = Array.isArray(finding.evidenceEdgeIds) ? finding.evidenceEdgeIds : [];
