@@ -93,9 +93,9 @@ export default async function handler(req: any, res: any) {
     return json(res, 503, { error: "OPENROUTER_API_KEY is not configured on the server." });
   }
 
-  const application = body.application;
-  const nodes: NodeSummary[] = Array.isArray(body.nodes) ? body.nodes : [];
-  const edges: EdgeSummary[] = Array.isArray(body.edges) ? body.edges : [];
+  const application = body.application as { name: string; description: string };
+  const nodes = body.nodes as NodeSummary[];
+  const edges = body.edges as EdgeSummary[];
   const notes = typeof body.notes === "string" ? body.notes : "";
   const workload = body.workload && typeof body.workload === "object" ? body.workload : {};
   const graphAnalysis = body.graphAnalysis && typeof body.graphAnalysis === "object" ? body.graphAnalysis : {};
