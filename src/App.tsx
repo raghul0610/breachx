@@ -8,7 +8,7 @@ import { AuthGate } from "./components/AuthGate";
 type AppMode = "home" | "projects" | "participant" | "generator";
 
 function AppContent() {
-  const [mode, setMode] = useState<AppMode>("home");
+  const [mode, setMode] = useState<AppMode>("projects");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   if (mode === "projects") {
