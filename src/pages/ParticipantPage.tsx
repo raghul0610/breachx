@@ -472,26 +472,64 @@ function ParticipantEditor({
       </header>
 
       <div className="workspace">
-        <aside className="sidebar left-panel" aria-label="Application requirements">
-          <div className="requirements-heading">
-            <div className="section-kicker"><FileText size={13} /> APPLICATION REQUIREMENTS</div>
-            <p>Define what you are building before shaping the architecture.</p>
+        <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements">
+          <div className="requirements-panel-header">
+            <div className="requirements-mark"><FileText size={16} /></div>
+            <div>
+              <div className="section-kicker">PROJECT BRIEF</div>
+              <p>Start with the problem. Shape the system around it.</p>
+            </div>
           </div>
-          <div className="field">
-            <label htmlFor="application-name">APPLICATION NAME</label>
-            <input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} />
-          </div>
-          <div className="field">
-            <label htmlFor="application-requirements">APPLICATION REQUIREMENTS</label>
-            <textarea id="application-requirements" rows={7} value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} />
-          </div>
-          <div className="field notes-field">
-            <label htmlFor="architecture-notes">ARCHITECTURE NOTES</label>
-            <textarea id="architecture-notes" rows={8} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Request flow, scaling, security, caching, persistence and failure handling." />
-          </div>
+
+          <section className="brief-card" aria-labelledby="brief-identity-title">
+            <div className="brief-card-heading">
+              <span className="brief-step">01</span>
+              <div>
+                <h2 id="brief-identity-title">Project identity</h2>
+                <p>Give this architecture a clear name.</p>
+              </div>
+            </div>
+            <div className="field">
+              <label htmlFor="application-name">APPLICATION NAME</label>
+              <input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" />
+            </div>
+          </section>
+
+          <section className="brief-card" aria-labelledby="brief-requirements-title">
+            <div className="brief-card-heading">
+              <span className="brief-step">02</span>
+              <div>
+                <h2 id="brief-requirements-title">What are you building?</h2>
+                <p>Describe users, traffic and core needs.</p>
+              </div>
+            </div>
+            <div className="field">
+              <label htmlFor="application-requirements">REQUIREMENTS</label>
+              <textarea id="application-requirements" rows={6} value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} placeholder="Who is this for? What must the system do?" />
+            </div>
+          </section>
+
+          <section className="brief-card brief-card-notes" aria-labelledby="brief-notes-title">
+            <div className="brief-card-heading">
+              <span className="brief-step">03</span>
+              <div>
+                <h2 id="brief-notes-title">Design constraints</h2>
+                <p>Capture important technical decisions.</p>
+              </div>
+            </div>
+            <div className="field notes-field">
+              <label htmlFor="architecture-notes">ARCHITECTURE NOTES</label>
+              <textarea id="architecture-notes" rows={5} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Scaling, security, caching, persistence, failure handling…" />
+            </div>
+          </section>
+
           <div className="requirements-status" role="status">
-            <span>{nodes.length} components</span><span>{edges.length} connections</span>
-            <small>{saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Changes saved automatically"}</small>
+            <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
+            <div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div>
+            <small className={saveStatus === "error" ? "requirements-save-error" : ""}>
+              <span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />
+              {saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}
+            </small>
           </div>
         </aside>
 
