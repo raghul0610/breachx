@@ -521,20 +521,6 @@ function ParticipantEditor({
             </div>
           </section>
 
-          <section className="brief-card" aria-labelledby="brief-requirements-title">
-            <div className="brief-card-heading">
-              <span className="brief-step">02</span>
-              <div>
-                <h2 id="brief-requirements-title">What are you building?</h2>
-                <p>Describe users, traffic and core needs.</p>
-              </div>
-            </div>
-            <div className="field">
-              <label htmlFor="application-requirements">REQUIREMENTS</label>
-              <textarea id="application-requirements" rows={6} value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} placeholder="Who is this for? What must the system do?" />
-            </div>
-          </section>
-
           <ArchitectureAIChat
             name={applicationName}
             requirements={applicationDescription}
