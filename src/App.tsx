@@ -52,5 +52,16 @@ function AppContent() {
 
 
 export default function App() {
+  const [authRequested, setAuthRequested] = useState(false);
+
+  if (!authRequested) {
+    return (
+      <LandingPage
+        onOpenDesigner={() => setAuthRequested(true)}
+        onOpenGenerator={() => setAuthRequested(true)}
+      />
+    );
+  }
+
   return <AuthGate><AppContent /></AuthGate>;
 }
