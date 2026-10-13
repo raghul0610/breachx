@@ -536,17 +536,33 @@ function ParticipantEditor({
         <div className="canvas-column">
           <section className="component-dock" aria-label="Architecture components">
             <div className="component-dock-heading">
-              <div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY</div><p>Choose a component, then create it on the canvas.</p></div>
-              <button className="primary-btn compact" onClick={() => selectedCatalogItem && addCatalogNode(selectedCatalogItem, undefined, catalogNotes)} disabled={!selectedCatalogItem} title={!selectedCatalogItem ? "Select a component first" : `Create ${selectedCatalogItem.label}`}><PlusCircle size={13} /> CREATE COMPONENT</button>
+              <div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY</div><p>Browse by system layer. Select a component, then add it to your canvas.</p></div>
+              <button className="primary-btn compact" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={`Add ${selectedCatalogItem?.label ?? CATALOG[0].label} to the canvas`}><PlusCircle size={13} /> {selectedCatalogItem ? "CREATE COMPONENT" : "ADD DEFAULT COMPONENT"}</button>
             </div>
-            <div className="component-dock-items">
-              {CATALOG.map((item) => (
-                <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
-                  <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={14} /></span><span>{item.label}</span></span>
-                  <small>{item.category}</small>
-                </button>
-              ))}
-            </div>
+            {[
+              { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
+              { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration"] },
+              { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML"] },
+            ].map((group) => {
+              const items = CATALOG.filter((item) => group.categories.includes(item.category));
+              return (
+                <div className="component-lane" key={group.title}>
+                  <div className="component-lane-label">
+                    <span>{group.title}</span>
+                    <small>{group.description}</small>
+                    <span className="component-lane-count">{items.length}</span>
+                  </div>
+                  <div className="component-dock-items" aria-label={group.title}>
+                    {items.map((item) => (
+                      <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
+                        <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={14} /></span><span>{item.label}</span></span>
+                        <small>{item.category}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </section>
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas">
           <div className="canvas-toolbar">
