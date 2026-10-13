@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Bot, Check, LoaderCircle, MessageSquare, Send, Sparkles, WandSparkles } from "lucide-react";
-import type { Edge, Node } from "@xyflow/react";
+import { MarkerType, type Edge, type Node } from "@xyflow/react";
 import type { BlueprintNodeData } from "./BlueprintNode";
 
 type GeneratedArchitecture = {
@@ -96,7 +96,7 @@ export function ArchitectureAIChat({
           target: connection.target,
           label: connection.label || undefined,
           animated: true,
-          markerEnd: { type: "arrowclosed" as const },
+          markerEnd: { type: MarkerType.ArrowClosed },
         }));
       if (nextNodes.length < 3 || nextEdges.length < 2) throw new Error("The proposed architecture is incomplete. No changes were applied.");
       const plan = { result, nodes: nextNodes, edges: nextEdges, request: instruction };
