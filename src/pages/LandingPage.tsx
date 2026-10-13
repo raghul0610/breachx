@@ -185,8 +185,8 @@ export function LandingPage({
           <button className="lp-nav-link" onClick={onOpenDesigner}>Designer</button>
           <button className="lp-nav-link" onClick={onOpenGenerator}>Generator</button>
         </div>
-        <button className="lp-nav-cta" onClick={onOpenDesigner} aria-label="Open Architecture Designer">
-          Open App
+        <button className="lp-nav-cta" onClick={onOpenDesigner} aria-label="Get Started">
+          Get Started
         </button>
       </nav>
 
@@ -221,7 +221,7 @@ export function LandingPage({
             </button>
             <button className="lp-btn-outline" onClick={onOpenGenerator}>
               <BrainCircuit size={16} />
-              Generate with AI
+              Explore AI Generator
             </button>
           </div>
         </div>
