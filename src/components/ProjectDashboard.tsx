@@ -11,6 +11,7 @@ import {
 } from "../lib/storage";
 import { deleteOwnedProject } from "../lib/projectsRepository";
 import "./ProjectDashboard.css";
+import { InteractiveTutorial } from "./InteractiveTutorial";
 
 export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void; onOpenProject: (projectId: string) => void }) {
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
@@ -100,7 +101,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
             <h1>PROJECT WORKSPACE</h1>
             <p>Keep each system design separate. Your private projects sync to your account across devices.</p>
           </div>
-          <button className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> NEW PROJECT</button>
+          <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> NEW PROJECT</button>
         </section>
         {error && <div className="project-error" role="alert">{error}</div>}
         {projects.length === 0 && !error ? (
@@ -108,10 +109,10 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
             <FolderPlus size={28} />
             <h2>No projects yet</h2>
             <p>Create your first architecture project to start designing.</p>
-            <button className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> CREATE PROJECT</button>
+            <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> CREATE PROJECT</button>
           </section>
         ) : (
-          <section className="project-grid" aria-label="Saved architecture projects">
+          <section className="project-grid" aria-label="Saved architecture projects" data-tutorial="project-grid">
             {projects.map((project) => (
               <article className="project-card panel" key={project.id}>
                 <div className="project-card-top">
@@ -121,7 +122,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
                 <h2>{project.applicationName}</h2>
                 <p className="project-description">{project.applicationDescription || "No requirements added yet."}</p>
                 <div className="project-updated">UPDATED {new Date(project.updatedAt).toLocaleString()}</div>
-                <div className="project-actions">
+                <div className="project-actions" data-tutorial="project-actions">
                   <button className="primary-btn compact" onClick={() => open(project.id)}>{project.status === "submitted" ? "VIEW PROJECT" : "OPEN PROJECT"}</button>
                   <button className="icon-btn" onClick={() => rename(project)} aria-label={`Rename ${project.applicationName}`} title="Rename"><Pencil size={13} /></button>
                   <button className="icon-btn" onClick={() => duplicate(project)} aria-label={`Duplicate ${project.applicationName}`} title="Duplicate"><Copy size={13} /></button>
@@ -133,6 +134,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
         )}
         <p className="project-storage-note">Cloud persistence is enabled. If a save fails, the cloud-sync banner at the top will show the error.</p>
       </main>
+      <InteractiveTutorial page="dashboard" />
     </div>
   );
 }
