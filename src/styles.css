@@ -810,9 +810,9 @@ body::-webkit-scrollbar,
 }
 .workspace > .left-panel,
 .workspace > .collapsed-panel-strip-left { grid-area: workspace-left; }
-.workspace > .panel-resizer-vertical:first-of-type { grid-area: workspace-left-resizer; }
+.workspace > .panel-resizer-left { grid-area: workspace-left-resizer; }
 .workspace > .canvas-column { grid-area: workspace-center; display:flex; flex-direction:column; min-width:0; min-height:0; overflow:hidden; }
-.workspace > .panel-resizer-vertical:last-of-type { grid-area: workspace-right-resizer; }
+.workspace > .panel-resizer-right { grid-area: workspace-right-resizer; }
 .workspace > .right-panel,
 .workspace > .collapsed-panel-strip-right { grid-area: workspace-right; }
 .workspace > .canvas-column > .canvas { flex:1 1 0; min-width:0; min-height:0; width:100%; }
