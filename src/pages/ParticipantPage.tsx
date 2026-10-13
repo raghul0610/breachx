@@ -547,7 +547,7 @@ function ParticipantEditor({
               setNodes(nextNodes);
               setEdges(nextEdges);
               setApplicationName(nextName);
-              setNotes((current) => current ? `${current}\\n\\nAI update: ${summary}` : `AI update: ${summary}`);
+              setNotes((current) => current ? `${current}\n\nAI update: ${summary}` : `AI update: ${summary}`);
               setSelectedId(null);
               setSelectedEdgeId(null);
               setSelectedCatalogTypeKey(null);
