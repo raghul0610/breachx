@@ -471,67 +471,99 @@ function ParticipantEditor({
         </span>
       </header>
 
-      <section className="problem-banner">
-        <div className="section-kicker">
-          <FileText size={13} /> APPLICATION REQUIREMENTS
-        </div>
-
-        <div className="field">
-          <label>APPLICATION NAME</label>
-          <input
-            value={applicationName}
-            onChange={(event) => setApplicationName(event.target.value)}
-            
-          />
-        </div>
-
-        <div className="field">
-          <label>APPLICATION REQUIREMENTS</label>
-          <textarea
-            rows={3}
-            value={applicationDescription}
-            onChange={(event) => setApplicationDescription(event.target.value)}
-            
-          />
-        </div>
-      </section>
-
       <div className="workspace">
-        <aside className="sidebar left-panel">
-          <div className="section-kicker">
-            <Layers size={13} /> COMPONENT PALETTE
+        <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements">
+          <div className="requirements-panel-header">
+            <div className="requirements-mark"><FileText size={16} /></div>
+            <div>
+              <div className="section-kicker">PROJECT BRIEF</div>
+              <p>Start with the problem. Shape the system around it.</p>
+            </div>
           </div>
 
-          {CATALOG.map((item) => (
-            <button
-              key={item.typeKey}
-              className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`}
-              draggable={true}
-              onDragStart={(event) => {
-                event.dataTransfer.setData(
-                  "application/breachx-component",
-                  item.typeKey,
-                );
-                event.dataTransfer.effectAllowed = "move";
-              }}
-              onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }}
-              aria-pressed={selectedCatalogTypeKey === item.typeKey}
-              
-            >
-              <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={14} /></span><span>{item.label}</span></span>
-              <small>{item.category}</small>
-            </button>
-          ))}
+          <section className="brief-card" aria-labelledby="brief-identity-title">
+            <div className="brief-card-heading">
+              <span className="brief-step">01</span>
+              <div>
+                <h2 id="brief-identity-title">Project identity</h2>
+                <p>Give this architecture a clear name.</p>
+              </div>
+            </div>
+            <div className="field">
+              <label htmlFor="application-name">APPLICATION NAME</label>
+              <input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" />
+            </div>
+          </section>
 
-          <div className="help-box">
-            <strong>HOW TO CONNECT</strong>
-            <p>
-              Drag from a colored handle on one component to a handle on
-              another to create a directional connection.
-            </p>
+          <section className="brief-card" aria-labelledby="brief-requirements-title">
+            <div className="brief-card-heading">
+              <span className="brief-step">02</span>
+              <div>
+                <h2 id="brief-requirements-title">What are you building?</h2>
+                <p>Describe users, traffic and core needs.</p>
+              </div>
+            </div>
+            <div className="field">
+              <label htmlFor="application-requirements">REQUIREMENTS</label>
+              <textarea id="application-requirements" rows={6} value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} placeholder="Who is this for? What must the system do?" />
+            </div>
+          </section>
+
+          <section className="brief-card brief-card-notes" aria-labelledby="brief-notes-title">
+            <div className="brief-card-heading">
+              <span className="brief-step">03</span>
+              <div>
+                <h2 id="brief-notes-title">Design constraints</h2>
+                <p>Capture important technical decisions.</p>
+              </div>
+            </div>
+            <div className="field notes-field">
+              <label htmlFor="architecture-notes">ARCHITECTURE NOTES</label>
+              <textarea id="architecture-notes" rows={5} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Scaling, security, caching, persistence, failure handling…" />
+            </div>
+          </section>
+
+          <div className="requirements-status" role="status">
+            <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
+            <div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div>
+            <small className={saveStatus === "error" ? "requirements-save-error" : ""}>
+              <span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />
+              {saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}
+            </small>
           </div>
         </aside>
 
+        <div className="canvas-column">
+          <section className="component-dock" aria-label="Architecture components">
+            <div className="component-dock-heading">
+              <div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY</div><p>Browse by system layer. Select a component, then add it to your canvas.</p></div>
+              <button className="primary-btn compact" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={`Add ${selectedCatalogItem?.label ?? CATALOG[0].label} to the canvas`}><PlusCircle size={13} /> {selectedCatalogItem ? "CREATE COMPONENT" : "ADD DEFAULT COMPONENT"}</button>
+            </div>
+            {[
+              { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
+              { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration"] },
+              { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML"] },
+            ].map((group) => {
+              const items = CATALOG.filter((item) => group.categories.includes(item.category));
+              return (
+                <div className="component-lane" key={group.title}>
+                  <div className="component-lane-label">
+                    <span>{group.title}</span>
+                    <small>{group.description}</small>
+                    <span className="component-lane-count">{items.length}</span>
+                  </div>
+                  <div className="component-dock-items" aria-label={group.title}>
+                    {items.map((item) => (
+                      <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
+                        <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={14} /></span><span>{item.label}</span></span>
+                        <small>{item.category}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </section>
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas">
           <div className="canvas-toolbar">
             <div>
@@ -603,6 +635,8 @@ function ParticipantEditor({
             <MiniMap position="bottom-right" />
           </ReactFlow>
         </section>
+
+        </div>
 
         <aside className="sidebar right-panel">
           <div className="section-kicker">INSPECTOR</div>
@@ -709,17 +743,6 @@ function ParticipantEditor({
           )}
 
           <div className="editor-history-status" aria-live="polite">{pastRef.current.length} undo step{pastRef.current.length === 1 ? "" : "s"} available · {futureRef.current.length} redo step{futureRef.current.length === 1 ? "" : "s"} </div>
-
-          <div className="field notes-field">
-            <label>ARCHITECTURE NOTES</label>
-            <textarea
-              rows={12}
-              
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="Describe request flow, scaling, security boundaries, caching, queues, persistence and failure handling."
-            />
-          </div>
 
           <div className="submission-rule">
             {submitted
