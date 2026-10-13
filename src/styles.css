@@ -701,8 +701,8 @@ html { scroll-behavior: smooth; }
 .panel-resizer-horizontal { height:7px; min-height:7px; cursor:row-resize; border-top:1px solid #1b2c38; border-bottom:1px solid #1b2c38; }
 .panel-resizer.is-hidden { display:none; }
 .workspace-resizing,.workspace-resizing * { cursor:inherit !important; user-select:none !important; }
-body.workspace-resizing { cursor:col-resize; }
-body.workspace-resizing:has(.panel-resizer-horizontal:active) { cursor:row-resize; }
+body.workspace-resizing-vertical { cursor:col-resize; }
+body.workspace-resizing-horizontal { cursor:row-resize; }
 .panel-toggle-button { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; width:29px; height:29px; padding:0; border:1px solid #263a47; border-radius:7px; color:#9db6c5; background:#0b151e; cursor:pointer; }
 .panel-toggle-button:hover { color:#6de0fb; border-color:#39728a; background:#102936; }
 .requirements-panel-header { position:relative; }
