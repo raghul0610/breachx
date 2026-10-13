@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   addEdge,
   reconnectEdge,
@@ -16,7 +16,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2 } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
@@ -25,6 +25,7 @@ import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
 import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
+import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -122,6 +123,12 @@ function ParticipantEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [leftPanelWidth, setLeftPanelWidth] = useState(260);
+  const [rightPanelWidth, setRightPanelWidth] = useState(300);
+  const [componentDockHeight, setComponentDockHeight] = useState(285);
+  const [resizeDrag, setResizeDrag] = useState<{ type: "left" | "right" | "dock"; start: number; initial: number } | null>(null);
   const [submitted, setSubmitted] = useState(saved?.status === "submitted");
   const [historyVersion, setHistoryVersion] = useState(0);
   const canvasRef = useRef<HTMLElement | null>(null);
@@ -131,6 +138,24 @@ function ParticipantEditor({
   const edgesRef = useRef(edges);
   const pastRef = useRef<GraphSnapshot[]>([]);
   const futureRef = useRef<GraphSnapshot[]>([]);
+  useEffect(() => {
+    if (!resizeDrag) return;
+    const onPointerMove = (event: PointerEvent) => {
+      if (resizeDrag.type === "left") setLeftPanelWidth(Math.max(210, Math.min(420, resizeDrag.initial + event.clientX - resizeDrag.start)));
+      if (resizeDrag.type === "right") setRightPanelWidth(Math.max(240, Math.min(440, resizeDrag.initial - (event.clientX - resizeDrag.start))));
+      if (resizeDrag.type === "dock") setComponentDockHeight(Math.max(175, Math.min(window.innerHeight * 0.58, resizeDrag.initial + event.clientY - resizeDrag.start)));
+    };
+    const onPointerUp = () => setResizeDrag(null);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    document.body.classList.add("workspace-resizing", resizeDrag.type === "dock" ? "workspace-resizing-horizontal" : "workspace-resizing-vertical");
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      document.body.classList.remove("workspace-resizing", "workspace-resizing-horizontal", "workspace-resizing-vertical");
+    };
+  }, [resizeDrag]);
+
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { edgesRef.current = edges; }, [edges]);
 
@@ -472,9 +497,9 @@ function ParticipantEditor({
         </span>
       </header>
 
-      <div className="workspace">
-        <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
-          <div className="requirements-panel-header">
+      <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
+        {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
+          <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
             <div className="requirements-mark"><FileText size={16} /></div>
             <div>
               <div className="section-kicker">PROJECT BRIEF</div>
@@ -496,33 +521,25 @@ function ParticipantEditor({
             </div>
           </section>
 
-          <section className="brief-card" aria-labelledby="brief-requirements-title">
-            <div className="brief-card-heading">
-              <span className="brief-step">02</span>
-              <div>
-                <h2 id="brief-requirements-title">What are you building?</h2>
-                <p>Describe users, traffic and core needs.</p>
-              </div>
-            </div>
-            <div className="field">
-              <label htmlFor="application-requirements">REQUIREMENTS</label>
-              <textarea id="application-requirements" rows={6} value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} placeholder="Who is this for? What must the system do?" />
-            </div>
-          </section>
-
-          <section className="brief-card brief-card-notes" aria-labelledby="brief-notes-title">
-            <div className="brief-card-heading">
-              <span className="brief-step">03</span>
-              <div>
-                <h2 id="brief-notes-title">Design constraints</h2>
-                <p>Capture important technical decisions.</p>
-              </div>
-            </div>
-            <div className="field notes-field">
-              <label htmlFor="architecture-notes">ARCHITECTURE NOTES</label>
-              <textarea id="architecture-notes" rows={5} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Scaling, security, caching, persistence, failure handling…" />
-            </div>
-          </section>
+          <ArchitectureAIChat
+            name={applicationName}
+            requirements={applicationDescription}
+            nodes={nodes}
+            edges={edges}
+            onBeforeApply={pushHistory}
+            onApply={(nextName, nextNodes, nextEdges, summary) => {
+              nodesRef.current = nextNodes;
+              edgesRef.current = nextEdges;
+              setNodes(nextNodes);
+              setEdges(nextEdges);
+              setApplicationName(nextName);
+              setNotes((current) => current ? `${current}\n\nAI update: ${summary}` : `AI update: ${summary}`);
+              setSelectedId(null);
+              setSelectedEdgeId(null);
+              setSelectedCatalogTypeKey(null);
+              logActivity("AI_ARCHITECTURE_UPDATED", { components: nextNodes.length, connections: nextEdges.length });
+            }}
+          />
 
           <div className="requirements-status" role="status">
             <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
@@ -532,7 +549,8 @@ function ParticipantEditor({
               {saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}
             </small>
           </div>
-        </aside>
+        </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-left"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(true)} aria-label="Open requirements sidebar" title="Open requirements sidebar"><PanelLeftOpen size={16} /></button><span>BRIEF</span></div>}
+        <div className={`panel-resizer panel-resizer-vertical ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
           <section className="component-dock" aria-label="Architecture components" data-tutorial="component-library">
@@ -565,6 +583,7 @@ function ParticipantEditor({
               );
             })}
           </section>
+          <div className="panel-resizer panel-resizer-horizontal" role="separator" aria-label="Resize component library height" aria-orientation="horizontal" title="Drag to resize component library" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "dock", start: event.clientY, initial: componentDockHeight }); }}><GripHorizontal size={14} /></div>
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
           <div className="canvas-toolbar">
             <div>
@@ -641,8 +660,9 @@ function ParticipantEditor({
 
         </div>
 
-        <aside className="sidebar right-panel" data-tutorial="inspector">
-          <div className="section-kicker">INSPECTOR</div>
+        <div className={`panel-resizer panel-resizer-vertical ${rightPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize inspector sidebar" aria-orientation="vertical" title="Drag to resize inspector" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "right", start: event.clientX, initial: rightPanelWidth }); }}><GripVertical size={14} /></div>
+        {rightPanelOpen ? <aside className="sidebar right-panel" data-tutorial="inspector">
+          <div className="panel-heading-row"><div className="section-kicker">INSPECTOR</div><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(false)} aria-label="Collapse inspector sidebar" title="Collapse sidebar"><PanelRightClose size={15} /></button></div>
 
           {selectedCatalogItem && selectedKnowledge ? (
             <div className="catalog-inspector">
@@ -754,7 +774,7 @@ function ParticipantEditor({
                 ? "Blueprint is ready to save."
                 : "Add an application description, 3 components and 2 connections to save."}
           </div>
-        </aside>
+        </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
       </div>
       <InteractiveTutorial page="workspace" />
     </div>
