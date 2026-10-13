@@ -24,6 +24,7 @@ import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
 import { deleteGraphSelection } from "../lib/graphEditing";
+import { InteractiveTutorial } from "../components/InteractiveTutorial";
 
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -472,7 +473,7 @@ function ParticipantEditor({
       </header>
 
       <div className="workspace">
-        <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements">
+        <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
           <div className="requirements-panel-header">
             <div className="requirements-mark"><FileText size={16} /></div>
             <div>
@@ -534,10 +535,10 @@ function ParticipantEditor({
         </aside>
 
         <div className="canvas-column">
-          <section className="component-dock" aria-label="Architecture components">
+          <section className="component-dock" aria-label="Architecture components" data-tutorial="component-library">
             <div className="component-dock-heading">
               <div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY</div><p>Browse by system layer. Select a component, then add it to your canvas.</p></div>
-              <button className="primary-btn compact" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={`Add ${selectedCatalogItem?.label ?? CATALOG[0].label} to the canvas`}><PlusCircle size={13} /> {selectedCatalogItem ? "CREATE COMPONENT" : "ADD DEFAULT COMPONENT"}</button>
+              <button data-tutorial="create-component" className="primary-btn compact" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={`Add ${selectedCatalogItem?.label ?? CATALOG[0].label} to the canvas`}><PlusCircle size={13} /> {selectedCatalogItem ? "CREATE COMPONENT" : "ADD DEFAULT COMPONENT"}</button>
             </div>
             {[
               { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
@@ -564,7 +565,7 @@ function ParticipantEditor({
               );
             })}
           </section>
-        <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas">
+        <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
           <div className="canvas-toolbar">
             <div>
               <div className="section-kicker">
@@ -580,8 +581,9 @@ function ParticipantEditor({
             <div className="toolbar-actions">
               <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
               <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
-              <button onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
+              <button data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
               <button
+                data-tutorial="save-draft"
                 onClick={() => save(submitted ? "submitted" : "draft")}
                 disabled={persisting}
               >
@@ -589,6 +591,7 @@ function ParticipantEditor({
               </button>
               <button
                 className="primary-btn compact"
+                data-tutorial="continue"
                 disabled={!canSubmit || persisting}
                 onClick={() => save("submitted")}
               >
@@ -638,7 +641,7 @@ function ParticipantEditor({
 
         </div>
 
-        <aside className="sidebar right-panel">
+        <aside className="sidebar right-panel" data-tutorial="inspector">
           <div className="section-kicker">INSPECTOR</div>
 
           {selectedCatalogItem && selectedKnowledge ? (
@@ -742,7 +745,7 @@ function ParticipantEditor({
             </div>
           )}
 
-          <div className="editor-history-status" aria-live="polite">{pastRef.current.length} undo step{pastRef.current.length === 1 ? "" : "s"} available · {futureRef.current.length} redo step{futureRef.current.length === 1 ? "" : "s"} </div>
+          <div className="editor-history-status" aria-live="polite" data-tutorial="connections">{pastRef.current.length} undo step{pastRef.current.length === 1 ? "" : "s"} available · {futureRef.current.length} redo step{futureRef.current.length === 1 ? "" : "s"} </div>
 
           <div className="submission-rule">
             {submitted
@@ -753,6 +756,7 @@ function ParticipantEditor({
           </div>
         </aside>
       </div>
+      <InteractiveTutorial page="workspace" />
     </div>
   );
 }
