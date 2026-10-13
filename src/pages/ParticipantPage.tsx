@@ -25,6 +25,7 @@ import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
 import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
+import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -534,19 +535,25 @@ function ParticipantEditor({
             </div>
           </section>
 
-          <section className="brief-card brief-card-notes" aria-labelledby="brief-notes-title">
-            <div className="brief-card-heading">
-              <span className="brief-step">03</span>
-              <div>
-                <h2 id="brief-notes-title">Design constraints</h2>
-                <p>Capture important technical decisions.</p>
-              </div>
-            </div>
-            <div className="field notes-field">
-              <label htmlFor="architecture-notes">ARCHITECTURE NOTES</label>
-              <textarea id="architecture-notes" rows={5} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Scaling, security, caching, persistence, failure handling…" />
-            </div>
-          </section>
+          <ArchitectureAIChat
+            name={applicationName}
+            requirements={applicationDescription}
+            nodes={nodes}
+            edges={edges}
+            onBeforeApply={pushHistory}
+            onApply={(nextName, nextNodes, nextEdges, summary) => {
+              nodesRef.current = nextNodes;
+              edgesRef.current = nextEdges;
+              setNodes(nextNodes);
+              setEdges(nextEdges);
+              setApplicationName(nextName);
+              setNotes((current) => current ? `${current}\\n\\nAI update: ${summary}` : `AI update: ${summary}`);
+              setSelectedId(null);
+              setSelectedEdgeId(null);
+              setSelectedCatalogTypeKey(null);
+              logActivity("AI_ARCHITECTURE_UPDATED", { components: nextNodes.length, connections: nextEdges.length });
+            }}
+          />
 
           <div className="requirements-status" role="status">
             <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
