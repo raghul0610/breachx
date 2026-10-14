@@ -101,7 +101,7 @@ export function validateArchitectureGraph(input: {
       groups.push(group);
     }
     if (groups.length > 1) {
-      warnings.push(`Graph contains ${groups.length} disconnected subgraphs; review components: ${groups.map((group) => group.join(", ")).join(" | ")}.`);
+      errors.push(`Graph contains ${groups.length} disconnected subgraphs; connect required components or remove unjustified components: ${groups.map((group) => group.join(", ")).join(" | ")}.`);
     }
     const indegree = new Map<string, number>();
     for (const id of validIds) indegree.set(id, 0);
