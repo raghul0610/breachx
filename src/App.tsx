@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { LandingPage } from "./pages/LandingPage";
 import { ParticipantPage } from "./pages/ParticipantPage";
-import { ArchitectureGeneratorPage } from "./pages/ArchitectureGeneratorPage";
 import { ProjectDashboard } from "./components/ProjectDashboard";
 import { AuthGate } from "./components/AuthGate";
 
-type AppMode = "home" | "projects" | "participant" | "generator";
+type AppMode = "home" | "projects" | "participant";
 
 function AppContent() {
   const [mode, setMode] = useState<AppMode>("projects");
@@ -33,14 +32,6 @@ function AppContent() {
     );
   }
 
-  if (mode === "generator") {
-    return (
-      <ArchitectureGeneratorPage
-        onBack={() => setMode("projects")}
-        onEdit={(projectId) => { setSelectedProjectId(projectId); setMode("participant"); }}
-      />
-    );
-  }
 
   return (
     <LandingPage
@@ -58,7 +49,6 @@ export default function App() {
     return (
       <LandingPage
         onOpenDesigner={() => setAuthRequested(true)}
-        onOpenGenerator={() => setAuthRequested(true)}
       />
     );
   }
