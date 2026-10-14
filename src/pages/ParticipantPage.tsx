@@ -389,7 +389,7 @@ function ParticipantEditor({
 
       if (effectiveStatus === "submitted") {
         setSubmitted(true);
-        alert(wasSubmitted ? "Submitted project changes saved." : "Blueprint saved. You can now generate a suggested architecture or export your design as a PDF.");
+        alert(wasSubmitted ? "Submitted project changes saved." : "Blueprint saved. You can continue editing or export your design as a PDF.");
         if (!wasSubmitted) onSubmitted();
       } else {
         alert("Draft saved.");
