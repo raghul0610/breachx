@@ -903,7 +903,7 @@ body { overflow:hidden; }
 .workspace > .collapsed-panel-strip-left, .workspace > .collapsed-panel-strip-right { position:absolute !important; top:14px; bottom:auto; z-index:21; display:flex; width:auto; min-height:40px; padding:5px; border:1px solid #293b48; border-radius:10px; background:rgba(8,16,23,.94); box-shadow:0 8px 28px #0007; }
 .workspace > .collapsed-panel-strip-left { left:12px; } .workspace > .collapsed-panel-strip-right { right:12px; }
 .workspace > .panel-resizer-vertical { display:none !important; }
-.workspace > .canvas-column .canvas-toolbar { position:absolute; top:12px; left:50%; z-index:8; width:min(780px,calc(100% - 48px)); max-height:92px; overflow:auto; transform:translateX(-50%); border:1px solid #293a47; border-radius:10px; background:rgba(8,17,25,.92); box-shadow:0 8px 30px #0006; backdrop-filter:blur(12px); }
+.workspace > .canvas-column .canvas-toolbar { position:absolute; top:auto; bottom:12px; left:50%; z-index:8; width:min(780px,calc(100% - 48px)); max-height:92px; overflow:auto; transform:translateX(-50%); border:1px solid #293a47; border-radius:10px; background:rgba(8,17,25,.92); box-shadow:0 8px 30px #0006; backdrop-filter:blur(12px); }
 .workspace > .canvas-column .canvas-toolbar .toolbar-actions { flex-wrap:wrap; }
 .floating-ai-chat-trigger { position:fixed; right:24px; bottom:24px; z-index:60; display:flex; align-items:center; justify-content:center; gap:9px; min-height:48px; padding:0 17px; border:1px solid #45c9ed; border-radius:999px; color:#06141b; background:#61d7f3; box-shadow:0 10px 36px #0009,0 0 0 4px #35c9ee1a; font:800 10px ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.06em; cursor:pointer; }
 .floating-ai-chat-trigger:hover { background:#8ae7fa; transform:translateY(-1px); }
