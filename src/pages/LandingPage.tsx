@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Workflow, BrainCircuit, Download, Layers } from "lucide-react";
+import { ArrowRight, Workflow, Download, Layers } from "lucide-react";
 
 /* ─── helpers ─────────────────────────────────────────────── */
 function usePrefersReducedMotion() {
@@ -159,10 +159,8 @@ function FeatureCard({
 /* ─── main ────────────────────────────────────────────────── */
 export function LandingPage({
   onOpenDesigner,
-  onOpenGenerator,
 }: {
   onOpenDesigner: () => void;
-  onOpenGenerator: () => void;
 }) {
   const reduced = usePrefersReducedMotion();
   const [heroVisible, setHeroVisible] = useState(false);
@@ -183,8 +181,7 @@ export function LandingPage({
         <span className="lp-nav-brand">ANCHON</span>
         <div className="lp-nav-links">
           <button className="lp-nav-link" onClick={onOpenDesigner}>Designer</button>
-          <button className="lp-nav-link" onClick={onOpenGenerator}>Generator</button>
-        </div>
+          </div>
         <button className="lp-nav-cta" onClick={onOpenDesigner} aria-label="Get Started">
           Get Started
         </button>
@@ -210,18 +207,12 @@ export function LandingPage({
             Design systems. Understand connections. Build better architecture.
           </p>
           <p className="lp-hero-copy">
-            Design your system architecture visually or let AI generate a starting point from your
-            requirements. Refine the architecture, explore its connections, and export a professional
-            blueprint.
+            Design your system architecture visually or use the AI chat in the workspace to propose and apply changes directly to the canvas.
           </p>
           <div className="lp-hero-actions">
             <button className="lp-btn-primary" onClick={onOpenDesigner}>
               <Workflow size={16} />
               Open Architecture Designer
-            </button>
-            <button className="lp-btn-outline" onClick={onOpenGenerator}>
-              <BrainCircuit size={16} />
-              Explore AI Generator
             </button>
           </div>
         </div>
@@ -233,11 +224,11 @@ export function LandingPage({
       {/* ── section B: two ways ── */}
       <section className="lp-section" aria-labelledby="lp-ways-heading">
         <div className="lp-section-inner" ref={featuresInView.ref}>
-          <div className="lp-section-kicker">TWO WAYS TO BUILD</div>
+          <div className="lp-section-kicker">DESIGN WITH AI</div>
           <h2 className="lp-section-heading" id="lp-ways-heading">
-            Your workflow,<br />your starting point.
+            One workspace.<br />From idea to architecture.
           </h2>
-          <div className="lp-features-grid">
+          <div className="lp-features-grid lp-features-grid-single">
             <FeatureCard
               icon={<Workflow size={24} />}
               title="Visual Architecture Designer"
@@ -248,16 +239,7 @@ export function LandingPage({
               visible={featuresInView.visible}
               reduced={reduced}
             />
-            <FeatureCard
-              icon={<BrainCircuit size={24} />}
-              title="AI Architecture Generator"
-              desc="Describe your application and let AI propose components, connections, request flows, and design decisions. Open the proposal in the editor to refine it."
-              cta="Generate Architecture"
-              onClick={onOpenGenerator}
-              delay={120}
-              visible={featuresInView.visible}
-              reduced={reduced}
-            />
+
           </div>
         </div>
       </section>
