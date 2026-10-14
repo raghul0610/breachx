@@ -35,7 +35,7 @@ export function ArchitectureGeneratorPage({onBack,onEdit}:{onBack:()=>void;onEdi
   if(!generated)return;
   const nodes:Node[] = generated.components.map((c,i)=>({id:c.id,type:"blueprintNode",position:{x:80+(i%4)*270,y:90+Math.floor(i/4)*180},data:{label:c.label,typeKey:c.typeKey,category:c.category,notes:c.notes}}));
   const edges:Edge[]=generated.connections.map((e,i)=>({id:"suggested-edge-"+i,source:e.source,target:e.target,label:[e.label,e.communicationType,e.purpose].filter(Boolean).join(" · ")||undefined,animated:true,markerEnd:{type:MarkerType.ArrowClosed}}));
-  const project = createProject({applicationName:generated.architectureName,applicationDescription:requirements,nodes,edges,notes:"AI-generated architecture proposal. Review assumptions and validate design choices before production use.\n\nOverview: "+generated.overview+"\nRequest flow: "+generated.requestFlow+"\nDesign decisions: "+generated.designDecisions.join("; "),status:"draft",updatedAt:new Date().toISOString()});
+  const project = createProject({applicationName:generated.architectureName,applicationDescription:requirements,nodes,edges,notes:"AI-generated architecture proposal. Review assumptions and validation findings before production use.\\n\\nOverview: "+generated.overview+"\\nRequest flow: "+generated.requestFlow+"\\nDesign decisions: "+generated.designDecisions.join("; ")+"\\nAssumptions: "+generated.assumptions.join("; ")+"\\nRequirement coverage: "+generated.requirementCoverage.map(r=>r.requirement+" — "+r.rationale).join("; ")+"\\nValidation warnings: "+generated.validation.warnings.join("; "),status:"draft",updatedAt:new Date().toISOString()});
   onEdit(project.id);
  }
  return <div className="app-shell generator-shell">
