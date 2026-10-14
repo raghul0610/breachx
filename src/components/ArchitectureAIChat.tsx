@@ -77,7 +77,7 @@ export function ArchitectureAIChat({
         }),
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error([payload.error, ...(payload.validation?.errors ?? []), ...(payload.validation?.warnings ?? [])].filter(Boolean).join("\\n") || "The architecture assistant could not complete that request.");
+      if (!response.ok) throw new Error([payload.error, ...(payload.validation?.errors ?? []), ...(payload.validation?.warnings ?? [])].filter(Boolean).join(" | ") || "The architecture assistant could not complete that request.");
       const result = payload as GeneratedArchitecture;
       const oldById = new Map(nodes.map((node) => [node.id, node]));
       const oldByLabel = new Map(nodes.map((node) => [node.data.label.toLowerCase(), node]));
@@ -104,7 +104,8 @@ export function ArchitectureAIChat({
       if (nextNodes.length < 3 || nextEdges.length < 2) throw new Error("The proposed architecture is incomplete. No changes were applied.");
       const plan = { result, nodes: nextNodes, edges: nextEdges, request: instruction };
       setPending(plan);
-      const validationSummary = result.validation?.warnings?.length ? ` Validation warnings: ${result.validation.warnings.slice(0, 3).join(" ")}` : "";\n      const summary = `Proposed ${nextNodes.length} components and ${nextEdges.length} connections. ${result.overview}${validationSummary}`;
+      const validationSummary = result.validation?.warnings?.length ? ` Validation warnings: ${result.validation.warnings.slice(0, 3).join(" ")}` : "";
+      const summary = `Proposed ${nextNodes.length} components and ${nextEdges.length} connections. ${result.overview}${validationSummary}`;
       setMessages((current) => [...current, { role: "assistant", content: mode === "agent" ? `Applied your request: ${summary}` : `Plan ready. ${summary} Review it, then apply the proposal to the canvas.` }]);
       if (mode === "agent") {
         onBeforeApply();
