@@ -64,14 +64,14 @@ describe("validateArchitectureGraph", () => {
     expect(result.errors.some((message) => message.includes("is not mapped to a component"))).toBe(true);
   });
 
-  it("warns when nodes are disconnected from the graph entry point", () => {
+  it("rejects disconnected subgraphs", () => {
     const result = validateArchitectureGraph({
       components: [...components, { id: "orphan", typeKey: "app_server", label: "Orphan", notes: "Independent component." }],
       connections,
       validTypeKeys,
       requirementCoverage,
     });
-    expect(result.passed).toBe(true);
-    expect(result.warnings.some((message) => message.includes("not reachable"))).toBe(true);
+    expect(result.passed).toBe(false);
+    expect(result.errors.some((message) => message.includes("disconnected subgraphs"))).toBe(true);
   });
 });
