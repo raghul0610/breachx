@@ -27,7 +27,7 @@ function AppContent() {
       <ParticipantPage
         projectId={selectedProjectId}
         onBack={() => setMode("projects")}
-        onSubmitted={() => setMode("generator")}
+        onSubmitted={() => setMode("projects")}
       />
     );
   }
@@ -36,7 +36,6 @@ function AppContent() {
   return (
     <LandingPage
       onOpenDesigner={() => setMode("projects")}
-      onOpenGenerator={() => setMode("generator")}
     />
   );
 }
