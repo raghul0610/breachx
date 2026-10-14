@@ -16,7 +16,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, PanelTopClose, PanelTopOpen, Maximize2, Minimize2, GripVertical, GripHorizontal } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
@@ -128,6 +128,8 @@ function ParticipantEditor({
   const [leftPanelWidth, setLeftPanelWidth] = useState(260);
   const [rightPanelWidth, setRightPanelWidth] = useState(300);
   const [componentDockHeight, setComponentDockHeight] = useState(285);
+  const [componentDockOpen, setComponentDockOpen] = useState(true);
+  const [canvasFocusMode, setCanvasFocusMode] = useState(false);
   const [resizeDrag, setResizeDrag] = useState<{ type: "left" | "right" | "dock"; start: number; initial: number } | null>(null);
   const [submitted, setSubmitted] = useState(saved?.status === "submitted");
   const [historyVersion, setHistoryVersion] = useState(0);
@@ -497,7 +499,7 @@ function ParticipantEditor({
         </span>
       </header>
 
-      <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
+      <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"} ${componentDockOpen ? "component-dock-open" : "component-dock-closed"} ${canvasFocusMode ? "canvas-focus-mode" : ""}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
           <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
             <div className="requirements-mark"><FileText size={16} /></div>
@@ -553,10 +555,13 @@ function ParticipantEditor({
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
-          <section className="component-dock" aria-label="Architecture components" data-tutorial="component-library">
+          {componentDockOpen && <section className="component-dock" aria-label="Architecture components" data-tutorial="component-library">
             <div className="component-dock-heading">
               <div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY</div><p>Browse by system layer. Select a component, then add it to your canvas.</p></div>
-              <button data-tutorial="create-component" className="primary-btn compact" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={`Add ${selectedCatalogItem?.label ?? CATALOG[0].label} to the canvas`}><PlusCircle size={13} /> {selectedCatalogItem ? "CREATE COMPONENT" : "ADD DEFAULT COMPONENT"}</button>
+              <div className="component-dock-heading-actions">
+                <button data-tutorial="create-component" className="primary-btn compact" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={`Add ${selectedCatalogItem?.label ?? CATALOG[0].label} to the canvas`}><PlusCircle size={13} /> {selectedCatalogItem ? "CREATE COMPONENT" : "ADD DEFAULT COMPONENT"}</button>
+                <button className="panel-toggle-button" type="button" onClick={() => setComponentDockOpen(false)} aria-label="Close component library" title="Hide component library"><PanelTopClose size={15} /></button>
+              </div>
             </div>
             {[
               { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
@@ -582,8 +587,8 @@ function ParticipantEditor({
                 </div>
               );
             })}
-          </section>
-          <div className="panel-resizer panel-resizer-horizontal" role="separator" aria-label="Resize component library height" aria-orientation="horizontal" title="Drag to resize component library" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "dock", start: event.clientY, initial: componentDockHeight }); }}><GripHorizontal size={14} /></div>
+          </section>}
+          {componentDockOpen && <div className="panel-resizer panel-resizer-horizontal" role="separator" aria-label="Resize component library height" aria-orientation="horizontal" title="Drag to resize component library" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "dock", start: event.clientY, initial: componentDockHeight }); }}><GripHorizontal size={14} /></div>}
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
           <div className="canvas-toolbar">
             <div>
@@ -598,6 +603,8 @@ function ParticipantEditor({
             </div>
 
             <div className="toolbar-actions">
+              <button type="button" onClick={() => setComponentDockOpen((open) => !open)} title={componentDockOpen ? "Hide component library" : "Show component library"} aria-label={componentDockOpen ? "Hide component library" : "Show component library"}>{componentDockOpen ? <PanelTopClose size={13} /> : <PanelTopOpen size={13} />} {componentDockOpen ? "HIDE COMPONENTS" : "COMPONENTS"}</button>
+              <button type="button" onClick={() => setCanvasFocusMode((focused) => !focused)} title={canvasFocusMode ? "Exit canvas focus" : "Expand architecture canvas"} aria-label={canvasFocusMode ? "Exit canvas focus" : "Expand architecture canvas"}>{canvasFocusMode ? <Minimize2 size={13} /> : <Maximize2 size={13} />} {canvasFocusMode ? "EXIT FOCUS" : "FOCUS CANVAS"}</button>
               <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
               <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
               <button data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
