@@ -302,10 +302,7 @@ export function LandingPage({
                 <Workflow size={16} />
                 Open Architecture Designer
               </button>
-              <button className="lp-btn-outline" onClick={onOpenGenerator}>
-                <BrainCircuit size={16} />
-                Generate with AI
-              </button>
+
             </div>
           </div>
         </div>
