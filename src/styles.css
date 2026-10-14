@@ -857,3 +857,31 @@ body::-webkit-scrollbar,
     max-height:38dvh;
   }
 }
+
+
+/* Architecture generator validation report */
+.architecture-validation {
+  margin: 18px 0;
+  padding: 14px 16px;
+  border: 1px solid #344350;
+  border-radius: 9px;
+  background: #09121a;
+}
+.architecture-validation > strong {
+  display: block;
+  font: 800 10px ui-monospace, monospace;
+  letter-spacing: .08em;
+}
+.architecture-validation > p {
+  margin: 8px 0 0;
+  color: #91a2b1;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.architecture-validation-passed { border-color: #235c46; }
+.architecture-validation-passed > strong { color: #71e2ad; }
+.architecture-validation-failed { border-color: #71373b; }
+.architecture-validation-failed > strong,
+.architecture-validation-error { color: #ff9292 !important; }
+.architecture-validation-warning { color: #f0cb73 !important; }
+.suggested-edge small { color: #8095a5; font-size: 10px; line-height: 1.5; }
