@@ -750,7 +750,7 @@ function ParticipantEditor({
 
           <div className="submission-rule">
             {submitted
-              ? "Blueprint saved. Continue to the AI architecture generator."
+              ? "Blueprint saved. Continue editing or export your design as a PDF."
               : canSubmit
                 ? "Blueprint is ready to save."
                 : "Add an application description, 3 components and 2 connections to save."}
