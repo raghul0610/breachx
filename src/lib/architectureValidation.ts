@@ -57,7 +57,7 @@ export function validateArchitectureGraph(input: {
     validIds.add(component.id);
     if (!validTypeKeys.has(component.typeKey)) errors.push(`Component "${component.label || component.id}" uses an unknown catalog type.`);
     if (!component.label?.trim()) errors.push(`Component "${component.id}" needs a descriptive label.`);
-    if (!component.notes?.trim()) warnings.push(`Component "${component.label || component.id}" has no responsibility or rationale.`);
+    if (!component.notes?.trim()) errors.push(`Component "${component.label || component.id}" has no responsibility or rationale.`);
   }
 
   const edgeKeys = new Set<string>();
@@ -77,7 +77,7 @@ export function validateArchitectureGraph(input: {
     edgeKeys.add(key);
     adjacency.get(edge.source)?.push(edge.target);
     if (!edge.label?.trim() || !edge.purpose?.trim() || !edge.communicationType?.trim()) {
-      warnings.push(`Connection ${edge.source} → ${edge.target} must explain its purpose and communication type.`);
+      errors.push(`Connection ${edge.source} → ${edge.target} must define a label, communication type, and purpose.`);
     }
   }
 
@@ -103,12 +103,13 @@ export function validateArchitectureGraph(input: {
     if (disconnected.length) warnings.push(`Components are not reachable from a graph entry point: ${disconnected.join(", ")}.`);
   }
 
+  if (requirementCoverage.length === 0) errors.push("Requirement coverage must map key requirements to components.");
   for (const item of requirementCoverage) {
     if (!item.requirement?.trim()) errors.push("Requirement coverage entries must name a requirement.");
     if (!item.rationale?.trim()) warnings.push(`Requirement "${item.requirement}" has no coverage rationale.`);
     const unknown = (item.componentIds ?? []).filter((id) => !validIds.has(id));
     if (unknown.length) errors.push(`Requirement "${item.requirement}" references unknown components: ${unknown.join(", ")}.`);
-    if (!item.componentIds?.length) warnings.push(`Requirement "${item.requirement}" is not mapped to a component.`);
+    if (!item.componentIds?.length) errors.push(`Requirement "${item.requirement}" is not mapped to a component.`);
   }
 
   const uniqueWarnings = [...new Set(warnings)].slice(0, MAX_WARNINGS);
