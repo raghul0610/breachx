@@ -61,9 +61,8 @@ export function validateArchitectureGraph(input: {
   }
 
   const edgeKeys = new Set<string>();
-  const adjacency = new Map<string, string[]>();
   const undirected = new Map<string, string[]>();
-  for (const id of validIds) { adjacency.set(id, []); undirected.set(id, []); }
+  for (const id of validIds) undirected.set(id, []);
   for (const edge of connections) {
     if (!validIds.has(edge.source) || !validIds.has(edge.target)) {
       errors.push(`Connection "${edge.source} → ${edge.target}" references a missing component.`);
@@ -76,7 +75,6 @@ export function validateArchitectureGraph(input: {
     const key = `${edge.source}\u0000${edge.target}`;
     if (edgeKeys.has(key)) warnings.push(`Duplicate directed connection: ${edge.source} → ${edge.target}.`);
     edgeKeys.add(key);
-    adjacency.get(edge.source)?.push(edge.target);
     undirected.get(edge.source)?.push(edge.target);
     undirected.get(edge.target)?.push(edge.source);
     if (!edge.label?.trim() || !edge.purpose?.trim() || !edge.communicationType?.trim()) {
