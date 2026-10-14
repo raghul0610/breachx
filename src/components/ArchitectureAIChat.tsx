@@ -77,7 +77,7 @@ export function ArchitectureAIChat({
         }),
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "The architecture assistant could not complete that request.");
+      if (!response.ok) throw new Error([payload.error, ...(payload.validation?.errors ?? []), ...(payload.validation?.warnings ?? [])].filter(Boolean).join("\\n") || "The architecture assistant could not complete that request.");
       const result = payload as GeneratedArchitecture;
       const oldById = new Map(nodes.map((node) => [node.id, node]));
       const oldByLabel = new Map(nodes.map((node) => [node.data.label.toLowerCase(), node]));
