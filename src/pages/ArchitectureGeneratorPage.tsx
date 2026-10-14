@@ -26,7 +26,7 @@ export function ArchitectureGeneratorPage({onBack,onEdit}:{onBack:()=>void;onEdi
   try{
    const response=await fetch("/api/generate-architecture",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,requirements})});
    const data=await response.json();
-   if(!response.ok)throw new Error([data.error,...(data.validation?.errors??[]),...(data.validation?.warnings??[])].filter(Boolean).join("\\n"));
+   if(!response.ok)throw new Error([data.error,...(data.validation?.errors??[]),...(data.validation?.warnings??[])].filter(Boolean).join(" | "));
    setGenerated(data as Generated);
   }catch(e){setError(e instanceof Error?e.message:"Could not generate architecture.");}
   finally{setLoading(false);}
