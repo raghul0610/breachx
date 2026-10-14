@@ -16,7 +16,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
@@ -125,6 +125,7 @@ function ParticipantEditor({
   const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
   const [leftPanelWidth, setLeftPanelWidth] = useState(260);
   const [rightPanelWidth, setRightPanelWidth] = useState(300);
   const [componentDockHeight, setComponentDockHeight] = useState(285);
@@ -521,26 +522,6 @@ function ParticipantEditor({
             </div>
           </section>
 
-          <ArchitectureAIChat
-            name={applicationName}
-            requirements={applicationDescription}
-            nodes={nodes}
-            edges={edges}
-            onBeforeApply={pushHistory}
-            onApply={(nextName, nextNodes, nextEdges, summary) => {
-              nodesRef.current = nextNodes;
-              edgesRef.current = nextEdges;
-              setNodes(nextNodes);
-              setEdges(nextEdges);
-              setApplicationName(nextName);
-              setNotes((current) => current ? `${current}\n\nAI update: ${summary}` : `AI update: ${summary}`);
-              setSelectedId(null);
-              setSelectedEdgeId(null);
-              setSelectedCatalogTypeKey(null);
-              logActivity("AI_ARCHITECTURE_UPDATED", { components: nextNodes.length, connections: nextEdges.length });
-            }}
-          />
-
           <div className="requirements-status" role="status">
             <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
             <div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div>
@@ -775,6 +756,32 @@ function ParticipantEditor({
                 : "Add an application description, 3 components and 2 connections to save."}
           </div>
         </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
+      </div>
+      <button type="button" className="floating-ai-chat-trigger" onClick={() => setChatOpen((open) => !open)} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label={chatOpen ? "Close architecture AI chat" : "Open architecture AI chat"} title={chatOpen ? "Close AI chat" : "Open AI chat"}>
+        {chatOpen ? <X size={19} /> : <MessageSquare size={19} />}
+        <span>{chatOpen ? "CLOSE AI" : "ASK ANCHON"}</span>
+      </button>
+      <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
+        <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" onClick={() => setChatOpen(false)} aria-label="Close AI chat"><X size={16} /></button></div>
+                  <ArchitectureAIChat
+            name={applicationName}
+            requirements={applicationDescription}
+            nodes={nodes}
+            edges={edges}
+            onBeforeApply={pushHistory}
+            onApply={(nextName, nextNodes, nextEdges, summary) => {
+              nodesRef.current = nextNodes;
+              edgesRef.current = nextEdges;
+              setNodes(nextNodes);
+              setEdges(nextEdges);
+              setApplicationName(nextName);
+              setNotes((current) => current ? `${current}\n\nAI update: ${summary}` : `AI update: ${summary}`);
+              setSelectedId(null);
+              setSelectedEdgeId(null);
+              setSelectedCatalogTypeKey(null);
+              logActivity("AI_ARCHITECTURE_UPDATED", { components: nextNodes.length, connections: nextEdges.length });
+            }}
+          />
       </div>
       <InteractiveTutorial page="workspace" />
     </div>
