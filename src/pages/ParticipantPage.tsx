@@ -100,7 +100,7 @@ function ParticipantEditor({
   projectId: string;
   startingSubmission: DesignSubmission | null;
 }) {
-  const { screenToFlowPosition, getViewport } = useReactFlow();
+  const { screenToFlowPosition, getViewport, fitView } = useReactFlow();
   const saved = startingSubmission;
 
   const [nodes, setNodes, onNodesChange] = useNodesState(
@@ -778,6 +778,9 @@ function ParticipantEditor({
               edgesRef.current = nextEdges;
               setNodes(nextNodes);
               setEdges(nextEdges);
+              window.requestAnimationFrame(() => {
+                void fitView({ padding: 0.2, duration: 350 });
+              });
               setApplicationName(nextName);
               setNotes((current) => current ? `${current}\n\nAI update: ${summary}` : `AI update: ${summary}`);
               setSelectedId(null);

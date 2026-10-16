@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Bot, Check, LoaderCircle, MessageSquare, Send, Sparkles, WandSparkles } from "lucide-react";
-import { MarkerType, type Edge, type Node } from "@xyflow/react";
+import { MarkerType, Position, type Edge, type Node } from "@xyflow/react";
+import { layoutArchitectureGraph } from "../lib/architectureLayout";
 import type { BlueprintNodeData } from "./BlueprintNode";
 
 type GeneratedArchitecture = {
@@ -81,12 +82,15 @@ export function ArchitectureAIChat({
       const result = payload as GeneratedArchitecture;
       const oldById = new Map(nodes.map((node) => [node.id, node]));
       const oldByLabel = new Map(nodes.map((node) => [node.data.label.toLowerCase(), node]));
-      const nextNodes: Node<BlueprintNodeData>[] = result.components.map((component, index) => {
+      const nextNodes: Node<BlueprintNodeData>[] = result.components.map((component) => {
         const existing = oldById.get(component.id) ?? oldByLabel.get(component.label.toLowerCase());
         return {
           id: component.id,
           type: "blueprintNode",
-          position: existing?.position ?? { x: 80 + (index % 4) * 250, y: 80 + Math.floor(index / 4) * 170 },
+          // AI proposals are laid out as a complete graph below; don't retain crowded old positions.
+          position: existing?.position ?? { x: 0, y: 0 },
+          sourcePosition: Position.Right,
+          targetPosition: Position.Left,
           data: { label: component.label, typeKey: component.typeKey, category: component.category, notes: component.notes || undefined },
         };
       });
@@ -101,15 +105,16 @@ export function ArchitectureAIChat({
           animated: true,
           markerEnd: { type: MarkerType.ArrowClosed },
         }));
-      if (nextNodes.length < 3 || nextEdges.length < 2) throw new Error("The proposed architecture is incomplete. No changes were applied.");
-      const plan = { result, nodes: nextNodes, edges: nextEdges, request: instruction };
+      const spaciousNodes = layoutArchitectureGraph(nextNodes, nextEdges);
+      if (spaciousNodes.length < 3 || nextEdges.length < 2) throw new Error("The proposed architecture is incomplete. No changes were applied.");
+      const plan = { result, nodes: spaciousNodes, edges: nextEdges, request: instruction };
       setPending(plan);
       const validationSummary = result.validation?.warnings?.length ? ` Validation warnings: ${result.validation.warnings.slice(0, 3).join(" ")}` : "";
-      const summary = `Proposed ${nextNodes.length} components and ${nextEdges.length} connections. ${result.overview}${validationSummary}`;
+      const summary = `Proposed ${spaciousNodes.length} components and ${nextEdges.length} connections in a compact horizontal layout. ${result.overview}${validationSummary}`;
       setMessages((current) => [...current, { role: "assistant", content: mode === "agent" ? `Applied your request: ${summary}` : `Plan ready. ${summary} Review it, then apply the proposal to the canvas.` }]);
       if (mode === "agent") {
         onBeforeApply();
-        onApply(result.architectureName || name, nextNodes, nextEdges, result.overview);
+        onApply(result.architectureName || name, spaciousNodes, nextEdges, result.overview);
         setPending(null);
       }
     } catch (cause) {
