@@ -253,28 +253,49 @@ function ParticipantEditor({
     : null;
   const canvasEdges = useMemo(() => edges.map((edge) => {
     const sourceNode = nodes.find((node) => node.id === edge.source);
+    const targetNode = nodes.find((node) => node.id === edge.target);
     const accent = getCategoryAccent(String(sourceNode?.data?.category ?? ""));
+    const review = reviewConnection({
+      edge,
+      nodes,
+      edges,
+      requirements: `${applicationName} ${applicationDescription} ${notes}`,
+    });
+    const rawLabel = typeof edge.label === "string" ? edge.label.trim() : "";
+    const inferredLabel = /database|storage|data/i.test(String(targetNode?.data?.category ?? targetNode?.data?.typeKey ?? ""))
+      ? "DATA"
+      : /api|fastapi|backend|server|service/i.test(String(targetNode?.data?.typeKey ?? targetNode?.data?.label ?? ""))
+        ? "API"
+        : /queue|kafka|event|message/i.test(String(targetNode?.data?.typeKey ?? targetNode?.data?.label ?? ""))
+          ? "EVENT"
+          : "FLOW";
+    const compactLabel = (rawLabel || inferredLabel).replace(/\s+/g, " ").slice(0, 14);
+    const hasWarning = review.severity === "high" || review.severity === "medium";
     return {
       ...edge,
-      label: edge.label ?? "FLOW",
+      label: hasWarning ? `⚠ ${compactLabel}` : compactLabel,
       labelStyle: {
         ...edge.labelStyle,
-        fill: accent,
+        fill: hasWarning ? (review.severity === "high" ? "#ff8997" : "#f5cb72") : accent,
         fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 800,
       },
       labelBgStyle: {
         ...edge.labelBgStyle,
-        fill: "#08121b",
-        fillOpacity: 0.96,
+        fill: hasWarning ? (review.severity === "high" ? "#35131b" : "#30250f") : "#08121b",
+        fillOpacity: 0.98,
       },
-      labelBgPadding: edge.labelBgPadding ?? [7, 4] as [number, number],
+      labelBgPadding: edge.labelBgPadding ?? [6, 3] as [number, number],
       labelBgBorderRadius: edge.labelBgBorderRadius ?? 4,
-      style: { ...edge.style, stroke: accent, strokeWidth: 2.6 },
-      markerEnd: { type: MarkerType.ArrowClosed, color: accent },
+      style: {
+        ...edge.style,
+        stroke: hasWarning ? (review.severity === "high" ? "#fb7185" : "#fbbf24") : accent,
+        strokeWidth: hasWarning ? 3.1 : 2.4,
+      },
+      markerEnd: { type: MarkerType.ArrowClosed, color: hasWarning ? (review.severity === "high" ? "#fb7185" : "#fbbf24") : accent },
     };
-  }), [edges, nodes]);
+  }), [edges, nodes, applicationName, applicationDescription, notes]);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
   const selectedCatalogItem = CATALOG.find((item) => item.typeKey === selectedCatalogTypeKey);
   const selectedKnowledge = selectedCatalogItem ? getComponentKnowledge(selectedCatalogItem) : null;
@@ -647,7 +668,7 @@ function ParticipantEditor({
             onConnect={onConnect}
             onReconnect={onReconnect}
             onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); canvasRef.current?.focus({ preventScroll: true }); }}
-            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); canvasRef.current?.focus({ preventScroll: true }); }}
+            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); canvasRef.current?.focus({ preventScroll: true }); }}
             onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); }}
             onDragOver={(event) => {
               event.preventDefault();
