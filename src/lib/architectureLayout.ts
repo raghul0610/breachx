@@ -1,4 +1,4 @@
-import type { Edge, Node, Position } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 
 export type LayoutNode = Pick<Node, "id" | "position">;
 export type LayoutConnection = Pick<Edge, "source" | "target">;
@@ -108,13 +108,12 @@ export function layoutArchitectureGraph<T extends LayoutNode>(
   }
 
   const positions = new Map<string, { x: number; y: number }>();
-  const maxRows = Math.max(...layerRanks.map((depth) => layers.get(depth)!.length));
   for (const depth of layerRanks) {
     const layer = layers.get(depth)!;
     layer.forEach((id, index) => {
       positions.set(id, {
         x: AI_LAYOUT.originX + depth * AI_LAYOUT.horizontalGap,
-        y: AI_LAYOUT.originY + (index - (layer.length - 1) / 2) * AI_LAYOUT.verticalGap + (maxRows > layer.length ? ((maxRows - layer.length) * AI_LAYOUT.verticalGap) / 2 : 0),
+        y: AI_LAYOUT.originY + (index - (layer.length - 1) / 2) * AI_LAYOUT.verticalGap,
       });
     });
   }
@@ -122,11 +121,3 @@ export function layoutArchitectureGraph<T extends LayoutNode>(
   return nodes.map((node) => ({ ...node, position: positions.get(node.id) ?? node.position }));
 }
 
-export function getAIEdgeRouting() {
-  return {
-    type: "smoothstep" as const,
-    sourcePosition: "right" as Position,
-    targetPosition: "left" as Position,
-    animated: true,
-  };
-}
