@@ -20,6 +20,20 @@ describe("reviewConnection", () => {
     expect(result.title).toContain("bypass");
   });
 
+  it("does not mistake a backend API server's database access for a client bypass", () => {
+    const backendNodes = [
+      ...nodes,
+      { id: "fastapi", data: { label: "FastAPI Backend", typeKey: "fastapi", category: "API" } },
+    ];
+    const result = reviewConnection({
+      edge: { id: "e1", source: "fastapi", target: "db" },
+      nodes: backendNodes,
+      edges: [{ id: "e1", source: "fastapi", target: "db" }],
+      requirements: "Web application with a FastAPI backend",
+    });
+    expect(result.severity).toBe("ok");
+  });
+
   it("flags self-referencing edges", () => {
     const result = reviewConnection({
       edge: { id: "e1", source: "api", target: "api" },
