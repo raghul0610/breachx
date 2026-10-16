@@ -4,14 +4,14 @@ export type LayoutNode = Pick<Node, "id" | "position">;
 export type LayoutConnection = Pick<Edge, "source" | "target">;
 
 export const AI_LAYOUT = {
-  horizontalGap: 540,
-  verticalGap: 320,
+  horizontalGap: 300,
+  verticalGap: 176,
   originX: 120,
   originY: 120,
 } as const;
 
 /**
- * Places architecture nodes in spacious left-to-right layers.
+ * Places architecture nodes in compact, left-to-right layers.
  * Rank is derived from graph connectivity; repeated barycenter ordering reduces
  * edge crossings while preserving a stable layout for nodes with the same rank.
  */
