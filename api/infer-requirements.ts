@@ -1,5 +1,3 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-
 declare const process: { env: Record<string, string | undefined> };
 
 const schema = {
@@ -14,7 +12,7 @@ const schema = {
   required: ["summary", "functionalRequirements", "nonFunctionalRequirements", "assumptions"],
 } as const;
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return res.status(503).json({ error: "OPENROUTER_API_KEY is not configured on the server." });
