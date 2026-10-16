@@ -33,41 +33,46 @@ export function layoutArchitectureGraph<T extends LayoutNode>(
     incoming.get(edge.target)!.push(edge.source);
   }
 
-  // Breadth-first depth from all entry nodes. This also gives sensible ranks for cycles.
-  const rank = new Map<string, number>();
-  const queue = ids.filter((id) => incoming.get(id)!.length === 0);
-  for (const id of queue) rank.set(id, 0);
-  if (queue.length === 0) {
-    queue.push(ids[0]);
-    rank.set(ids[0], 0);
-  }
+  // Use longest-path ranks for acyclic graphs so each connection advances one layer.
+  // This avoids edges skipping over intermediate columns of nodes.
+  const rank = new Map<string, number>(ids.map((id) => [id, 0]));
+  const indegree = new Map(ids.map((id) => [id, incoming.get(id)!.length]));
+  const queue = ids.filter((id) => indegree.get(id) === 0);
+  const topologicalOrder: string[] = [];
   for (let cursor = 0; cursor < queue.length; cursor += 1) {
     const source = queue[cursor];
+    topologicalOrder.push(source);
     for (const target of outgoing.get(source)!) {
-      const nextRank = (rank.get(source) ?? 0) + 1;
-      if (!rank.has(target) || nextRank < rank.get(target)!) {
-        rank.set(target, nextRank);
-        queue.push(target);
-      }
+      rank.set(target, Math.max(rank.get(target) ?? 0, (rank.get(source) ?? 0) + 1));
+      indegree.set(target, indegree.get(target)! - 1);
+      if (indegree.get(target) === 0) queue.push(target);
     }
   }
-  // Disconnected components are placed in subsequent layers rather than stacked on top.
-  let maxRank = Math.max(0, ...rank.values());
-  for (const id of ids) {
-    if (rank.has(id)) continue;
-    maxRank += 1;
-    rank.set(id, maxRank);
-    queue.push(id);
-    for (let cursor = queue.length - 1; cursor < queue.length; cursor += 1) {
-      const source = queue[cursor];
+  if (topologicalOrder.length !== ids.length) {
+    // Cyclic architectures have no valid topological order; use a bounded BFS fallback.
+    rank.clear();
+    const cycleQueue = ids.filter((id) => incoming.get(id)!.length === 0);
+    for (const id of cycleQueue) rank.set(id, 0);
+    if (cycleQueue.length === 0) {
+      cycleQueue.push(ids[0]);
+      rank.set(ids[0], 0);
+    }
+    for (let cursor = 0; cursor < cycleQueue.length; cursor += 1) {
+      const source = cycleQueue[cursor];
       for (const target of outgoing.get(source)!) {
         if (!rank.has(target)) {
-          rank.set(target, (rank.get(source) ?? maxRank) + 1);
-          queue.push(target);
+          rank.set(target, (rank.get(source) ?? 0) + 1);
+          cycleQueue.push(target);
         }
       }
     }
-    maxRank = Math.max(maxRank, ...rank.values());
+    let nextRank = Math.max(0, ...rank.values()) + 1;
+    for (const id of ids) {
+      if (!rank.has(id)) {
+        rank.set(id, nextRank);
+        nextRank += 1;
+      }
+    }
   }
 
   const layers = new Map<number, string[]>();
