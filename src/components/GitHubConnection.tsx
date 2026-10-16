@@ -175,7 +175,7 @@ export function GitHubConnection({ onOpenProject }: { onOpenProject: (projectId:
   };
 
   const reviewArchitecture = () => {
-    const corpus = [...(analysis?.topLevel ?? []), ...(analysis?.directories ?? []), ...(analysis?.keyFiles ?? []).flatMap(file => [file.path, ...file.summary])].join(" ").toLowerCase();
+    const corpus = [...(analysis?.topLevel ?? []), ...(analysis?.directories ?? []), ...(analysis?.keyFiles ?? []).flatMap(file => [file.path, ...file.summary]), ...(analysis?.sourceEvidence ?? []).flatMap(file => [file.path, ...file.imports, ...file.indicators])].join(" ").toLowerCase();
     const reqs = requirements.toLowerCase();
     const findings: { severity: "high" | "medium" | "info"; title: string; reason: string; recommendation: string }[] = [];
     if (!/test|spec|jest|vitest|pytest|playwright|cypress/.test(corpus)) findings.push({ severity: "medium", title: "Automated test coverage not evident", reason: "The scan did not expose recognizable test tooling or test directories. This is not proof that tests do not exist.", recommendation: "Add or identify unit, integration, and end-to-end tests for critical flows." });
@@ -248,7 +248,7 @@ export function GitHubConnection({ onOpenProject }: { onOpenProject: (projectId:
         <section className="github-analysis" aria-live="polite">
           <div className="github-analysis-heading"><div><div className="github-repository-list-heading"><FolderTree size={12} /> CODEBASE ANALYSIS</div><h3>{analysis.repository}</h3><p>{analysis.branch} · {analysis.commit.slice(0, 7)} · {new Date(analysis.analyzedAt).toLocaleString()}</p></div><button className="github-refresh-btn" onClick={() => setAnalysis(null)}>CLEAR</button></div>
           <div className="github-analysis-stats"><div><strong>{analysis.summary.files.toLocaleString()}</strong><span>FILES</span></div><div><strong>{analysis.summary.directories.toLocaleString()}</strong><span>DIRECTORIES</span></div><div><strong>{analysis.summary.manifests}</strong><span>MANIFESTS</span></div><div><strong>{(analysis.summary.sizeBytes / 1024 / 1024).toFixed(1)} MB</strong><span>TRACKED SIZE</span></div></div>
-          <h4>Languages</h4><div className="github-language-list">{analysis.languages.slice(0, 8).map(item => <span key={item.language}>{item.language}<b>{item.files}</b></span>)}</div>
+          <h4>Source-level scan</h4><p className="github-muted">{analysis.sourceScan ? `Inspected ${analysis.sourceScan.sampledFiles} source files out of ${analysis.sourceScan.candidateFiles} eligible files${analysis.sourceScan.capped ? " (sample capped)" : ""}; resolved ${analysis.sourceConnections?.length ?? 0} internal imports. Connections are based on static import evidence, not observed runtime traffic.` : "This analysis result predates source-level import scanning. Re-run analysis to inspect module imports."}</p><h4>Languages</h4><div className="github-language-list">{analysis.languages.slice(0, 8).map(item => <span key={item.language}>{item.language}<b>{item.files}</b></span>)}</div>
           <h4>Top-level paths</h4><div className="github-path-list">{analysis.topLevel.map(path => <code key={path}>{path}</code>)}</div>
           <h4>Dependency and project manifests</h4>
           {analysis.keyFiles.length === 0 ? <p className="github-muted">No supported manifest files were found.</p> : analysis.keyFiles.map(file => <details className="github-manifest" key={file.path}><summary>{file.path}</summary><ul>{file.summary.map((line,index)=><li key={index}>{line}</li>)}</ul></details>)}
