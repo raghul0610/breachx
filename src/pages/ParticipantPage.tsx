@@ -16,7 +16,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
@@ -27,6 +27,33 @@ import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 
+
+
+type InferredRequirements = {
+  summary: string;
+  functionalRequirements: string[];
+  nonFunctionalRequirements: string[];
+  assumptions: string[];
+};
+
+const REQUIREMENTS_MARKER = "\n\n[ANCHON_INFERRED_REQUIREMENTS]\n";
+
+function readInferredRequirements(notes: string): InferredRequirements | null {
+  const markerIndex = notes.lastIndexOf(REQUIREMENTS_MARKER);
+  if (markerIndex < 0) return null;
+  try {
+    const value = JSON.parse(notes.slice(markerIndex + REQUIREMENTS_MARKER.length));
+    if (!value || !Array.isArray(value.functionalRequirements) || !Array.isArray(value.nonFunctionalRequirements)) return null;
+    return {
+      summary: typeof value.summary === "string" ? value.summary : "",
+      functionalRequirements: value.functionalRequirements.filter((item: unknown): item is string => typeof item === "string"),
+      nonFunctionalRequirements: value.nonFunctionalRequirements.filter((item: unknown): item is string => typeof item === "string"),
+      assumptions: Array.isArray(value.assumptions) ? value.assumptions.filter((item: unknown): item is string => typeof item === "string") : [],
+    };
+  } catch {
+    return null;
+  }
+}
 
 const initialNodes: Node<BlueprintNodeData>[] = [
   {
@@ -117,6 +144,9 @@ function ParticipantEditor({
       "Describe the application, expected users, traffic and important requirements.",
   );
   const [notes, setNotes] = useState(saved?.notes ?? "");
+  const [inferredRequirements, setInferredRequirements] = useState<InferredRequirements | null>(() => readInferredRequirements(saved?.notes ?? ""));
+  const [inferringRequirements, setInferringRequirements] = useState(false);
+  const [requirementsError, setRequirementsError] = useState("");
   const [viewport, setViewport] = useState(saved?.viewport);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
   const [saveError, setSaveError] = useState("");
@@ -353,6 +383,49 @@ function ParticipantEditor({
     [onEdgesChange, submitted],
   );
 
+
+  const inferRequirementsFromArchitecture = async () => {
+    setInferringRequirements(true);
+    setRequirementsError("");
+    try {
+      const response = await fetch("/api/infer-requirements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          application: { name: applicationName, description: applicationDescription },
+          nodes: nodes.map((node) => ({
+            id: node.id,
+            typeKey: node.data?.typeKey ?? "",
+            label: node.data?.label ?? node.id,
+            category: node.data?.category ?? "",
+            notes: node.data?.notes ?? "",
+          })),
+          edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target, label: edge.label ?? "" })),
+          notes: notes.split(REQUIREMENTS_MARKER)[0].trim(),
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(typeof payload.error === "string" ? payload.error : "Requirements analysis failed.");
+      const result: InferredRequirements = {
+        summary: typeof payload.summary === "string" ? payload.summary : "",
+        functionalRequirements: Array.isArray(payload.functionalRequirements) ? payload.functionalRequirements : [],
+        nonFunctionalRequirements: Array.isArray(payload.nonFunctionalRequirements) ? payload.nonFunctionalRequirements : [],
+        assumptions: Array.isArray(payload.assumptions) ? payload.assumptions : [],
+      };
+      setInferredRequirements(result);
+      const baseNotes = notes.split(REQUIREMENTS_MARKER)[0].trim();
+      setNotes(baseNotes + REQUIREMENTS_MARKER + JSON.stringify(result));
+      setApplicationDescription((current) => {
+        const base = current.split(REQUIREMENTS_MARKER)[0].trim();
+        return base || result.summary;
+      });
+    } catch (cause) {
+      setRequirementsError(cause instanceof Error ? cause.message : "Could not infer requirements for this architecture.");
+    } finally {
+      setInferringRequirements(false);
+    }
+  };
+
   const save = async (submissionStatus: "draft" | "submitted") => {
     const wasSubmitted = submitted;
     const effectiveStatus = wasSubmitted ? "submitted" : submissionStatus;
@@ -546,6 +619,35 @@ function ParticipantEditor({
               <label htmlFor="application-name">APPLICATION NAME</label>
               <input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" />
             </div>
+          </section>
+
+
+          <section className="brief-card" aria-labelledby="inferred-requirements-title">
+            <div className="brief-card-heading">
+              <span className="brief-step">02</span>
+              <div>
+                <h2 id="inferred-requirements-title">Architecture requirements</h2>
+                <p>Agent-inferred from the current components and connections.</p>
+              </div>
+            </div>
+            <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}>
+              <Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}
+            </button>
+            {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
+            {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
+            {inferredRequirements && <>
+              <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
+              <div style={{ marginTop: 14 }}>
+                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>
+                {inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}
+              </div>
+              <div style={{ marginTop: 14 }}>
+                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>
+                {inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}
+              </div>
+              {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
+              <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
+            </>}
           </section>
 
           <div className="requirements-status" role="status">
