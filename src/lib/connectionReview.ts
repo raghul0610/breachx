@@ -19,6 +19,7 @@ const labelOf = (node: ReviewNode) => node.data?.label ?? keyOf(node) ?? node.id
 
 const PUBLIC_ENTRY_TYPES = new Set([
   "client", "internet", "browser", "mobile_app", "frontend", "user_app", "client_app",
+  "dns", "cdn", "reverse_proxy", "bff", "api_gateway", "load_balancer", "firewall", "ddos_protection",
 ]);
 
 const DATA_TYPES = new Set([
@@ -33,8 +34,7 @@ const HIGH_COMPLEXITY_TYPES = new Set([
 
 const isPublicEntry = (node: ReviewNode) =>
   PUBLIC_ENTRY_TYPES.has(keyOf(node)) ||
-  node.data?.category === "Edge" ||
-  /^(client|internet|browser|mobile|frontend|user app)/i.test(labelOf(node));
+  /^(client|internet|browser|mobile|frontend|user app|cdn|dns|reverse proxy|api gateway|load balancer|firewall)/i.test(labelOf(node));
 
 const isDataStore = (node: ReviewNode) =>
   DATA_TYPES.has(keyOf(node)) ||
