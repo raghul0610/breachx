@@ -1074,3 +1074,100 @@ body { overflow:hidden; }
   cursor:default;
 }
 .workspace > .canvas-column > .component-dock.component-dock-open { z-index:32; }
+
+
+/* ANCHON scrolling fix: keep document/page content scrollable while hiding scrollbar chrome. */
+html,
+body {
+  min-height: 100%;
+  height: auto;
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+}
+
+#root {
+  min-height: 100dvh;
+  height: auto;
+  overflow: visible;
+}
+
+/* The landing page contains multiple sections and must not clip vertical overflow. */
+.lp-root {
+  min-height: 100dvh;
+  height: auto;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/* Workspace panels and popup content scroll independently without visible scrollbars. */
+.workspace > .left-panel,
+.workspace > .right-panel {
+  min-height: 0;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.workspace > .canvas-column > .component-dock.component-dock-open {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.floating-ai-chat-panel {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Long generator pages need a bounded scroll container rather than an unbounded overflow:auto. */
+.generator-shell {
+  height: 100dvh;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Keep all scrolling functional while suppressing scrollbar visuals. */
+html,
+body,
+#root,
+.lp-root,
+.app-shell,
+.workspace,
+.sidebar,
+.component-dock,
+.floating-ai-chat-panel,
+.generator-shell,
+.admin-content,
+.json-view,
+.ai-chat-messages {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar,
+.lp-root::-webkit-scrollbar,
+.app-shell::-webkit-scrollbar,
+.workspace::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+.component-dock::-webkit-scrollbar,
+.floating-ai-chat-panel::-webkit-scrollbar,
+.generator-shell::-webkit-scrollbar,
+.admin-content::-webkit-scrollbar,
+.json-view::-webkit-scrollbar,
+.ai-chat-messages::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
