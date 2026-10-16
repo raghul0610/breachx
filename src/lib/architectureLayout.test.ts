@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AI_LAYOUT, layoutArchitectureGraph } from "./architectureLayout";
 
 describe("layoutArchitectureGraph", () => {
-  it("places connected nodes in spacious left-to-right layers", () => {
+  it("places connected nodes in compact left-to-right layers", () => {
     const nodes = [
       { id: "client", position: { x: 0, y: 0 } },
       { id: "api", position: { x: 0, y: 0 } },
@@ -20,7 +20,7 @@ describe("layoutArchitectureGraph", () => {
     expect(new Set(result.map((node) => `${node.position.x},${node.position.y}`)).size).toBe(nodes.length);
   });
 
-  it("stacks fan-out nodes with large vertical separation", () => {
+  it("stacks fan-out nodes without excessive vertical spacing", () => {
     const nodes = [
       { id: "gateway", position: { x: 0, y: 0 } },
       { id: "users", position: { x: 0, y: 0 } },
