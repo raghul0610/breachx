@@ -182,7 +182,6 @@ export function LandingPage({
         <div className="lp-nav-links">
           <button className="lp-nav-link" onClick={onOpenDesigner}>Designer</button>
           </div>
-        </div>
         <button className="lp-nav-cta" onClick={onOpenDesigner} aria-label="Get Started">
           Get Started
         </button>
