@@ -496,7 +496,9 @@ function ParticipantEditor({
           <strong>ANCHON</strong>
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
-        <div className="topbar-right"><div className="topbar-actions">            <div className="toolbar-actions topbar-toolbar-actions">
+        <div className="topbar-right"><div className="topbar-actions"><div className="toolbar-actions topbar-toolbar-actions">
+              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => setComponentLibraryOpen((open) => !open)} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
+              <button type="button" className="topbar-add-component-button" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={"Add " + (selectedCatalogItem?.label ?? CATALOG[0].label) + " to the canvas"}><PlusCircle size={13} /> ADD COMPONENT</button>
               <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
               <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
               <button data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
@@ -522,6 +524,7 @@ function ParticipantEditor({
       </header>
 
       <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
+        {(componentLibraryOpen || leftPanelOpen || rightPanelOpen) && <button type="button" className="workspace-popup-scrim" aria-label="Close open panel" onClick={() => { setComponentLibraryOpen(false); setLeftPanelOpen(false); setRightPanelOpen(false); }} />}
         {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
           <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
             <div className="requirements-mark"><FileText size={16} /></div>
@@ -557,11 +560,8 @@ function ParticipantEditor({
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
-          <section className={`component-dock ${componentLibraryOpen ? "component-dock-open" : "component-dock-closed"}`} aria-label="Architecture components" data-tutorial="component-library">
-            <div className="component-dock-heading"><button type="button" className="component-library-toggle" onClick={() => setComponentLibraryOpen((open) => !open)} aria-expanded={componentLibraryOpen} aria-label={componentLibraryOpen ? "Collapse component library" : "Expand component library"} title={componentLibraryOpen ? "Collapse component library" : "Expand component library"}>{componentLibraryOpen ? <PanelLeftClose size={15} /> : <Layers size={15} />}<span>{componentLibraryOpen ? "HIDE LIBRARY" : "COMPONENT LIBRARY"}</span></button>
-              <div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY</div><p>Browse by system layer. Select a component, then add it to your canvas.</p></div>
-              <button data-tutorial="create-component" className="primary-btn compact" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={`Add ${selectedCatalogItem?.label ?? CATALOG[0].label} to the canvas`}><PlusCircle size={13} /> {selectedCatalogItem ? "CREATE COMPONENT" : "ADD DEFAULT COMPONENT"}</button>
-            </div>
+          {componentLibraryOpen && <section id="component-library-popup" className="component-dock component-dock-open" role="dialog" aria-modal="true" aria-label="Architecture component library" data-tutorial="component-library">
+            <div className="component-dock-heading"><div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY</div><p>Browse by system layer. Select a component, then add it to your canvas.</p></div><button type="button" className="component-library-close" onClick={() => setComponentLibraryOpen(false)} aria-label="Close component library"><X size={16} /></button></div>
             {componentLibraryOpen && <>{[
               { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
               { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration"] },
@@ -585,9 +585,8 @@ function ParticipantEditor({
                   </div>
                 </div>
               );
-            })}</>}
-          </section>
-          <div className="panel-resizer panel-resizer-horizontal" role="separator" aria-label="Resize component library height" aria-orientation="horizontal" title="Drag to resize component library" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "dock", start: event.clientY, initial: componentDockHeight }); }}><GripHorizontal size={14} /></div>
+            })}
+          </section>}
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
           <div className="canvas-toolbar">
             <div>
@@ -764,6 +763,7 @@ function ParticipantEditor({
         {chatOpen ? <X size={19} /> : <MessageSquare size={19} />}
         <span>{chatOpen ? "CLOSE AI" : "ASK ANCHON"}</span>
       </button>
+      {chatOpen && <button type="button" className="ai-chat-scrim" aria-label="Close Ask ANCHON panel" onClick={() => setChatOpen(false)} />}
       <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
         <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" onClick={() => setChatOpen(false)} aria-label="Close AI chat"><X size={16} /></button></div>
                   <ArchitectureAIChat
