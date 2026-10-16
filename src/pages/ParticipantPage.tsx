@@ -19,7 +19,8 @@ import {
 import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
-import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
+import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
+import { reviewConnection } from "../lib/connectionReview";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
@@ -242,6 +243,38 @@ function ParticipantEditor({
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
+  const connectionReview = selectedEdge
+    ? reviewConnection({
+        edge: selectedEdge,
+        nodes,
+        edges,
+        requirements: `${applicationName} ${applicationDescription} ${notes}`,
+      })
+    : null;
+  const canvasEdges = useMemo(() => edges.map((edge) => {
+    const sourceNode = nodes.find((node) => node.id === edge.source);
+    const accent = getCategoryAccent(String(sourceNode?.data?.category ?? ""));
+    return {
+      ...edge,
+      label: edge.label ?? "FLOW",
+      labelStyle: {
+        ...edge.labelStyle,
+        fill: accent,
+        fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+        fontSize: 13,
+        fontWeight: 800,
+      },
+      labelBgStyle: {
+        ...edge.labelBgStyle,
+        fill: "#08121b",
+        fillOpacity: 0.96,
+      },
+      labelBgPadding: edge.labelBgPadding ?? [7, 4] as [number, number],
+      labelBgBorderRadius: edge.labelBgBorderRadius ?? 4,
+      style: { ...edge.style, stroke: accent, strokeWidth: 2.6 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: accent },
+    };
+  }), [edges, nodes]);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
   const selectedCatalogItem = CATALOG.find((item) => item.typeKey === selectedCatalogTypeKey);
   const selectedKnowledge = selectedCatalogItem ? getComponentKnowledge(selectedCatalogItem) : null;
@@ -606,7 +639,7 @@ function ParticipantEditor({
 
           <ReactFlow
             nodes={nodes}
-            edges={edges}
+            edges={canvasEdges}
             nodeTypes={nodeTypes}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
@@ -629,6 +662,10 @@ function ParticipantEditor({
             colorMode="dark"
             defaultEdgeOptions={{
               animated: true,
+              style: { strokeWidth: 2.6 },
+              labelStyle: { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 13, fontWeight: 800 },
+              labelBgStyle: { fill: "#08121b", fillOpacity: 0.96 },
+              labelBgPadding: [7, 4],
               markerEnd: { type: MarkerType.ArrowClosed },
             }}
           >
@@ -738,8 +775,17 @@ function ParticipantEditor({
           ) : selectedEdge ? (
             <div className="catalog-inspector">
               <div className="catalog-inspector-title"><div className="catalog-component-icon"><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION</div><h3>Directed connection</h3></div></div>
-              <p className="catalog-summary">This connection carries flow from <strong>{nodes.find((node) => node.id === selectedEdge.source)?.data.label ?? selectedEdge.source}</strong> to <strong>{nodes.find((node) => node.id === selectedEdge.target)?.data.label ?? selectedEdge.target}</strong>.</p>
-              <button className="danger-btn"  onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
+              <p className="catalog-summary">Flow from <strong>{nodes.find((node) => node.id === selectedEdge.source)?.data.label ?? selectedEdge.source}</strong> to <strong>{nodes.find((node) => node.id === selectedEdge.target)?.data.label ?? selectedEdge.target}</strong>.</p>
+              {connectionReview && <section className={`connection-review connection-review--${connectionReview.severity}`} aria-live="polite">
+                <div className="connection-review-heading">
+                  <span className="section-kicker">CONNECTION REVIEW</span>
+                  <strong>{connectionReview.title}</strong>
+                </div>
+                <p>{connectionReview.description}</p>
+                <div className="connection-review-recommendation"><strong>RECOMMENDATION</strong><span>{connectionReview.recommendation}</span></div>
+                <small>Rule-based screening only. Confirm against actual workload, data flow, security boundaries and cost estimates before production.</small>
+              </section>}
+              <button className="danger-btn" onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
             </div>
           ) : (
             <div className="empty-inspector">
