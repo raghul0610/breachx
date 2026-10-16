@@ -1171,3 +1171,57 @@ body::-webkit-scrollbar,
   width: 0 !important;
   height: 0 !important;
 }
+
+
+/* Edge visual system: source-category color, stronger paths, readable labels and canvas typography. */
+.canvas .bp-node {
+  min-width: 190px;
+  max-width: 270px;
+  padding: 14px;
+}
+.canvas .node-heading { gap: 8px; }
+.canvas .node-category { font-size: 11px; letter-spacing: .07em; }
+.canvas .node-category-icon svg { width: 15px; height: 15px; }
+.canvas .node-label { margin-top: 6px; font-size: 15px; line-height: 1.35; font-weight: 850; }
+.canvas .node-notes { margin-top: 7px; font-size: 11px; line-height: 1.55; }
+.canvas .handle { width: 12px !important; height: 12px !important; }
+.canvas .react-flow__edge-path { stroke-width: 2.6; }
+.canvas .react-flow__edge.selected .react-flow__edge-path { stroke-width: 3.4; }
+.canvas .react-flow__edge-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .025em;
+}
+.canvas .react-flow__edge-textbg { rx: 4px; ry: 4px; }
+.canvas .react-flow__controls button { width: 34px; height: 34px; }
+.canvas .react-flow__controls button svg { max-width: 17px; max-height: 17px; }
+.canvas .react-flow__minimap { border: 1px solid #2a3b49; }
+.canvas .react-flow__attribution { font-size: 10px; }
+
+.connection-review {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #29404f;
+  border-radius: 9px;
+  background: #09131c;
+}
+.connection-review-heading { display:flex; flex-direction:column; gap:7px; }
+.connection-review-heading > strong { font-size:13px; line-height:1.4; }
+.connection-review p { margin:9px 0; color:#b7c7d3; font-size:12px; line-height:1.6; }
+.connection-review-recommendation { display:flex; flex-direction:column; gap:5px; padding-top:9px; border-top:1px solid #243541; }
+.connection-review-recommendation strong { color:#93a7b6; font:800 10px ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.06em; }
+.connection-review-recommendation span { color:#e0eaf0; font-size:12px; line-height:1.6; }
+.connection-review > small { display:block; margin-top:10px; color:#748898; font-size:10px; line-height:1.5; }
+.connection-review--high { border-color:#a83f4c; background:rgba(84,18,30,.22); }
+.connection-review--high .connection-review-heading > strong { color:#ff8997; }
+.connection-review--medium { border-color:#8c6b2a; background:rgba(86,62,12,.18); }
+.connection-review--medium .connection-review-heading > strong { color:#f5cb72; }
+.connection-review--low .connection-review-heading > strong { color:#91d8ff; }
+.connection-review--ok .connection-review-heading > strong { color:#7ee0b0; }
+
+@media(max-width:760px) {
+  .canvas .bp-node { min-width:170px; max-width:235px; padding:12px; }
+  .canvas .node-label { font-size:14px; }
+  .canvas .react-flow__edge-text { font-size:12px; }
+}
