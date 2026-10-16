@@ -16,7 +16,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
@@ -123,8 +123,12 @@ function ParticipantEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
-  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(false);
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
+  const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
+  const chatDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(260);
   const [rightPanelWidth, setRightPanelWidth] = useState(300);
   const [componentDockHeight, setComponentDockHeight] = useState(285);
@@ -388,7 +392,7 @@ function ParticipantEditor({
 
       if (effectiveStatus === "submitted") {
         setSubmitted(true);
-        alert(wasSubmitted ? "Submitted project changes saved." : "Blueprint saved. You can now generate a suggested architecture or export your design as a PDF.");
+        alert(wasSubmitted ? "Submitted project changes saved." : "Blueprint saved. You can continue editing or export your design as a PDF.");
         if (!wasSubmitted) onSubmitted();
       } else {
         alert("Draft saved.");
@@ -492,9 +496,29 @@ function ParticipantEditor({
           <strong>ANCHON</strong>
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
-        <span className="status-pill">
+        <div className="topbar-right"><div className="topbar-actions">            <div className="toolbar-actions topbar-toolbar-actions">
+              <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
+              <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
+              <button data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
+              <button
+                data-tutorial="save-draft"
+                onClick={() => save(submitted ? "submitted" : "draft")}
+                disabled={persisting}
+              >
+                <Save size={13} /> {persisting ? "SAVING…" : submitted ? "SAVE CHANGES" : "SAVE DRAFT"}
+              </button>
+              <button
+                className="primary-btn compact"
+                data-tutorial="continue"
+                disabled={!canSubmit || persisting}
+                onClick={() => save("submitted")}
+              >
+                <Send size={13} />{" "}
+                {submitted ? "UPDATE SUBMITTED PROJECT" : "SAVE BLUEPRINT & CONTINUE"}
+              </button>
+            </div></div><span className="status-pill">
           {submitted ? "SUBMITTED · EDITABLE" : saveStatus === "saving" ? "SAVING…" : saveStatus === "error" ? "SAVE ERROR" : "SAVING TO CLOUD"}
-        </span>
+        </span></div>
       </header>
 
       <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
@@ -521,26 +545,6 @@ function ParticipantEditor({
             </div>
           </section>
 
-          <ArchitectureAIChat
-            name={applicationName}
-            requirements={applicationDescription}
-            nodes={nodes}
-            edges={edges}
-            onBeforeApply={pushHistory}
-            onApply={(nextName, nextNodes, nextEdges, summary) => {
-              nodesRef.current = nextNodes;
-              edgesRef.current = nextEdges;
-              setNodes(nextNodes);
-              setEdges(nextEdges);
-              setApplicationName(nextName);
-              setNotes((current) => current ? `${current}\n\nAI update: ${summary}` : `AI update: ${summary}`);
-              setSelectedId(null);
-              setSelectedEdgeId(null);
-              setSelectedCatalogTypeKey(null);
-              logActivity("AI_ARCHITECTURE_UPDATED", { components: nextNodes.length, connections: nextEdges.length });
-            }}
-          />
-
           <div className="requirements-status" role="status">
             <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
             <div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div>
@@ -553,12 +557,12 @@ function ParticipantEditor({
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
-          <section className="component-dock" aria-label="Architecture components" data-tutorial="component-library">
-            <div className="component-dock-heading">
+          <section className={`component-dock ${componentLibraryOpen ? "component-dock-open" : "component-dock-closed"}`} aria-label="Architecture components" data-tutorial="component-library">
+            <div className="component-dock-heading"><button type="button" className="component-library-toggle" onClick={() => setComponentLibraryOpen((open) => !open)} aria-expanded={componentLibraryOpen} aria-label={componentLibraryOpen ? "Collapse component library" : "Expand component library"} title={componentLibraryOpen ? "Collapse component library" : "Expand component library"}>{componentLibraryOpen ? <PanelLeftClose size={15} /> : <Layers size={15} />}<span>{componentLibraryOpen ? "HIDE LIBRARY" : "COMPONENT LIBRARY"}</span></button>
               <div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY</div><p>Browse by system layer. Select a component, then add it to your canvas.</p></div>
               <button data-tutorial="create-component" className="primary-btn compact" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={`Add ${selectedCatalogItem?.label ?? CATALOG[0].label} to the canvas`}><PlusCircle size={13} /> {selectedCatalogItem ? "CREATE COMPONENT" : "ADD DEFAULT COMPONENT"}</button>
             </div>
-            {[
+            {componentLibraryOpen && <>{[
               { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
               { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration"] },
               { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML"] },
@@ -581,7 +585,7 @@ function ParticipantEditor({
                   </div>
                 </div>
               );
-            })}
+            })}</>}
           </section>
           <div className="panel-resizer panel-resizer-horizontal" role="separator" aria-label="Resize component library height" aria-orientation="horizontal" title="Drag to resize component library" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "dock", start: event.clientY, initial: componentDockHeight }); }}><GripHorizontal size={14} /></div>
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
@@ -597,27 +601,7 @@ function ParticipantEditor({
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
 
-            <div className="toolbar-actions">
-              <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
-              <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
-              <button data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
-              <button
-                data-tutorial="save-draft"
-                onClick={() => save(submitted ? "submitted" : "draft")}
-                disabled={persisting}
-              >
-                <Save size={13} /> {persisting ? "SAVING…" : submitted ? "SAVE CHANGES" : "SAVE DRAFT"}
-              </button>
-              <button
-                className="primary-btn compact"
-                data-tutorial="continue"
-                disabled={!canSubmit || persisting}
-                onClick={() => save("submitted")}
-              >
-                <Send size={13} />{" "}
-                {submitted ? "UPDATE SUBMITTED PROJECT" : "SAVE BLUEPRINT & CONTINUE"}
-              </button>
-            </div>
+
           </div>
 
           <ReactFlow
@@ -769,12 +753,38 @@ function ParticipantEditor({
 
           <div className="submission-rule">
             {submitted
-              ? "Blueprint saved. Continue to the AI architecture generator."
+              ? "Blueprint saved. Continue editing or export your design as a PDF."
               : canSubmit
                 ? "Blueprint is ready to save."
                 : "Add an application description, 3 components and 2 connections to save."}
           </div>
         </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
+      </div>
+      <button type="button" className="floating-ai-chat-trigger" style={{ transform: `translate(${-chatOffset.x}px, ${-chatOffset.y}px)` }} onPointerDown={(event) => { if (event.button !== 0) return; chatDragRef.current = { pointerX: event.clientX, pointerY: event.clientY, originX: chatOffset.x, originY: chatOffset.y, moved: false }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { const drag = chatDragRef.current; if (!drag || !event.currentTarget.hasPointerCapture(event.pointerId)) return; const dx = event.clientX - drag.pointerX; const dy = event.clientY - drag.pointerY; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) setChatOffset({ x: drag.originX - dx, y: drag.originY - dy }); }} onPointerUp={(event) => { const drag = chatDragRef.current; chatDragRef.current = null; if (drag?.moved) event.preventDefault(); else setChatOpen((open) => !open); }} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label={chatOpen ? "Close architecture AI chat" : "Open architecture AI chat"} title="Drag to move · click to open">
+        {chatOpen ? <X size={19} /> : <MessageSquare size={19} />}
+        <span>{chatOpen ? "CLOSE AI" : "ASK ANCHON"}</span>
+      </button>
+      <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
+        <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" onClick={() => setChatOpen(false)} aria-label="Close AI chat"><X size={16} /></button></div>
+                  <ArchitectureAIChat
+            name={applicationName}
+            requirements={applicationDescription}
+            nodes={nodes}
+            edges={edges}
+            onBeforeApply={pushHistory}
+            onApply={(nextName, nextNodes, nextEdges, summary) => {
+              nodesRef.current = nextNodes;
+              edgesRef.current = nextEdges;
+              setNodes(nextNodes);
+              setEdges(nextEdges);
+              setApplicationName(nextName);
+              setNotes((current) => current ? `${current}\n\nAI update: ${summary}` : `AI update: ${summary}`);
+              setSelectedId(null);
+              setSelectedEdgeId(null);
+              setSelectedCatalogTypeKey(null);
+              logActivity("AI_ARCHITECTURE_UPDATED", { components: nextNodes.length, connections: nextEdges.length });
+            }}
+          />
       </div>
       <InteractiveTutorial page="workspace" />
     </div>

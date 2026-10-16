@@ -8,8 +8,11 @@ type GeneratedArchitecture = {
   overview: string;
   requestFlow: string;
   designDecisions: string[];
+  assumptions?: string[];
+  requirementCoverage?: { requirement: string; componentIds: string[]; rationale: string }[];
+  validation?: { passed: boolean; errors: string[]; warnings: string[] };
   components: { id: string; typeKey: string; label: string; category: string; notes: string }[];
-  connections: { source: string; target: string; label: string }[];
+  connections: { source: string; target: string; label: string; communicationType?: string; purpose?: string }[];
 };
 type ChatMessage = { role: "user" | "assistant"; content: string };
 type Mode = "planning" | "agent";
@@ -74,7 +77,7 @@ export function ArchitectureAIChat({
         }),
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "The architecture assistant could not complete that request.");
+      if (!response.ok) throw new Error([payload.error, ...(payload.validation?.errors ?? []), ...(payload.validation?.warnings ?? [])].filter(Boolean).join(" | ") || "The architecture assistant could not complete that request.");
       const result = payload as GeneratedArchitecture;
       const oldById = new Map(nodes.map((node) => [node.id, node]));
       const oldByLabel = new Map(nodes.map((node) => [node.data.label.toLowerCase(), node]));
@@ -94,14 +97,15 @@ export function ArchitectureAIChat({
           id: `ai-edge-${index}-${connection.source}-${connection.target}`,
           source: connection.source,
           target: connection.target,
-          label: connection.label || undefined,
+          label: [connection.label, connection.communicationType, connection.purpose].filter(Boolean).join(" · ") || undefined,
           animated: true,
           markerEnd: { type: MarkerType.ArrowClosed },
         }));
       if (nextNodes.length < 3 || nextEdges.length < 2) throw new Error("The proposed architecture is incomplete. No changes were applied.");
       const plan = { result, nodes: nextNodes, edges: nextEdges, request: instruction };
       setPending(plan);
-      const summary = `Proposed ${nextNodes.length} components and ${nextEdges.length} connections. ${result.overview}`;
+      const validationSummary = result.validation?.warnings?.length ? ` Validation warnings: ${result.validation.warnings.slice(0, 3).join(" ")}` : "";
+      const summary = `Proposed ${nextNodes.length} components and ${nextEdges.length} connections. ${result.overview}${validationSummary}`;
       setMessages((current) => [...current, { role: "assistant", content: mode === "agent" ? `Applied your request: ${summary}` : `Plan ready. ${summary} Review it, then apply the proposal to the canvas.` }]);
       if (mode === "agent") {
         onBeforeApply();
