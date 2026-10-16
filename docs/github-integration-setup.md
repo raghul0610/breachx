@@ -12,7 +12,7 @@ Create a GitHub App and configure:
 - Repository permissions: **Contents: Read-only** and **Metadata: Read-only** for this phase.
 - Install the app only on repositories the user chooses. Do not grant write access yet.
 
-The user is sent to the GitHub App installation page. GitHub returns the signed state and installation ID to the callback. The callback verifies state and the installation using a short-lived GitHub App JWT. The backend stores only the installation ID and account login, not an access token. A short-lived installation token is generated server-side when repositories are listed.
+The user is sent to the GitHub App installation page. GitHub returns the signed state and installation ID to the configured Setup URL callback. The callback verifies state and the installation using a short-lived GitHub App JWT. The backend stores only the installation ID and account login, not an access token. A short-lived installation token is generated server-side when repositories are listed.
 
 ## Supabase secrets
 
@@ -21,7 +21,6 @@ Configure these Edge Function secrets:
 - `GITHUB_APP_ID`
 - `GITHUB_APP_PRIVATE_KEY` (PEM private key; preserve or replace escaped newline sequences)
 - `GITHUB_OAUTH_STATE_SECRET` (long random signing secret)
-- `GITHUB_CALLBACK_URL` (callback URL registered in the GitHub App; used for deployment documentation/configuration)
 - `ANCHON_APP_URL` (exact deployed ANCHON origin, no trailing slash)
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
