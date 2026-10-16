@@ -101,7 +101,6 @@ export function ArchitectureAIChat({
           id: `ai-edge-${index}-${connection.source}-${connection.target}`,
           source: connection.source,
           target: connection.target,
-          type: "smoothstep",
           label: [connection.label, connection.communicationType, connection.purpose].filter(Boolean).join(" · ") || undefined,
           animated: true,
           markerEnd: { type: MarkerType.ArrowClosed },
@@ -111,7 +110,7 @@ export function ArchitectureAIChat({
       const plan = { result, nodes: spaciousNodes, edges: nextEdges, request: instruction };
       setPending(plan);
       const validationSummary = result.validation?.warnings?.length ? ` Validation warnings: ${result.validation.warnings.slice(0, 3).join(" ")}` : "";
-      const summary = `Proposed ${spaciousNodes.length} components and ${nextEdges.length} connections in a spacious layered layout. ${result.overview}${validationSummary}`;
+      const summary = `Proposed ${spaciousNodes.length} components and ${nextEdges.length} connections in a compact horizontal layout. ${result.overview}${validationSummary}`;
       setMessages((current) => [...current, { role: "assistant", content: mode === "agent" ? `Applied your request: ${summary}` : `Plan ready. ${summary} Review it, then apply the proposal to the canvas.` }]);
       if (mode === "agent") {
         onBeforeApply();
