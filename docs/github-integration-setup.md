@@ -1,47 +1,39 @@
-# ANCHON GitHub repository connection
+# ANCHON GitHub App integration
 
-This feature connects a signed-in ANCHON user to GitHub and lists repositories available to the authorized GitHub identity. It does not yet clone, inspect source files, or modify repositories.
+Phase 1 connects a signed-in ANCHON user to a GitHub App installation and lists repositories explicitly selected during installation. It does not yet ingest source code, analyse architecture, or modify repositories.
 
-## 1. Create/configure the GitHub App
+## GitHub App setup
 
-Create a GitHub App under the account that will own ANCHON's integration. Set the user authorization callback URL to the deployed Supabase Edge Function URL:
+Create a GitHub App and configure:
+- App slug: used as `GITHUB_APP_SLUG`
+- App ID: `GITHUB_APP_ID`
+- Private key: `GITHUB_APP_PRIVATE_KEY`
+- Setup URL/callback: `https://<SUPABASE_PROJECT_REF>.supabase.co/functions/v1/github-connect-callback`
+- Repository permissions: **Contents: Read-only** and **Metadata: Read-only** for this phase.
+- Install the app only on repositories the user chooses. Do not grant write access yet.
 
-`https://<SUPABASE_PROJECT_REF>.supabase.co/functions/v1/github-connect-callback`
+The user is sent to the GitHub App installation page. GitHub returns the signed state and installation ID to the callback. The callback verifies state and the installation using a short-lived GitHub App JWT. The backend stores only the installation ID and account login, not an access token. A short-lived installation token is generated server-side when repositories are listed.
 
-Use the GitHub App client ID and client secret. Configure the minimum repository permissions needed for metadata and contents read. Install the app only on repositories the user wants ANCHON to access. Avoid write permissions in this phase.
+## Supabase secrets
 
-## 2. Configure Supabase Edge Function secrets
-
-Set these secrets in the Supabase project before deploying the functions:
-
-- `GITHUB_APP_CLIENT_ID`
-- `GITHUB_APP_CLIENT_SECRET`
-- `GITHUB_CALLBACK_URL` (same callback URL configured on GitHub)
-- `GITHUB_OAUTH_STATE_SECRET` (long random secret used to sign OAuth state)
-- `GITHUB_TOKEN_ENCRYPTION_KEY` (base64-encoded 32 random bytes for AES-256-GCM)
-- `ANCHON_APP_URL` (the exact deployed ANCHON origin, no trailing slash)
+Configure these Edge Function secrets:
+- `GITHUB_APP_SLUG`
+- `GITHUB_APP_ID`
+- `GITHUB_APP_PRIVATE_KEY` (PEM private key; preserve or replace escaped newline sequences)
+- `GITHUB_OAUTH_STATE_SECRET` (long random signing secret)
+- `GITHUB_CALLBACK_URL` (callback URL registered in the GitHub App; used for deployment documentation/configuration)
+- `ANCHON_APP_URL` (exact deployed ANCHON origin, no trailing slash)
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-Never put the GitHub client secret, encryption key, or service-role key in Vite environment variables or frontend code. Generate the encryption key with a trusted local cryptographic tool, e.g. Node: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
+Never place the GitHub App private key or service-role key in frontend/Vite environment variables. Apply the migration and deploy `github-connect-start`, `github-connect-callback`, and `github-repositories`. Callback must have JWT verification disabled because GitHub calls it; the other functions require a valid Supabase user JWT.
 
-## 3. Deploy
+## Security and current scope
 
-Apply the migration, then deploy all three functions:
-
-- `github-connect-start`
-- `github-connect-callback`
-- `github-repositories`
-
-The browser invokes `github-connect-start` and `github-repositories` using the signed-in user's Supabase session. The callback verifies a signed, time-limited state, exchanges the one-time authorization code server-side, encrypts the access token with AES-GCM, and stores it in a table that authenticated browser users cannot write to. Only the backend service role can read token ciphertext.
-
-## 4. Security and limitations
-
-- The browser never receives the GitHub access token.
-- Do not enable broad write permissions for this read-only phase.
-- Review the GitHub App's actual permission model and installation scope before production rollout. Repository visibility is constrained by the GitHub identity and app installation/permissions.
-- OAuth state is signed and expires after 10 minutes. Consider adding a single-use nonce table/check before production if replay resistance beyond the one-time GitHub code is required.
-- Repository listing is capped at the first 100 entries in this initial version; pagination can be added.
-- Disconnect/revoke, installation webhooks, token rotation/revocation, audit logging, source-code ingestion, and architecture analysis are follow-up work.
-- Do not process source code or execute project scripts on the application server. Source analysis should run in an isolated worker/sandbox.
+- RLS allows users to read only their own connection metadata; clients cannot insert or update connections.
+- The service role is used only in Edge Functions after validating the caller or signed OAuth state.
+- State is HMAC-signed and expires after 10 minutes.
+- The repository list endpoint returns up to 100 repositories in the selected installation.
+- Disconnect/revoke, pagination, audit logging, webhook synchronization, source ingestion, and architecture analysis are follow-up tasks.
+- Never execute repository scripts on the application server. Source analysis should run in an isolated worker/sandbox.
