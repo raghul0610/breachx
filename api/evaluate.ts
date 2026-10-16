@@ -204,7 +204,12 @@ Component-vocabulary rules:
     return json(res, 502, { error: "Provider returned invalid structured output." });
   }
 
-  const validPrincipleIds = new Set<string>([\n    ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),\n    ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),\n  ]);\n\n  const validFindings = (Array.isArray(review.recommendations) ? review.recommendations : [])
+  const validPrincipleIds = new Set<string>([
+    ...SYSTEM_DESIGN_FUNDAMENTALS.map((p) => p.id),
+    ...ARCHITECTURE_PRINCIPLES.map((p) => p.id),
+  ]);
+
+  const validFindings = (Array.isArray(review.findings) ? review.findings : [])
     .filter((finding: any) => {
       const nodeEvidence = Array.isArray(finding.evidenceNodeIds) ? finding.evidenceNodeIds : [];
       const edgeEvidence = Array.isArray(finding.evidenceEdgeIds) ? finding.evidenceEdgeIds : [];
@@ -229,11 +234,7 @@ Component-vocabulary rules:
     summary: typeof review.summary === "string" ? review.summary : "",
     strengths: Array.isArray(review.strengths) ? review.strengths.slice(0, 8) : [],
     findings: validFindings.map((finding: any) => ({ ...finding, description: `Requirement: ${finding.requirement}\n${finding.description}` })),
-    topicReviews: Array.isArray(review.topicReviews) ? review.topicReviews : [],
-    overview: review.overview,
-    howItWorks: review.howItWorks,
-    assumptions: Array.isArray(review.assumptions) ? review.assumptions : [],
-    assessments: [],
+    assessments: Array.isArray(review.assessments) ? review.assessments : [],
     model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
   });
 }
