@@ -1040,3 +1040,24 @@ body { overflow:hidden; }
     overflow-y:auto;
   }
 }
+
+
+/* Compact topbar actions and dimmed popup overlays. */
+.topbar-right { min-width:0; }
+.topbar-toolbar-actions { justify-content:flex-end; }
+.topbar-library-button,.topbar-add-component-button { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:30px; padding:0 10px; border:1px solid #29404f; border-radius:8px; color:#bfeefa; background:#0b1821; font:800 9px ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.035em; white-space:nowrap; cursor:pointer; }
+.topbar-library-button:hover,.topbar-library-button.is-active { border-color:#40c6e9; color:#75e2fa; background:#0b2632; }
+.topbar-add-component-button { border-color:#28b7e8; color:#06141b; background:#53d2f2; }
+.topbar-add-component-button:hover { background:#82e6fa; }
+.workspace > .canvas-column > .component-dock.component-dock-open { position:absolute !important; top:14px; left:14px; z-index:32; width:min(920px,calc(100% - 28px)) !important; max-height:min(64dvh,560px) !important; height:auto !important; padding:14px !important; overflow:auto !important; transform:none !important; border:1px solid #315064; border-radius:12px; background:rgba(8,17,25,.985); box-shadow:0 22px 64px #000b; backdrop-filter:blur(18px); }
+.component-dock-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+.component-dock-heading > div { min-width:0; }
+.component-library-close { display:grid; place-items:center; flex:0 0 32px; width:32px; height:32px; border:1px solid #2a4657; border-radius:8px; color:#b9d2df; background:#0b1922; cursor:pointer; }
+.workspace-popup-scrim { position:absolute; inset:0; z-index:11; width:100%; height:100%; border:0; background:rgba(0,0,0,.42); cursor:default; backdrop-filter:blur(1px); }
+.workspace > .left-panel,.workspace > .right-panel { z-index:22; }
+.ai-chat-scrim { position:fixed; inset:48px 0 0; z-index:58; width:100%; height:calc(100dvh - 48px); border:0; background:rgba(0,0,0,.42); backdrop-filter:blur(1px); }
+.floating-ai-chat-panel { z-index:59; }
+.floating-ai-chat-trigger { z-index:60; }
+@media(max-width:1200px) { .topbar-toolbar-actions > button { padding:0 7px; gap:4px; font-size:8px; } .topbar-library-button,.topbar-add-component-button { padding:0 7px; font-size:8px; } }
+@media(max-width:900px) { .app-shell > .topbar { gap:8px; } .topbar-sub { display:none; } .topbar-toolbar-actions { gap:4px; } .topbar-toolbar-actions > button { min-height:28px; } }
+@media(max-width:760px) { .topbar-library-button,.topbar-add-component-button { width:32px; min-width:32px; overflow:hidden; padding:0; font-size:0; } .topbar-library-button svg,.topbar-add-component-button svg { flex:0 0 auto; } .workspace > .canvas-column > .component-dock.component-dock-open { top:8px; left:8px; width:calc(100% - 16px) !important; max-height:72dvh !important; } }
