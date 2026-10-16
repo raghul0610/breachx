@@ -91,6 +91,74 @@ Deno.serve(async (req) => {
         manifestDetails.push({path,summary});
       } catch { /* Skip unreadable or non-text manifests; continue the scan. */ }
     }
+    // Inspect a bounded sample of source files without executing repository code.
+    const sourceCandidates = (entries as {path:string;size?:number;sha?:string}[])
+      .filter(entry => /\.(tsx?|jsx?|mjs|cjs|py|go|java|kt|rb|php|rs|cs|sql)$/i.test(entry.path)
+        && !/(^|\/)(test|tests|__tests__|fixtures|mocks?)(\/|$)/i.test(entry.path)
+        && (entry.size ?? 0) > 0 && (entry.size ?? 0) <= 90_000 && typeof entry.sha === "string")
+      .sort((a,b) => {
+        const score = (path:string) => (/\b(src|app|server|api|routes|services|controllers|models|lib)\b/i.test(path) ? 0 : 1);
+        return score(a.path)-score(b.path) || a.path.localeCompare(b.path);
+      }).slice(0, 45);
+    const sourceFiles: {path:string;content:string;imports:string[]}[] = [];
+    for (const entry of sourceCandidates) {
+      try {
+        const blob = await gh("/repos/" + encodeURIComponent(owner) + "/" + encodeURIComponent(name) + "/git/blobs/" + entry.sha);
+        if (blob.encoding !== "base64" || typeof blob.content !== "string") continue;
+        const binary = atob(blob.content.replace(/\n/g, ""));
+        const bytes = Uint8Array.from(binary, (ch:string) => ch.charCodeAt(0));
+        const content = new TextDecoder().decode(bytes).slice(0, 90_000);
+        const imports = new Set<string>();
+        const patterns = [
+          /\bfrom\s+["']([^"']+)["']/g,
+          /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g,
+          /\brequire\s*\(\s*["']([^"']+)["']\s*\)/g,
+          /^\s*import\s+["']([^"']+)["']/gm,
+          /^\s*from\s+([.\w]+)\s+import\s+/gm,
+        ];
+        for (const pattern of patterns) {
+          for (const match of content.matchAll(pattern)) {
+            const value = match[1];
+            if (value && !value.startsWith("http")) imports.add(value);
+          }
+        }
+        sourceFiles.push({ path: entry.path, content, imports: [...imports].slice(0, 80) });
+      } catch { /* Keep partial source evidence if one blob cannot be read. */ }
+    }
+    const sourcePathSet = new Set(sourceFiles.map(file => file.path));
+    const normalizePath = (fromPath:string, specifier:string) => {
+      if (!specifier.startsWith(".")) return null;
+      const base = fromPath.split("/");
+      base.pop();
+      for (const part of specifier.split("/")) {
+        if (part === "." || !part) continue;
+        if (part === "..") base.pop(); else base.push(part);
+      }
+      const root = base.join("/");
+      const candidates = [root, ...[".ts",".tsx",".js",".jsx",".mjs",".cjs",".py",".go",".java"].map(ext=>root+ext), ...["index.ts","index.tsx","index.js","index.jsx","__init__.py"].map(file=>root+"/"+file)];
+      return candidates.find(candidate => sourcePathSet.has(candidate)) ?? null;
+    };
+    const sourceConnections: {source:string;target:string;label:string;evidence:string[]}[] = [];
+    for (const file of sourceFiles) {
+      for (const specifier of file.imports) {
+        const target = normalizePath(file.path, specifier);
+        if (target && target !== file.path) sourceConnections.push({
+          source: file.path, target, label: "imports",
+          evidence: [file.path + " imports " + specifier, "Resolved to " + target],
+        });
+      }
+    }
+    const sourceEvidence = sourceFiles.map(file => {
+      const text = file.content.toLowerCase();
+      const indicators: string[] = [];
+      if (/\b(fetch|axios|httpx|requests\.|got\()/.test(text)) indicators.push("outbound-http");
+      if (/\b(router|routes?|app\.(get|post|put|delete)|@getmapping|@postmapping|urlpatterns|path\()/.test(text)) indicators.push("http-route");
+      if (/\b(select|insert|update|delete from|create table|prisma\.|supabase\.from|mongoose\.|sqlalchemy|repository\.)/.test(text)) indicators.push("data-access");
+      if (/\b(jwt|oauth|authenticate|authorization|requireauth|authmiddleware|verifytoken|session)\b/.test(text)) indicators.push("authentication");
+      if (/\b(kafka|rabbitmq|bullmq|celery|publish\(|subscribe\(|sendmessage|sqs)\b/.test(text)) indicators.push("async-messaging");
+      if (/\b(process\.env|deno\.env|getenv\(|secret|private.?key)\b/.test(text)) indicators.push("configuration-or-secret-reference");
+      return { path:file.path, imports:file.imports, indicators };
+    });
     const totalBytes = (entries as {size?:number}[]).reduce((sum,e)=>sum+(e.size ?? 0),0);
     return json({
       repository: repository.full_name, branch, commit: branchInfo.commit.sha, analyzedAt: new Date().toISOString(),
@@ -99,7 +167,10 @@ Deno.serve(async (req) => {
       topLevel: [...new Set((entries as {path:string}[]).map(e=>e.path.split("/")[0]))].sort().slice(0,80),
       directories: [...directories].sort().slice(0,150),
       keyFiles: manifestDetails,
-      note: "Static metadata scan only. It does not execute code, inspect secrets, or infer runtime data flows."
+      sourceEvidence,
+      sourceConnections: sourceConnections.slice(0, 250),
+      sourceScan: { sampledFiles: sourceFiles.length, candidateFiles: sourceCandidates.length, capped: sourceCandidates.length >= 45 },
+      note: "Read-only static source sample. Relative imports are resolved where possible. This does not execute code, prove runtime flows, or verify security controls."
     });
   } catch (cause) {
     return json({ error: cause instanceof Error ? cause.message : "Repository analysis failed." }, 502);
