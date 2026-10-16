@@ -8,6 +8,21 @@ function corsFor(req: Request) {
   return { ...baseCors, ...(allowedOrigin ? { "Access-Control-Allow-Origin": allowedOrigin } : {}) };
 }
 const json = (req: Request, body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsFor(req), "Content-Type": "application/json" } });
+function readConfiguredKey(name: string): string | undefined {
+  const raw = Deno.env.get(name);
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      if (typeof parsed.default === "string" && parsed.default.length > 0) return parsed.default;
+      const first = Object.values(parsed).find((value) => typeof value === "string" && value.length > 0);
+      if (typeof first === "string") return first;
+    }
+  } catch {
+    if (/^sb_(publishable|secret)_/.test(raw)) return raw;
+  }
+  return undefined;
+}
 function b64url(data: string | Uint8Array) { const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data; return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 async function appJwt(appId: string, pem: string) {
   const now = Math.floor(Date.now() / 1000), head = b64url(JSON.stringify({ alg: "RS256", typ: "JWT" })), body = b64url(JSON.stringify({ iat: now - 30, exp: now + 8 * 60, iss: appId })), unsigned = head + "." + body;
@@ -19,7 +34,11 @@ async function appJwt(appId: string, pem: string) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsFor(req) });
   if (req.method !== "POST") return json(req, { error: "Method not allowed." }, 405);
-  const url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY"), service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), appId = Deno.env.get("GITHUB_APP_ID"), privateKey = Deno.env.get("GITHUB_APP_PRIVATE_KEY");
+  const url = Deno.env.get("SUPABASE_URL");
+  const anon = Deno.env.get("SUPABASE_ANON_KEY") ?? readConfiguredKey("SUPABASE_PUBLISHABLE_KEYS");
+  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? readConfiguredKey("SUPABASE_SECRET_KEYS");
+  const appId = Deno.env.get("GITHUB_APP_ID");
+  const privateKey = Deno.env.get("GITHUB_APP_PRIVATE_KEY");
   const authorization = req.headers.get("Authorization");
   if (!url || !anon || !service || !appId || !privateKey) return json(req, { error: "GitHub App integration is not configured." }, 503);
   if (!authorization?.startsWith("Bearer ")) return json(req, { error: "Sign in to ANCHON first." }, 401);
