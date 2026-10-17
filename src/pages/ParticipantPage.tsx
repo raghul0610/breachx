@@ -59,6 +59,41 @@ function readInferredRequirements(notes: string): InferredRequirements | null {
   }
 }
 
+
+function CurvedArchitectureEdge(props: EdgeProps) {
+  const [path, labelX, labelY] = getBezierPath({ ...props, curvature: 0.42 });
+  const accent = String(props.style?.stroke ?? "#38bdf8");
+  return (
+    <g>
+      <BaseEdge {...props} path={path} style={{ ...props.style, stroke: accent, strokeWidth: props.selected ? 2.8 : 2.1 }} markerEnd={props.markerEnd} />
+      {props.label ? <EdgeLabelRenderer><div className="architecture-edge-label nodrag nopan" style={{ position: "absolute", transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, color: accent, pointerEvents: "none" }}>{props.label}</div></EdgeLabelRenderer> : null}
+    </g>
+  );
+}
+
+function layoutArchitecture(nodes: Node<BlueprintNodeData>[], edges: Edge[]): Node<BlueprintNodeData>[] {
+  if (nodes.length < 2) return nodes;
+  const depth = new Map(nodes.map((item) => [item.id, 0]));
+  for (let pass = 0; pass < nodes.length; pass += 1) {
+    let changed = false;
+    for (const edge of edges) {
+      const sourceDepth = depth.get(edge.source), targetDepth = depth.get(edge.target);
+      if (sourceDepth === undefined || targetDepth === undefined) continue;
+      if (targetDepth < sourceDepth + 1) { depth.set(edge.target, sourceDepth + 1); changed = true; }
+    }
+    if (!changed) break;
+  }
+  const layers = new Map<number, Node<BlueprintNodeData>[]>();
+  for (const item of nodes) { const layer = depth.get(item.id) ?? 0; layers.set(layer, [...(layers.get(layer) ?? []), item]); }
+  const rowHeight = 250, columnWidth = 360;
+  const maxRows = Math.max(...[...layers.values()].map((items) => items.length));
+  const top = -((maxRows - 1) * rowHeight) / 2;
+  return nodes.map((item) => {
+    const layer = depth.get(item.id) ?? 0, items = layers.get(layer) ?? [item];
+    return { ...item, position: { x: layer * columnWidth, y: top + items.findIndex((candidate) => candidate.id === item.id) * rowHeight } };
+  });
+}
+
 const initialNodes: Node<BlueprintNodeData>[] = [
   {
     id: "node-1",
@@ -275,7 +310,7 @@ function ParticipantEditor({
 
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const edgeTypes = useMemo(() => ({ curvedArchitectureEdge: CurvedArchitectureEdge }), []);
-  const renderedEdges = useMemo(() => edges.map((edge) => { const source = nodes.find((item) => item.id === edge.source); const accent = getCategoryAccent(String(source?.data?.category ?? "")); return { ...edge, type: "curvedArchitectureEdge", animated: true, style: { ...edge.style, stroke: accent }, markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 14, height: 14 }, label: typeof edge.label === "string" ? edge.label : "", labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20 }; }), [edges, nodes]);
+  const renderedEdges = useMemo(() => edges.map((edge) => { const source = nodes.find((item) => item.id === edge.source); const accent = getCategoryAccent(String(source?.data?.category ?? "")); return { ...edge, type: "curvedArchitectureEdge", animated: true, style: { ...edge.style, stroke: accent }, markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 22, height: 22 }, label: typeof edge.label === "string" ? edge.label : "", labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20 }; }), [edges, nodes]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
