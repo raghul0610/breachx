@@ -24,7 +24,6 @@ export const BlueprintNode = memo(({ data, selected }: NodeProps) => {
         <span className="node-category">{node.category}</span>
       </div>
       <div className="node-label" title={node.label}>{node.label}</div>
-      {node.notes ? <div className="node-notes">{node.notes}</div> : null}
     </div>
   );
 });

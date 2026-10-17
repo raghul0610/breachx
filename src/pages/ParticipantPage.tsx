@@ -9,6 +9,10 @@ import {
   ReactFlow,
   ReactFlowProvider,
   MarkerType,
+  BaseEdge,
+  EdgeLabelRenderer,
+  getBezierPath,
+  type EdgeProps,
   useEdgesState,
   useNodesState,
   useReactFlow,
@@ -19,7 +23,7 @@ import {
 import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
-import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
+import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
@@ -270,6 +274,8 @@ function ParticipantEditor({
   const [persisting, setPersisting] = useState(false);
 
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
+  const edgeTypes = useMemo(() => ({ curvedArchitectureEdge: CurvedArchitectureEdge }), []);
+  const renderedEdges = useMemo(() => edges.map((edge) => { const source = nodes.find((item) => item.id === edge.source); const accent = getCategoryAccent(String(source?.data?.category ?? "")); return { ...edge, type: "curvedArchitectureEdge", animated: true, style: { ...edge.style, stroke: accent }, markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 14, height: 14 }, label: typeof edge.label === "string" ? edge.label : "", labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20 }; }), [edges, nodes]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -570,7 +576,7 @@ function ParticipantEditor({
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
         <div className="topbar-right"><div className="topbar-actions"><div className="toolbar-actions topbar-toolbar-actions">
-              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => setComponentLibraryOpen((open) => !open)} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
+              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); if (nextOpen) setRightPanelOpen(true); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
               <button type="button" className="topbar-add-component-button" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={"Add " + (selectedCatalogItem?.label ?? CATALOG[0].label) + " to the canvas"}><PlusCircle size={13} /> ADD COMPONENT</button>
               <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
               <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
@@ -596,7 +602,7 @@ function ParticipantEditor({
         </span></div>
       </header>
 
-      <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
+      <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen || componentLibraryOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen || componentLibraryOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen || componentLibraryOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         {(leftPanelOpen || rightPanelOpen) && <button type="button" className="workspace-popup-scrim" aria-label="Close open panel" onClick={() => { setComponentLibraryOpen(false); setLeftPanelOpen(false); setRightPanelOpen(false); }} />}
         {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
           <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
@@ -708,15 +714,16 @@ function ParticipantEditor({
 
           <ReactFlow
             nodes={nodes}
-            edges={edges}
+            edges={renderedEdges}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
             deleteKeyCode={null}
             onConnect={onConnect}
             onReconnect={onReconnect}
-            onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); canvasRef.current?.focus({ preventScroll: true }); }}
-            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); canvasRef.current?.focus({ preventScroll: true }); }}
+            onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); canvasRef.current?.focus({ preventScroll: true }); }}
+            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); canvasRef.current?.focus({ preventScroll: true }); }}
             onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); }}
             onDragOver={(event) => {
               event.preventDefault();
@@ -876,9 +883,10 @@ function ParticipantEditor({
             edges={edges}
             onBeforeApply={pushHistory}
             onApply={(nextName, nextNodes, nextEdges, summary) => {
-              nodesRef.current = nextNodes;
+              const spacedNodes = layoutArchitecture(nextNodes, nextEdges);
+              nodesRef.current = spacedNodes;
               edgesRef.current = nextEdges;
-              setNodes(nextNodes);
+              setNodes(spacedNodes);
               setEdges(nextEdges);
               window.requestAnimationFrame(() => {
                 void fitView({ padding: 0.2, duration: 350 });
