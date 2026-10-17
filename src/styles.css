@@ -1428,3 +1428,51 @@ body:has(.app-shell) :not(.lp-root, .lp-root *) .component-library-controls sele
     top: 43% !important;
   }
 }
+
+
+/* Final typography pass for all signed-in product tabs (landing page stays untouched). */
+.app-shell:not(.lp-root) {
+  font-family: var(--anchon-font-ui);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.app-shell:not(.lp-root) :is(.topbar strong,.control-hero h1,.generator-hero h1,.generated-result h2,.project-dashboard-hero h1) {
+  font-weight: 700 !important;
+  letter-spacing: -0.035em;
+}
+.app-shell:not(.lp-root) :is(.control-hero h1,.generator-hero h1) {
+  font-size: clamp(21px, 2.4vw, 28px);
+  line-height: 1.2;
+}
+.app-shell:not(.lp-root) :is(.control-hero p,.generator-hero p,.generated-result > p,.project-dashboard-hero p,.github-connection-title p) {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.app-shell:not(.lp-root) :is(.section-kicker,.eyebrow) {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .07em;
+}
+.app-shell:not(.lp-root) :is(.primary-btn,.outline-btn,.toolbar-actions button,.event-actions button,.nav-btn,.danger-btn,.danger-outline,.warning-outline,.icon-btn,.topbar-library-button,.topbar-add-component-button) {
+  min-height: 34px;
+  padding: 7px 11px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.app-shell:not(.lp-root) :is(.stat strong,.team-row strong) { font-weight: 650; }
+.app-shell:not(.lp-root) :is(.feature-card strong,.suggested-component strong) { font-weight: 650; }
+.app-shell:not(.lp-root) :is(.field label,.tiny,.counter,.topbar-sub,.status-pill,.warning-pill) {
+  font-weight: 550;
+  letter-spacing: .035em;
+}
+.app-shell:not(.lp-root) :is(.panel,.feature-card,.section-block,.generator-form,.generated-result,.generator-hero) {
+  border-radius: 9px;
+}
+.app-shell:not(.lp-root) :is(.field input,.field textarea,.component-library-search input,.component-library-controls select) {
+  font-size: 12px;
+  line-height: 1.45;
+}
+.tutorial-card h2 { font-size: 18px; font-weight: 650; letter-spacing: -0.02em; }
+.tutorial-card p { font-size: 12px; line-height: 1.6; }
+.tutorial-progress-label { font-size: 10px; font-weight: 550; letter-spacing: .04em; }
