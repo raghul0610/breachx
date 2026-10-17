@@ -1173,25 +1173,34 @@ body::-webkit-scrollbar,
 }
 
 
-/* Edge visual system: source-category color, stronger paths, readable labels and canvas typography. */
+/* Compact canvas: keep the architecture visible and move detail into the inspector. */
 .canvas .bp-node {
-  min-width: 190px;
-  max-width: 270px;
-  padding: 14px;
+  min-width: 180px;
+  max-width: 220px;
+  padding: 10px 11px;
 }
-.canvas .node-heading { gap: 8px; }
-.canvas .node-category { font-size: 11px; letter-spacing: .07em; }
-.canvas .node-category-icon svg { width: 15px; height: 15px; }
-.canvas .node-label { margin-top: 6px; font-size: 15px; line-height: 1.35; font-weight: 850; }
-.canvas .node-notes { margin-top: 7px; font-size: 11px; line-height: 1.55; }
-.canvas .handle { width: 12px !important; height: 12px !important; }
-.canvas .react-flow__edge-path { stroke-width: 2.6; }
-.canvas .react-flow__edge.selected .react-flow__edge-path { stroke-width: 3.4; }
+.canvas .node-heading { gap: 6px; }
+.canvas .node-category { font-size: 9px; letter-spacing: .055em; }
+.canvas .node-category-icon svg { width: 12px; height: 12px; }
+.canvas .node-label { margin-top: 5px; font-size: 12px; line-height: 1.3; font-weight: 800; }
+.canvas .node-notes {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-top: 5px;
+  font-size: 9px;
+  line-height: 1.4;
+  color: #91a6b8;
+}
+.canvas .handle { width: 9px !important; height: 9px !important; }
+.canvas .react-flow__edge-path { stroke-width: 2px; }
+.canvas .react-flow__edge.selected .react-flow__edge-path { stroke-width: 3px; }
 .canvas .react-flow__edge-text {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: .025em;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 .canvas .react-flow__edge-textbg { rx: 4px; ry: 4px; }
 .canvas .react-flow__controls button { width: 34px; height: 34px; }
@@ -1221,29 +1230,41 @@ body::-webkit-scrollbar,
 .connection-review--ok .connection-review-heading > strong { color:#7ee0b0; }
 
 @media(max-width:760px) {
-  .canvas .bp-node { min-width:170px; max-width:235px; padding:12px; }
-  .canvas .node-label { font-size:14px; }
-  .canvas .react-flow__edge-text { font-size:12px; }
+  .canvas .bp-node { min-width:160px; max-width:200px; padding:9px; }
+  .canvas .node-label { font-size:11px; }
+  .canvas .react-flow__edge-text { font-size:9px; }
 }
 
 
 .github-connection-development{margin-top:20px;padding:14px 16px}.github-building-pill{flex:none;padding:5px 8px;border:1px solid #5b4a2b;border-radius:5px;background:#211a0c;color:#e7c77b;font:700 9px ui-monospace,monospace;letter-spacing:.04em}.inferred-requirements-card .brief-card-heading{margin-bottom:10px}.inferred-requirements-card .brief-card-heading p{margin-top:3px}
 
 
-/* Architecture connections: origin-category color, stronger paths, readable short labels. */
-.canvas .react-flow__edge-path { stroke-width: 4 !important; }
-.canvas .react-flow__edge.selected .react-flow__edge-path { stroke-width: 5 !important; }
+/* Keep semantic edge colors visible without oversized strokes or labels. */
+.canvas .react-flow__edge-path { stroke-width: 2px !important; }
+.canvas .react-flow__edge.selected .react-flow__edge-path { stroke-width: 3px !important; }
 .canvas .react-flow__edge-text {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: .02em;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
-.canvas .react-flow__edge-textbg { rx: 5px; ry: 5px; }
-.edge-inspector .catalog-inspector-title h3 { overflow-wrap:anywhere; line-height:1.45; }
-.edge-origin-indicator { display:flex; align-items:center; gap:7px; margin:12px 0 4px; padding:8px; border:1px solid; border-radius:6px; background:#081018; font:700 9px ui-monospace,monospace; letter-spacing:.035em; }
+.canvas .react-flow__edge-textbg { rx: 4px; ry: 4px; }
+.edge-inspector .catalog-inspector-title h3 { overflow-wrap:anywhere; line-height:1.35; }
+.edge-origin-indicator { display:flex; align-items:center; gap:7px; margin:10px 0 4px; padding:8px; border:1px solid; border-radius:6px; background:#081018; font:700 9px ui-monospace,monospace; letter-spacing:.035em; }
 .edge-origin-indicator span { width:8px; height:8px; border-radius:50%; flex:none; box-shadow:0 0 8px currentColor; }
-.edge-inspector .field textarea { min-height:70px; resize:vertical; line-height:1.55; }
+.edge-inspector .field textarea { min-height:70px; resize:vertical; line-height:1.5; }
+
+.selected-node-details { margin: 2px 0 14px; }
+.selected-node-details .catalog-summary { margin-bottom: 12px; }
+.selected-node-details .catalog-detail-block { margin-top: 10px; }
+.inspector-connections { margin: 14px 0; padding: 10px; border: 1px solid #243744; border-radius: 8px; background: #09131b; }
+.inspector-connections-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; color:#8ca4b5; font:800 10px ui-monospace,monospace; letter-spacing:.07em; }
+.inspector-connections-heading span { color:#36c5f5; }
+.inspector-connection-row { display:grid; grid-template-columns:30px minmax(0,1fr); gap:3px 7px; width:100%; padding:8px 0; border:0; border-top:1px solid #1c2d39; background:transparent; color:#dbe7ef; text-align:left; cursor:pointer; }
+.inspector-connection-row > span:nth-child(2) { min-width:0; overflow-wrap:anywhere; font-size:11px; }
+.inspector-connection-row small { grid-column:2; color:#79cdeb; font-size:10px; }
+.inspector-connection-row:hover { color:#67d8ff; }
+.inspector-connection-direction { align-self:start; padding:3px 4px; border:1px solid #294958; border-radius:4px; color:#75c9e8; font:800 8px ui-monospace,monospace; text-align:center; }
 
 
 /* Consistent project typography and compact inferred requirements. */
