@@ -1531,3 +1531,17 @@ body:has(.app-shell) :not(.lp-root, .lp-root *) .component-library-controls sele
     padding: 0 6px !important;
   }
 }
+
+
+/* Pure-black page background beneath the LiquidChrome effect. */
+html,
+body,
+#root,
+.lp-root,
+.app-shell,
+.app-shell:not(.lp-root),
+.app-shell:not(.lp-root) .react-flow,
+.shape-grid-background {
+  background-color: #000 !important;
+  background-image: none !important;
+}
