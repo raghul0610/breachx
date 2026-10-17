@@ -63,11 +63,8 @@ type EdgeExplanation = { purpose?: string; rationale?: string };
 
 function TooltipEdge(props: EdgeProps) {
   const [edgePath, labelX, labelY] = getBezierPath(props);
-  const data = (props.data ?? {}) as EdgeExplanation & { tooltip?: string };
-  const description = data.tooltip || data.purpose || "Architecture connection between components.";
   return (
     <g>
-      <title>{description}</title>
       <BaseEdge
         {...props}
         path={edgePath}
@@ -80,7 +77,6 @@ function TooltipEdge(props: EdgeProps) {
         <EdgeLabelRenderer>
           <div
             className="nodrag nopan"
-            title={description}
             style={{
               position: "absolute",
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
@@ -143,11 +139,23 @@ function compactEdgeLabel(label: unknown, sourceCategory: string, sourceLabel: s
   return raw.split(/\s+/).filter(Boolean).slice(0, 2).join(" ");
 }
 
-function getConnectionAccent(sourceCategory: string, targetCategory: string): string {
-  // Color by the destination's responsibility so different flow types remain distinguishable.
-  const category = targetCategory || sourceCategory;
-  const accent = getCategoryAccent(category);
-  return accent || "#94a3b8";
+const EDGE_PALETTE = [
+  "#38bdf8", // sky
+  "#a78bfa", // violet
+  "#34d399", // emerald
+  "#fbbf24", // amber
+  "#fb7185", // rose
+  "#22d3ee", // cyan
+  "#c084fc", // purple
+  "#a3e635", // lime
+  "#f97316", // orange
+  "#60a5fa", // blue
+  "#e879f9", // fuchsia
+  "#2dd4bf", // teal
+];
+
+function getEdgeAccent(edgeIndex: number): string {
+  return EDGE_PALETTE[((edgeIndex % EDGE_PALETTE.length) + EDGE_PALETTE.length) % EDGE_PALETTE.length];
 }
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -390,21 +398,19 @@ function ParticipantEditor({
       return { ...edge, data: { ...data, [field]: nextValue } };
     }));
   };
-  const renderEdges = useMemo(() => edges.map((edge) => {
+  const renderEdges = useMemo(() => edges.map((edge, edgeIndex) => {
     const sourceNode = nodes.find((node) => node.id === edge.source);
     const targetNode = nodes.find((node) => node.id === edge.target);
     const sourceLabel = String(sourceNode?.data?.label ?? edge.source);
     const targetLabel = String(targetNode?.data?.label ?? edge.target);
     const sourceCategory = String(sourceNode?.data?.category ?? "");
     const targetCategory = String(targetNode?.data?.category ?? "");
-    const accent = getConnectionAccent(sourceCategory, targetCategory);
-    const explanation = edgeExplanation(edge, sourceLabel, targetLabel);
-    const tooltip = [explanation.purpose, explanation.rationale].filter(Boolean).join(" ");
+    const accent = getEdgeAccent(edgeIndex);
     return {
       ...edge,
       type: "tooltipEdge",
       animated: false,
-      data: { ...(edge.data ?? {}), tooltip },
+      data: { ...(edge.data ?? {}) },
       label: compactEdgeLabel(edge.label, sourceCategory, sourceLabel, targetCategory, targetLabel),
       style: { ...edge.style, stroke: accent, strokeWidth: edge.selected ? 3 : 2 },
       markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 16, height: 16 },
@@ -1034,11 +1040,12 @@ function ParticipantEditor({
                 const targetLabel = String(targetNode?.data?.label ?? selectedEdge.target);
                 const sourceCategory = String(sourceNode?.data?.category ?? "");
                 const targetCategory = String(targetNode?.data?.category ?? "");
-                const accent = getConnectionAccent(sourceCategory, targetCategory);
+                const edgeIndex = edges.findIndex((edge) => edge.id === selectedEdge.id);
+                const accent = getEdgeAccent(Math.max(0, edgeIndex));
                 const explanation = edgeExplanation(selectedEdge, sourceLabel, targetLabel);
                 return <>
-                  <div className="catalog-inspector-title"><div className="catalog-component-icon" style={{ color: accent, borderColor: accent }}><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION · {sourceCategory || "SYSTEM"}</div><h3>{sourceLabel} → {targetLabel}</h3></div></div>
-                  <div className="edge-origin-indicator" style={{ borderColor: accent, color: accent }}><span style={{ background: accent }} /> EDGE COLOR FROM TARGET: {targetCategory.toUpperCase() || sourceCategory.toUpperCase() || "DEFAULT"}</div>
+                  <div className="catalog-inspector-title"><div className="catalog-component-icon" style={{ color: accent, borderColor: accent }}><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION · EDGE {edgeIndex + 1}</div><h3>{sourceLabel} → {targetLabel}</h3></div></div>
+                  <div className="edge-origin-indicator" style={{ borderColor: accent, color: accent }}><span style={{ background: accent }} /> UNIQUE EDGE COLOR</div>
                   <div className="field">
                     <label>CANVAS LABEL · MAX 2 WORDS</label>
                     <input value={compactEdgeLabel(selectedEdge.label, sourceCategory, sourceLabel, targetCategory, targetLabel)} maxLength={40} onChange={(event) => updateSelectedEdge("label", event.target.value)} placeholder="e.g. Sends requests" />
