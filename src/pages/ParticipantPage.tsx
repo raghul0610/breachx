@@ -16,11 +16,10 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
-import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
-import { reviewConnection } from "../lib/connectionReview";
+import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
@@ -28,6 +27,33 @@ import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 
+
+
+type InferredRequirements = {
+  summary: string;
+  functionalRequirements: string[];
+  nonFunctionalRequirements: string[];
+  assumptions: string[];
+};
+
+const REQUIREMENTS_MARKER = "\n\n[ANCHON_INFERRED_REQUIREMENTS]\n";
+
+function readInferredRequirements(notes: string): InferredRequirements | null {
+  const markerIndex = notes.lastIndexOf(REQUIREMENTS_MARKER);
+  if (markerIndex < 0) return null;
+  try {
+    const value = JSON.parse(notes.slice(markerIndex + REQUIREMENTS_MARKER.length));
+    if (!value || !Array.isArray(value.functionalRequirements) || !Array.isArray(value.nonFunctionalRequirements)) return null;
+    return {
+      summary: typeof value.summary === "string" ? value.summary : "",
+      functionalRequirements: value.functionalRequirements.filter((item: unknown): item is string => typeof item === "string"),
+      nonFunctionalRequirements: value.nonFunctionalRequirements.filter((item: unknown): item is string => typeof item === "string"),
+      assumptions: Array.isArray(value.assumptions) ? value.assumptions.filter((item: unknown): item is string => typeof item === "string") : [],
+    };
+  } catch {
+    return null;
+  }
+}
 
 const initialNodes: Node<BlueprintNodeData>[] = [
   {
@@ -118,6 +144,9 @@ function ParticipantEditor({
       "Describe the application, expected users, traffic and important requirements.",
   );
   const [notes, setNotes] = useState(saved?.notes ?? "");
+  const [inferredRequirements, setInferredRequirements] = useState<InferredRequirements | null>(() => readInferredRequirements(saved?.notes ?? ""));
+  const [inferringRequirements, setInferringRequirements] = useState(false);
+  const [requirementsError, setRequirementsError] = useState("");
   const [viewport, setViewport] = useState(saved?.viewport);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
   const [saveError, setSaveError] = useState("");
@@ -243,59 +272,6 @@ function ParticipantEditor({
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
-  const connectionReview = selectedEdge
-    ? reviewConnection({
-        edge: selectedEdge,
-        nodes,
-        edges,
-        requirements: `${applicationName} ${applicationDescription} ${notes}`,
-      })
-    : null;
-  const canvasEdges = useMemo(() => edges.map((edge) => {
-    const sourceNode = nodes.find((node) => node.id === edge.source);
-    const targetNode = nodes.find((node) => node.id === edge.target);
-    const accent = getCategoryAccent(String(sourceNode?.data?.category ?? ""));
-    const review = reviewConnection({
-      edge,
-      nodes,
-      edges,
-      requirements: `${applicationName} ${applicationDescription} ${notes}`,
-    });
-    const rawLabel = typeof edge.label === "string" ? edge.label.trim() : "";
-    const inferredLabel = /database|storage|data/i.test(String(targetNode?.data?.category ?? targetNode?.data?.typeKey ?? ""))
-      ? "DATA"
-      : /api|fastapi|backend|server|service/i.test(String(targetNode?.data?.typeKey ?? targetNode?.data?.label ?? ""))
-        ? "API"
-        : /queue|kafka|event|message/i.test(String(targetNode?.data?.typeKey ?? targetNode?.data?.label ?? ""))
-          ? "EVENT"
-          : "FLOW";
-    const compactLabel = (rawLabel || inferredLabel).replace(/\s+/g, " ").slice(0, 14);
-    const hasWarning = review.severity === "high" || review.severity === "medium";
-    return {
-      ...edge,
-      label: hasWarning ? `⚠ ${compactLabel}` : compactLabel,
-      labelStyle: {
-        ...edge.labelStyle,
-        fill: hasWarning ? (review.severity === "high" ? "#ff8997" : "#f5cb72") : accent,
-        fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-        fontSize: 12,
-        fontWeight: 800,
-      },
-      labelBgStyle: {
-        ...edge.labelBgStyle,
-        fill: hasWarning ? (review.severity === "high" ? "#35131b" : "#30250f") : "#08121b",
-        fillOpacity: 0.98,
-      },
-      labelBgPadding: edge.labelBgPadding ?? [6, 3] as [number, number],
-      labelBgBorderRadius: edge.labelBgBorderRadius ?? 4,
-      style: {
-        ...edge.style,
-        stroke: hasWarning ? (review.severity === "high" ? "#fb7185" : "#fbbf24") : accent,
-        strokeWidth: hasWarning ? 3.1 : 2.4,
-      },
-      markerEnd: { type: MarkerType.ArrowClosed, color: hasWarning ? (review.severity === "high" ? "#fb7185" : "#fbbf24") : accent },
-    };
-  }), [edges, nodes, applicationName, applicationDescription, notes]);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
   const selectedCatalogItem = CATALOG.find((item) => item.typeKey === selectedCatalogTypeKey);
   const selectedKnowledge = selectedCatalogItem ? getComponentKnowledge(selectedCatalogItem) : null;
@@ -406,6 +382,49 @@ function ParticipantEditor({
     },
     [onEdgesChange, submitted],
   );
+
+
+  const inferRequirementsFromArchitecture = async () => {
+    setInferringRequirements(true);
+    setRequirementsError("");
+    try {
+      const response = await fetch("/api/infer-requirements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          application: { name: applicationName, description: applicationDescription },
+          nodes: nodes.map((node) => ({
+            id: node.id,
+            typeKey: node.data?.typeKey ?? "",
+            label: node.data?.label ?? node.id,
+            category: node.data?.category ?? "",
+            notes: node.data?.notes ?? "",
+          })),
+          edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target, label: edge.label ?? "" })),
+          notes: notes.split(REQUIREMENTS_MARKER)[0].trim(),
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(typeof payload.error === "string" ? payload.error : "Requirements analysis failed.");
+      const result: InferredRequirements = {
+        summary: typeof payload.summary === "string" ? payload.summary : "",
+        functionalRequirements: Array.isArray(payload.functionalRequirements) ? payload.functionalRequirements : [],
+        nonFunctionalRequirements: Array.isArray(payload.nonFunctionalRequirements) ? payload.nonFunctionalRequirements : [],
+        assumptions: Array.isArray(payload.assumptions) ? payload.assumptions : [],
+      };
+      setInferredRequirements(result);
+      const baseNotes = notes.split(REQUIREMENTS_MARKER)[0].trim();
+      setNotes(baseNotes + REQUIREMENTS_MARKER + JSON.stringify(result));
+      setApplicationDescription((current) => {
+        const base = current.split(REQUIREMENTS_MARKER)[0].trim();
+        return base || result.summary;
+      });
+    } catch (cause) {
+      setRequirementsError(cause instanceof Error ? cause.message : "Could not infer requirements for this architecture.");
+    } finally {
+      setInferringRequirements(false);
+    }
+  };
 
   const save = async (submissionStatus: "draft" | "submitted") => {
     const wasSubmitted = submitted;
@@ -602,6 +621,35 @@ function ParticipantEditor({
             </div>
           </section>
 
+
+          <section className="brief-card" aria-labelledby="inferred-requirements-title">
+            <div className="brief-card-heading">
+              <span className="brief-step">02</span>
+              <div>
+                <h2 id="inferred-requirements-title">Architecture requirements</h2>
+                <p>Agent-inferred from the current components and connections.</p>
+              </div>
+            </div>
+            <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}>
+              <Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}
+            </button>
+            {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
+            {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
+            {inferredRequirements && <>
+              <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
+              <div style={{ marginTop: 14 }}>
+                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>
+                {inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}
+              </div>
+              <div style={{ marginTop: 14 }}>
+                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>
+                {inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}
+              </div>
+              {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
+              <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
+            </>}
+          </section>
+
           <div className="requirements-status" role="status">
             <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
             <div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div>
@@ -660,7 +708,7 @@ function ParticipantEditor({
 
           <ReactFlow
             nodes={nodes}
-            edges={canvasEdges}
+            edges={edges}
             nodeTypes={nodeTypes}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
@@ -668,7 +716,7 @@ function ParticipantEditor({
             onConnect={onConnect}
             onReconnect={onReconnect}
             onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); canvasRef.current?.focus({ preventScroll: true }); }}
-            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); canvasRef.current?.focus({ preventScroll: true }); }}
+            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); canvasRef.current?.focus({ preventScroll: true }); }}
             onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); }}
             onDragOver={(event) => {
               event.preventDefault();
@@ -683,10 +731,6 @@ function ParticipantEditor({
             colorMode="dark"
             defaultEdgeOptions={{
               animated: true,
-              style: { strokeWidth: 2.6 },
-              labelStyle: { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 13, fontWeight: 800 },
-              labelBgStyle: { fill: "#08121b", fillOpacity: 0.96 },
-              labelBgPadding: [7, 4],
               markerEnd: { type: MarkerType.ArrowClosed },
             }}
           >
@@ -796,17 +840,8 @@ function ParticipantEditor({
           ) : selectedEdge ? (
             <div className="catalog-inspector">
               <div className="catalog-inspector-title"><div className="catalog-component-icon"><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION</div><h3>Directed connection</h3></div></div>
-              <p className="catalog-summary">Flow from <strong>{nodes.find((node) => node.id === selectedEdge.source)?.data.label ?? selectedEdge.source}</strong> to <strong>{nodes.find((node) => node.id === selectedEdge.target)?.data.label ?? selectedEdge.target}</strong>.</p>
-              {connectionReview && <section className={`connection-review connection-review--${connectionReview.severity}`} aria-live="polite">
-                <div className="connection-review-heading">
-                  <span className="section-kicker">CONNECTION REVIEW</span>
-                  <strong>{connectionReview.title}</strong>
-                </div>
-                <p>{connectionReview.description}</p>
-                <div className="connection-review-recommendation"><strong>RECOMMENDATION</strong><span>{connectionReview.recommendation}</span></div>
-                <small>Rule-based screening only. Confirm against actual workload, data flow, security boundaries and cost estimates before production.</small>
-              </section>}
-              <button className="danger-btn" onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
+              <p className="catalog-summary">This connection carries flow from <strong>{nodes.find((node) => node.id === selectedEdge.source)?.data.label ?? selectedEdge.source}</strong> to <strong>{nodes.find((node) => node.id === selectedEdge.target)?.data.label ?? selectedEdge.target}</strong>.</p>
+              <button className="danger-btn"  onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
             </div>
           ) : (
             <div className="empty-inspector">
