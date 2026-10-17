@@ -62,7 +62,7 @@ function readInferredRequirements(notes: string): InferredRequirements | null {
 type EdgeExplanation = { purpose?: string; rationale?: string };
 
 function TooltipEdge(props: EdgeProps) {
-  const [edgePath] = getBezierPath(props);
+  const [edgePath, labelX, labelY] = getBezierPath(props);
   const data = (props.data ?? {}) as EdgeExplanation & { tooltip?: string };
   const description = data.tooltip || data.purpose || "Architecture connection between components.";
   return (
@@ -83,7 +83,7 @@ function TooltipEdge(props: EdgeProps) {
             title={description}
             style={{
               position: "absolute",
-              transform: `translate(-50%, -50%) translate(${props.labelX}px, ${props.labelY}px)`,
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: "all",
               color: String(props.style?.stroke ?? "#8bdcf5"),
               background: "#071018",
