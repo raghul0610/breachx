@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
   const { data: { user }, error } = await client.auth.getUser();
   if (error || !user) return json(req, { error: "Your ANCHON session is invalid or expired." }, 401);
   const origin = req.headers.get("Origin") ?? "";
-  const configuredOrigin = (Deno.env.get("ANCHON_APP_URL") ?? "").replace(/\\/+$/, "");
+  const configuredOrigin = (Deno.env.get("ANCHON_APP_URL") ?? "").replace(/\/+$/, "");
   const isAllowedPreview = /^https:\/\/breachx-[a-z0-9-]+-raghul06102006-7731s-projects\.vercel\.app$/.test(origin);
   const returnOrigin = origin === configuredOrigin || isAllowedPreview ? origin : configuredOrigin;
   const payload = btoa(JSON.stringify({ sub: user.id, ts: Date.now(), nonce: crypto.randomUUID(), origin: returnOrigin })).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
