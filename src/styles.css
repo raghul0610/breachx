@@ -1495,3 +1495,39 @@ body:has(.app-shell) :not(.lp-root, .lp-root *) .component-library-controls sele
 .app-shell:not(.lp-root) p { font-size: 12px; line-height: 1.55; }
 .app-shell:not(.lp-root) :is(.section-kicker,.eyebrow,.status-pill,.warning-pill) { font-weight: 550 !important; }
 .app-shell:not(.lp-root) :is(button,[role="button"]) { font-weight: 550 !important; }
+
+
+/* Compact editor toolbar: smaller labels and lighter weight, without changing layout. */
+.app-shell .topbar-toolbar-actions > button,
+.app-shell .topbar-toolbar-actions > .topbar-library-button,
+.app-shell .topbar-toolbar-actions > .topbar-add-component-button {
+  min-height: 28px !important;
+  padding: 0 8px !important;
+  font-family: var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif) !important;
+  font-size: 10px !important;
+  font-weight: 550 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+  gap: 5px !important;
+}
+.app-shell .topbar-toolbar-actions > button svg,
+.app-shell .topbar-toolbar-actions > .topbar-library-button svg,
+.app-shell .topbar-toolbar-actions > .topbar-add-component-button svg {
+  width: 13px !important;
+  height: 13px !important;
+}
+.app-shell .topbar-toolbar-actions .status-pill {
+  font-size: 8px !important;
+  font-weight: 500 !important;
+  letter-spacing: .02em !important;
+}
+.app-shell .topbar strong { font-size: 12px !important; font-weight: 650 !important; }
+.app-shell .topbar-sub { font-size: 9px !important; font-weight: 450 !important; }
+@media(max-width:1200px) {
+  .app-shell .topbar-toolbar-actions > button,
+  .app-shell .topbar-toolbar-actions > .topbar-library-button,
+  .app-shell .topbar-toolbar-actions > .topbar-add-component-button {
+    font-size: 9px !important;
+    padding: 0 6px !important;
+  }
+}
