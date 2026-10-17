@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import "./AnchonTechText.css";
 
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
@@ -14,7 +15,6 @@ export function AnchonTechText() {
     if (!host || !canvas || !ctx) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const resizeObserver = new ResizeObserver(resize);
     let width = 1;
     let height = 1;
     let dpr = 1;
@@ -168,6 +168,7 @@ export function AnchonTechText() {
     };
     const onLeave = () => { pointer.inside = false; wake(); };
 
+    const resizeObserver = new ResizeObserver(resize);
     host.addEventListener("pointermove", onMove, { passive: true });
     host.addEventListener("pointerenter", onMove, { passive: true });
     host.addEventListener("pointerleave", onLeave);
