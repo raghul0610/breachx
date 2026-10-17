@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Github, ExternalLink, RefreshCw, ShieldCheck, ScanSearch, FolderTree } from "lucide-react";
+import { Github, ExternalLink, RefreshCw, ShieldCheck, ScanSearch, FolderTree, Workflow, ArrowRight } from "lucide-react";
+import { createProject } from "../lib/storage";
 import { supabase } from "../lib/supabase";
 import "./GitHubConnection.css";
 
@@ -23,7 +24,7 @@ type RepositoryResponse = {
   error?: string;
 };
 
-export function GitHubConnection() {
+export function GitHubConnection({ onOpenProject }: { onOpenProject: (projectId: string) => void }) {
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [login, setLogin] = useState("");
   const [connected, setConnected] = useState(false);
@@ -33,6 +34,7 @@ export function GitHubConnection() {
   const [notice, setNotice] = useState("");
   const [analyzing, setAnalyzing] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [creatingArchitecture, setCreatingArchitecture] = useState(false);
 
   const loadRepositories = useCallback(async () => {
     setLoading(true);
@@ -86,6 +88,63 @@ export function GitHubConnection() {
       setError(cause instanceof Error ? cause.message : "Repository analysis failed.");
     } finally {
       setAnalyzing(null);
+    }
+  };
+
+  const createArchitectureDraft = () => {
+    if (!analysis) return;
+    setCreatingArchitecture(true);
+    setError("");
+    try {
+      const allPaths = [...analysis.topLevel, ...analysis.directories, ...analysis.keyFiles.map(file => file.path)].join(" ").toLowerCase();
+      const manifestText = analysis.keyFiles.map(file => file.path + " " + file.summary.join(" ")).join(" ").toLowerCase();
+      const languages = new Set(analysis.languages.map(item => item.language.toLowerCase()));
+      const hasFrontend = ["typescript", "javascript", "html", "vue", "svelte"].some(language => languages.has(language))
+        || /vite|next\.js|react|angular|frontend|client|public\//.test(manifestText + " " + allPaths);
+      const hasBackend = ["python", "go", "java", "c#", "ruby", "php", "rust"].some(language => languages.has(language))
+        || /(^|[ /])(api|backend|server|services)([ /]|$)|fastapi|express|django|flask|spring boot/.test(manifestText + " " + allPaths);
+      const hasDatabase = /(^|[ /])(migrations|database|db|schema)([ /]|$)|\.sql\b|postgres|mysql|sqlite|mongodb|prisma|drizzle|supabase/.test(manifestText + " " + allPaths);
+      const hasAuth = /supabase|auth|authentication|identity|oauth|jwt/.test(manifestText + " " + allPaths);
+      const hasAsync = /kafka|rabbitmq|celery|bullmq|queue|worker|event bus/.test(manifestText + " " + allPaths);
+      const components: { id: string; label: string; typeKey: string; category: string; notes: string }[] = [];
+      const add = (id: string, label: string, typeKey: string, category: string, notes: string) => {
+        if (!components.some(item => item.id === id)) components.push({ id, label, typeKey, category, notes });
+      };
+      add("client", hasFrontend ? "Frontend / Client Application" : "Application Entry Point", "client", "Edge", hasFrontend ? "Inferred from web-language files and frontend manifests." : "Placeholder entry point; confirm this component manually.");
+      if (hasBackend) add("backend", "Application / API Service", "app_server", "Compute", "Inferred from backend languages, directories, or framework manifests.");
+      if (hasAsync) add("queue", "Async Worker / Queue", "queue", "Messaging", "Inferred from queue, worker, or messaging references.");
+      if (hasAuth) add("auth", "Authentication / Identity", "auth_service", "Security", "Inferred from auth-related paths or dependencies; actual auth flows are unverified.");
+      if (hasDatabase) add("database", "Database / Persistence", "database", "Data", "Inferred from migrations, SQL files, database dependencies, or persistence configuration.");
+      if (!hasBackend && !hasDatabase) add("runtime", "Application Runtime", "app_server", "Compute", "Generic runtime placeholder; the repository scan did not establish a backend or database.");
+      if (components.length === 1) add("external", "External Integration", "external_api", "External", "Placeholder integration; validate whether the application calls external services.");
+      const gapX = 270, gapY = 170, cols = Math.min(3, components.length);
+      const nodes = components.map((component, index) => ({
+        id: "codebase-" + component.id,
+        type: "blueprintNode",
+        position: { x: (index % cols) * gapX + 80, y: Math.floor(index / cols) * gapY + 100 },
+        data: { label: component.label, typeKey: component.typeKey, category: component.category, notes: component.notes },
+      }));
+      const edges = components.slice(0, -1).map((component, index) => ({
+        id: "codebase-edge-" + component.id + "-" + components[index + 1].id,
+        source: "codebase-" + component.id,
+        target: "codebase-" + components[index + 1].id,
+        label: "inferred",
+        animated: false,
+        markerEnd: { type: "arrowclosed" },
+      }));
+      const project = createProject({
+        applicationName: analysis.repository + " — Architecture Draft",
+        applicationDescription: "Generated from a read-only scan of " + analysis.repository + " at " + analysis.commit.slice(0, 7) + ". This is a hypothesis based on languages, paths, and manifests, not a verified runtime architecture.",
+        nodes,
+        edges,
+        notes: "Generated by ANCHON Codebase Analysis. Source repository: " + analysis.repository + "\nBranch: " + analysis.branch + "\nCommit: " + analysis.commit + "\nAnalyzed: " + analysis.analyzedAt + "\n\nIMPORTANT: Components and connections are inferred from static file structure and dependency manifests. Validate every node and edge against source code, deployment configuration, and runtime traces before treating this as accurate. Connections labelled 'inferred' are draft hypotheses, not observed data flows.",
+        status: "draft",
+      });
+      onOpenProject(project.id);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not create an architecture draft.");
+    } finally {
+      setCreatingArchitecture(false);
     }
   };
 
@@ -155,6 +214,8 @@ export function GitHubConnection() {
           <h4>Dependency and project manifests</h4>
           {analysis.keyFiles.length === 0 ? <p className="github-muted">No supported manifest files were found.</p> : analysis.keyFiles.map(file => <details className="github-manifest" key={file.path}><summary>{file.path}</summary><ul>{file.summary.map((line,index)=><li key={index}>{line}</li>)}</ul></details>)}
           <p className="github-readonly-note">{analysis.note}</p>
+          <div className="github-create-architecture"><div><strong>Generate architecture draft</strong><p>Creates an editable ANCHON project with inferred components and labelled draft connections.</p></div><button className="primary-btn" onClick={createArchitectureDraft} disabled={creatingArchitecture}>{creatingArchitecture ? <RefreshCw size={13} /> : <Workflow size={13} />}{creatingArchitecture ? "CREATING…" : "CREATE DRAFT"}<ArrowRight size={13} /></button></div>
+          <p className="github-readonly-note">This draft is a starting hypothesis, not a verified architecture. Review it in the canvas before relying on it.</p>
         </section>
       )}
     </section>
