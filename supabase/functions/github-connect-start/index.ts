@@ -26,7 +26,7 @@ function readConfiguredKey(name: string): string | undefined {
 async function sign(value: string, secret: string) {
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value));
-  return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/, "");
+  return btoa(String.fromCharCode(...new Uint8Array(sig))).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsFor(req) });
@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
   const client = createClient(url!, anon!, { global: { headers: { Authorization: authorization } } });
   const { data: { user }, error } = await client.auth.getUser();
   if (error || !user) return json(req, { error: "Your ANCHON session is invalid or expired." }, 401);
-  const payload = btoa(JSON.stringify({ sub: user.id, ts: Date.now(), nonce: crypto.randomUUID() })).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/, "");
+  const payload = btoa(JSON.stringify({ sub: user.id, ts: Date.now(), nonce: crypto.randomUUID() })).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
   const state = payload + "." + await sign(payload, secret!);
   const installUrl = new URL("https://github.com/apps/" + encodeURIComponent(slug!) + "/installations/new");
   installUrl.searchParams.set("state", state);
