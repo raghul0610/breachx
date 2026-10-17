@@ -1,6 +1,6 @@
 # ANCHON GitHub App integration
 
-Phase 1 connects a signed-in ANCHON user to a GitHub App installation and lists repositories explicitly selected during installation. It does not yet ingest source code, analyse architecture, or modify repositories.
+Phase 1 connects a signed-in ANCHON user to a GitHub App installation and lists repositories explicitly selected during installation. Phase 2 adds a read-only repository structure scan: tracked file counts, directory structure, language counts, and summaries of common dependency/project manifests. It does not execute code, infer runtime data flows, or modify repositories.
 
 ## GitHub App setup
 
