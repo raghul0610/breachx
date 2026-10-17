@@ -89,10 +89,10 @@ function TooltipEdge(props: EdgeProps) {
               background: "#071018",
               border: `1px solid ${String(props.style?.stroke ?? "#8bdcf5")}`,
               borderRadius: 5,
-              padding: "5px 8px",
+              padding: "3px 5px",
               fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-              fontSize: 14,
-              fontWeight: 800,
+              fontSize: 10,
+              fontWeight: 700,
               whiteSpace: "nowrap",
             }}
           >
