@@ -128,13 +128,26 @@ function defaultEdgeLabel(sourceCategory: string, sourceLabel: string, targetCat
 
 function compactEdgeLabel(label: unknown, sourceCategory: string, sourceLabel: string, targetCategory: string, targetLabel: string): string {
   const raw = typeof label === "string" ? label.replace(/·/g, " ").trim() : "";
-  if (!raw) return defaultEdgeLabel(sourceCategory, sourceLabel, targetCategory, targetLabel);
-  if (/import/i.test(raw)) return "Imports modules";
-  if (/auth/i.test(raw)) return "Auth check";
-  if (/data access|database|persistence/i.test(raw)) return "Access data";
-  if (/api boundary|api request/i.test(raw)) return "API request";
-  if (/async|queue|event/i.test(raw)) return "Queue events";
-  return raw.split(/\s+/).filter(Boolean).slice(0, 3).join(" ");
+  if (!raw) {
+    const fallback = defaultEdgeLabel(sourceCategory, sourceLabel, targetCategory, targetLabel);
+    return fallback.split(/\s+/).filter(Boolean).slice(0, 2).join(" ");
+  }
+  if (/https|http/i.test(raw)) return "HTTPS";
+  if (/import/i.test(raw)) return "Import";
+  if (/auth|identity|permission/i.test(raw)) return "Auth";
+  if (/data access|database|persistence|sql|query|store/i.test(raw)) return "Data query";
+  if (/api boundary|api request|request|route/i.test(raw)) return "API call";
+  if (/async|queue|event|publish|notify/i.test(raw)) return "Event";
+  if (/monitor|metric|log|trace|telemetry/i.test(raw)) return "Telemetry";
+  if (/cache/i.test(raw)) return "Cache";
+  return raw.split(/\s+/).filter(Boolean).slice(0, 2).join(" ");
+}
+
+function getConnectionAccent(sourceCategory: string, targetCategory: string): string {
+  // Color by the destination's responsibility so different flow types remain distinguishable.
+  const category = targetCategory || sourceCategory;
+  const accent = getCategoryAccent(category);
+  return accent || "#94a3b8";
 }
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -355,11 +368,19 @@ function ParticipantEditor({
   const edgeTypes = useMemo(() => ({ tooltipEdge: TooltipEdge }), []);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
+  const selectedNodeCatalogItem = selected
+    ? CATALOG.find((item) => item.typeKey === String(selected.data.typeKey ?? ""))
+    : undefined;
+  const selectedNodeKnowledge = selectedNodeCatalogItem
+    ? getComponentKnowledge(selectedNodeCatalogItem)
+    : null;
+  const selectedIncomingEdges = selected ? edges.filter((edge) => edge.target === selected.id) : [];
+  const selectedOutgoingEdges = selected ? edges.filter((edge) => edge.source === selected.id) : [];
   const updateSelectedEdge = (field: "label" | "purpose" | "rationale", value: string) => {
     if (!selectedEdgeId) return;
     const words = value.trim().split(/\s+/).filter(Boolean);
-    const nextValue = field === "label" && words.length > 3
-      ? words.slice(0, 3).join(" ")
+    const nextValue = field === "label" && words.length > 2
+      ? words.slice(0, 2).join(" ")
       : value;
     pushHistory();
     setEdges((current) => current.map((edge) => {
@@ -376,21 +397,22 @@ function ParticipantEditor({
     const targetLabel = String(targetNode?.data?.label ?? edge.target);
     const sourceCategory = String(sourceNode?.data?.category ?? "");
     const targetCategory = String(targetNode?.data?.category ?? "");
-    const accent = getCategoryAccent(sourceCategory);
+    const accent = getConnectionAccent(sourceCategory, targetCategory);
     const explanation = edgeExplanation(edge, sourceLabel, targetLabel);
     const tooltip = [explanation.purpose, explanation.rationale].filter(Boolean).join(" ");
     return {
       ...edge,
       type: "tooltipEdge",
+      animated: false,
       data: { ...(edge.data ?? {}), tooltip },
       label: compactEdgeLabel(edge.label, sourceCategory, sourceLabel, targetCategory, targetLabel),
-      style: { ...edge.style, stroke: accent, strokeWidth: 4 },
-      markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 24, height: 24 },
-      labelStyle: { ...edge.labelStyle, fill: accent, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 14, fontWeight: 800 },
-      labelBgStyle: { ...edge.labelBgStyle, fill: "#071018", fillOpacity: 0.96, stroke: accent, strokeWidth: 1 },
-      labelBgPadding: [8, 5] as [number, number],
-      labelBgBorderRadius: 5,
-      interactionWidth: 24,
+      style: { ...edge.style, stroke: accent, strokeWidth: edge.selected ? 3 : 2 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 16, height: 16 },
+      labelStyle: { ...edge.labelStyle, fill: accent, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 10, fontWeight: 700 },
+      labelBgStyle: { ...edge.labelBgStyle, fill: "#071018", fillOpacity: 0.98, stroke: accent, strokeWidth: 1 },
+      labelBgPadding: [5, 3] as [number, number],
+      labelBgBorderRadius: 4,
+      interactionWidth: 18,
     };
   }), [edges, nodes]);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -936,8 +958,50 @@ function ParticipantEditor({
                 <div className={`catalog-component-icon catalog-component-icon--${getCategoryVisual(String(selected.data.category)).tone}`}><CategoryIcon category={String(selected.data.category)} size={18} /></div>
                 <div>
                   <div className="section-kicker">{selected.data.category}</div>
-                  <h3>Canvas component</h3>
+                  <h3>{String(selected.data.label)}</h3>
                 </div>
+              </div>
+              {selectedNodeKnowledge ? (
+                <div className="selected-node-details">
+                  <p className="catalog-summary">{selectedNodeKnowledge.summary}</p>
+                  <div className="catalog-detail-block">
+                    <strong>RESPONSIBILITY</strong>
+                    <p>{selectedNodeKnowledge.whatItIs}</p>
+                  </div>
+                  <div className="catalog-detail-block">
+                    <strong>HOW IT FITS</strong>
+                    <p>{selectedNodeKnowledge.howItFits}</p>
+                  </div>
+                  <div className="catalog-detail-block">
+                    <strong>TRADE-OFFS</strong>
+                    <p>{selectedNodeKnowledge.tradeoffs}</p>
+                  </div>
+                </div>
+              ) : null}
+              <div className="inspector-connections">
+                <div className="inspector-connections-heading">CONNECTIONS <span>{selectedIncomingEdges.length + selectedOutgoingEdges.length}</span></div>
+                {selectedIncomingEdges.length === 0 && selectedOutgoingEdges.length === 0 ? (
+                  <p className="catalog-hint">No connections yet. Connect this component to another node.</p>
+                ) : (
+                  <>
+                    {selectedIncomingEdges.map((edge) => {
+                      const source = nodes.find((node) => node.id === edge.source);
+                      return <button type="button" className="inspector-connection-row" key={edge.id} onClick={() => { setSelectedId(null); setSelectedEdgeId(edge.id); setRightPanelOpen(true); }}>
+                        <span className="inspector-connection-direction">IN</span>
+                        <span>{String(source?.data?.label ?? edge.source)}</span>
+                        <small>{compactEdgeLabel(edge.label, String(source?.data?.category ?? ""), String(source?.data?.label ?? edge.source), String(selected.data.category ?? ""), String(selected.data.label ?? selected.id))}</small>
+                      </button>;
+                    })}
+                    {selectedOutgoingEdges.map((edge) => {
+                      const target = nodes.find((node) => node.id === edge.target);
+                      return <button type="button" className="inspector-connection-row" key={edge.id} onClick={() => { setSelectedId(null); setSelectedEdgeId(edge.id); setRightPanelOpen(true); }}>
+                        <span className="inspector-connection-direction">OUT</span>
+                        <span>{String(target?.data?.label ?? edge.target)}</span>
+                        <small>{compactEdgeLabel(edge.label, String(selected.data.category ?? ""), String(selected.data.label ?? selected.id), String(target?.data?.category ?? ""), String(target?.data?.label ?? edge.target))}</small>
+                      </button>;
+                    })}
+                  </>
+                )}
               </div>
               <div className="field">
                 <label>COMPONENT LABEL</label>
@@ -976,7 +1040,7 @@ function ParticipantEditor({
                   <div className="catalog-inspector-title"><div className="catalog-component-icon" style={{ color: accent, borderColor: accent }}><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION · {sourceCategory || "SYSTEM"}</div><h3>{sourceLabel} → {targetLabel}</h3></div></div>
                   <div className="edge-origin-indicator" style={{ borderColor: accent, color: accent }}><span style={{ background: accent }} /> EDGE COLOR FROM ORIGIN: {sourceCategory.toUpperCase() || "DEFAULT"}</div>
                   <div className="field">
-                    <label>CANVAS LABEL · MAX 3 WORDS</label>
+                    <label>CANVAS LABEL · MAX 2 WORDS</label>
                     <input value={compactEdgeLabel(selectedEdge.label, sourceCategory, sourceLabel, targetCategory, targetLabel)} maxLength={40} onChange={(event) => updateSelectedEdge("label", event.target.value)} placeholder="e.g. Sends requests" />
                   </div>
                   <div className="field">
@@ -994,7 +1058,7 @@ function ParticipantEditor({
           ) : (
             <div className="empty-inspector">
               <BookOpen size={18} />
-              <p>Select a component from the palette to learn about it, or select a canvas component to edit it.</p>
+              <p>Select a canvas node or connection to inspect its details and edit its properties.</p>
               <p className="catalog-hint">Clicking a palette item only opens its details. Use ADD COMPONENT or drag it onto the canvas to place it.</p>
             </div>
           )}
