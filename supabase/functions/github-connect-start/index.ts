@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const baseCors = { "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS", "Vary": "Origin" };
 function corsFor(req: Request) {
   const origin = req.headers.get("Origin") ?? "";
-  const configured = (Deno.env.get("ANCHON_APP_URL") ?? "").replace(/\\/+$/, "");
+  const configured = (Deno.env.get("ANCHON_APP_URL") ?? "").replace(/\/+$/, "");
   const isVercelPreview = /^https:\/\/breachx-[a-z0-9-]+-raghul06102006-7731s-projects\.vercel\.app$/.test(origin);
   const allowedOrigin = origin === configured || isVercelPreview ? origin : configured;
   return { ...baseCors, ...(allowedOrigin ? { "Access-Control-Allow-Origin": allowedOrigin } : {}) };
