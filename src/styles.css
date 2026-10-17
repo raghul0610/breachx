@@ -1225,3 +1225,6 @@ body::-webkit-scrollbar,
   .canvas .node-label { font-size:14px; }
   .canvas .react-flow__edge-text { font-size:12px; }
 }
+
+
+.github-connection-development{margin-top:20px;padding:14px 16px}.github-building-pill{flex:none;padding:5px 8px;border:1px solid #5b4a2b;border-radius:5px;background:#211a0c;color:#e7c77b;font:700 9px ui-monospace,monospace;letter-spacing:.04em}.inferred-requirements-card .brief-card-heading{margin-bottom:10px}.inferred-requirements-card .brief-card-heading p{margin-top:3px}

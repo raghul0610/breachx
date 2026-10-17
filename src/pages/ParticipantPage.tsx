@@ -622,7 +622,7 @@ function ParticipantEditor({
           </section>
 
 
-          <section className="brief-card" aria-labelledby="inferred-requirements-title">
+          <section className="brief-card inferred-requirements-card" aria-labelledby="inferred-requirements-title" style={{ marginTop: 14, padding: 12 }}>
             <div className="brief-card-heading">
               <span className="brief-step">02</span>
               <div>
