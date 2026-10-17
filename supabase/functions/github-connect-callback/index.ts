@@ -60,7 +60,7 @@ async function appJwt(appId: string, pem: string) {
 Deno.serve(async (req) => {
   const appUrl = Deno.env.get("ANCHON_APP_URL");
   if (!appUrl) return new Response("ANCHON_APP_URL is not configured.", { status: 503 });
-  let returnOrigin = appUrl.replace(/\\/+$/, "");
+  let returnOrigin = appUrl.replace(/\/+$/, "");
   const fail = (reason: string) => redirect(new URL("/?github=error&reason=" + encodeURIComponent(reason), returnOrigin).toString());
   const url = new URL(req.url), state = url.searchParams.get("state"), installationId = url.searchParams.get("installation_id"), action = url.searchParams.get("setup_action");
   if (!state || !installationId || (action !== "install" && action !== "update")) return fail("installation_not_completed");
@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     if (!payload || !signature || extra || !stateSecret || !appId || !privateKey || !supabaseUrl || !serviceKey) return fail("integration_not_configured");
     if (!(await verify(payload, signature, stateSecret))) return fail("invalid_state_signature");
     const claims = JSON.parse(decodeUrl(payload)) as { sub: string; ts: number; nonce: string; origin?: string };
-    const configuredOrigin = appUrl.replace(/\\/+$/, "");
+    const configuredOrigin = appUrl.replace(/\/+$/, "");
     const allowedPreview = typeof claims.origin === "string" && /^https:\/\/breachx-[a-z0-9-]+-raghul06102006-7731s-projects\.vercel\.app$/.test(claims.origin);
     if (claims.origin === configuredOrigin || allowedPreview) returnOrigin = claims.origin!;
     if (!claims.sub || !claims.nonce || !Number.isFinite(claims.ts) || Date.now() - claims.ts > 10 * 60 * 1000 || claims.ts > Date.now() + 60_000) return fail("expired_state");
