@@ -1476,3 +1476,22 @@ body:has(.app-shell) :not(.lp-root, .lp-root *) .component-library-controls sele
 .tutorial-card h2 { font-size: 18px; font-weight: 650; letter-spacing: -0.02em; }
 .tutorial-card p { font-size: 12px; line-height: 1.6; }
 .tutorial-progress-label { font-size: 10px; font-weight: 550; letter-spacing: .04em; }
+
+
+/* Product-wide type scale: keep all non-landing tabs compact and avoid synthetic heavy headings. */
+.app-shell:not(.lp-root) h1 {
+  font-size: clamp(20px, 2.1vw, 26px) !important;
+  line-height: 1.2 !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.035em !important;
+}
+.app-shell:not(.lp-root) h2 {
+  font-size: 15px !important;
+  line-height: 1.35 !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+}
+.app-shell:not(.lp-root) h3 { font-size: 13px !important; font-weight: 600 !important; }
+.app-shell:not(.lp-root) p { font-size: 12px; line-height: 1.55; }
+.app-shell:not(.lp-root) :is(.section-kicker,.eyebrow,.status-pill,.warning-pill) { font-weight: 550 !important; }
+.app-shell:not(.lp-root) :is(button,[role="button"]) { font-weight: 550 !important; }
