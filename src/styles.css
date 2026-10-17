@@ -1732,3 +1732,32 @@ body, .app-shell, .home, .lp-root {
 .catalog-item, .bp-node {
   border-color: rgba(205, 207, 216, .17) !important;
 }
+
+
+/* Let the luminous silver SwarmCursor background remain visible through landing sections. */
+.lp-root,
+.lp-root .lp-section,
+.lp-root .lp-section-alt,
+.lp-root .lp-marquee-track,
+.lp-root .lp-closing-inner,
+.lp-root .lp-feature-card {
+  background: transparent !important;
+}
+.lp-root .lp-closing-inner {
+  border-color: rgba(205, 207, 216, .22) !important;
+  box-shadow: none !important;
+}
+.lp-root .lp-feature-card {
+  border-color: rgba(205, 207, 216, .2) !important;
+  box-shadow: none !important;
+}
+.lp-root .lp-feature-card:hover {
+  background: rgba(205, 207, 216, .055) !important;
+}
+.lp-root .lp-marquee-track {
+  border-color: rgba(205, 207, 216, .18) !important;
+}
+.lp-root .lp-section-alt {
+  border-top-color: rgba(205, 207, 216, .1) !important;
+  border-bottom-color: rgba(205, 207, 216, .1) !important;
+}
