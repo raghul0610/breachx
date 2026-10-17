@@ -1761,3 +1761,22 @@ body, .app-shell, .home, .lp-root {
   border-top-color: rgba(205, 207, 216, .1) !important;
   border-bottom-color: rgba(205, 207, 216, .1) !important;
 }
+
+
+/* Pure-black background theme: remove the silver glow and all background tinting. */
+html,
+body,
+#root,
+.lp-root,
+.app-shell,
+.app-shell:not(.lp-root),
+.app-shell:not(.lp-root) .react-flow,
+.shape-grid-background {
+  background-color: #000 !important;
+  background-image: none !important;
+}
+.shape-grid-background::before,
+.shape-grid-background::after {
+  display: none !important;
+  background: none !important;
+}
