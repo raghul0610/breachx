@@ -1704,3 +1704,31 @@ body, .app-shell, .home { background-color: var(--anchon-bg) !important; }
   .lp-nav-link { padding: 9px 8px !important; font-size: 11px !important; }
   .lp-nav-cta { min-height: 36px !important; padding: 0 11px !important; font-size: 11px !important; }
 }
+
+
+/* Silver-grey luminous background theme */
+:root {
+  --anchon-bg: #101114;
+  --anchon-panel: rgba(25, 26, 30, .9);
+  --anchon-border: rgba(205, 207, 216, .17);
+}
+body, .app-shell, .home, .lp-root {
+  background-color: #101114 !important;
+}
+.app-shell:not(.lp-root), .app-shell:not(.lp-root) .topbar,
+.app-shell:not(.lp-root) .sidebar, .app-shell:not(.lp-root) .problem-banner,
+.app-shell:not(.lp-root) .canvas-toolbar {
+  background-color: rgba(18, 19, 23, .94) !important;
+}
+.app-shell:not(.lp-root) .react-flow { background: #101114 !important; }
+.shape-grid-background, .lp-root { background: #101114 !important; }
+.shape-grid-background::after {
+  background:
+    radial-gradient(ellipse at 50% 10%, rgba(205, 207, 216, .19), transparent 58%),
+    radial-gradient(ellipse at 50% 55%, rgba(145, 148, 158, .07), transparent 70%),
+    linear-gradient(180deg, rgba(16, 17, 20, .04), rgba(16, 17, 20, .52)) !important;
+}
+.panel, .home-card, .sidebar, .topbar, .problem-banner, .canvas-toolbar,
+.catalog-item, .bp-node {
+  border-color: rgba(205, 207, 216, .17) !important;
+}
