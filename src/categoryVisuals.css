@@ -1,9 +1,30 @@
-/* Phase 3: category identity shared by palette, canvas nodes and inspector. */
+/* Phase 3: category identity shared by palette, canvas nodes and inspector.
+   Restyle only: every selector, class name and layout dimension is unchanged. */
+
 .node-heading{display:flex;align-items:center;gap:6px;min-width:0}
-.node-category-icon{display:inline-flex;align-items:center;justify-content:center;flex:none}
-.bp-node{border-top-width:2px;border-top-color:var(--category-accent,#64748b);transition:border-color .14s ease,box-shadow .14s ease,background .14s ease}
+.node-category-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;filter:drop-shadow(0 0 6px var(--category-glow,transparent))}
+
+/* ---------- Canvas nodes ---------- */
+.bp-node{
+  border-top-width:2px;
+  border-top-color:var(--category-accent,#64748b);
+  box-shadow:inset 0 1px 0 #ffffff0d,0 6px 18px -10px #000c;
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease,transform .18s ease;
+}
+/* soft category tint fading out from the top edge (doubled class = beats base .bp-node background) */
+.bp-node.bp-node{
+  background-image:linear-gradient(180deg,var(--category-glow,#64748b22) 0%,transparent 42%);
+}
 .bp-node .node-category,.bp-node .node-category-icon{color:var(--category-accent,#94a3b8)}
-.bp-node.selected{border-color:var(--category-accent,#29b6f6);box-shadow:0 0 0 2px var(--category-glow,#29b6f633),0 12px 28px #0009}
+.bp-node:hover:not(.selected){
+  box-shadow:inset 0 1px 0 #ffffff12,0 0 0 1px var(--category-glow,#29b6f633),0 10px 26px -8px #000d;
+}
+.bp-node.bp-node.selected{
+  border-color:var(--category-accent,#29b6f6);
+  box-shadow:0 0 0 2px var(--category-glow,#29b6f633),0 0 28px -6px var(--category-accent,#29b6f6),0 14px 32px #000a;
+}
+
+/* ---------- Category palette (unchanged hues) ---------- */
 .bp-node--edge,.catalog-item--edge,.catalog-component-icon--edge{--category-accent:#38bdf8;--category-glow:#38bdf833}
 .bp-node--security,.catalog-item--security,.catalog-component-icon--security{--category-accent:#fb7185;--category-glow:#fb718533}
 .bp-node--network,.catalog-item--network,.catalog-component-icon--network{--category-accent:#60a5fa;--category-glow:#60a5fa33}
@@ -24,17 +45,45 @@
 .bp-node--banking,.catalog-item--banking,.catalog-component-icon--banking{--category-accent:#f87171;--category-glow:#f8717133}
 .bp-node--ai,.catalog-item--ai,.catalog-component-icon--ai{--category-accent:#c4b5fd;--category-glow:#c4b5fd33}
 .bp-node--neutral,.catalog-item--neutral{--category-accent:#94a3b8;--category-glow:#94a3b833}
-.catalog-item{border-left:2px solid var(--category-accent,#263541);transition:border-color .14s ease,background .14s ease,transform .14s ease}
-.catalog-item:hover:not(:disabled){border-color:var(--category-accent,#263541);background:#111e29;transform:translateX(2px)}
-.catalog-item-active{border-color:var(--category-accent,#29b6f6)!important;background:#12202b!important;box-shadow:inset 2px 0 0 var(--category-accent,#29b6f6)}
+
+/* ---------- Palette / catalog list ---------- */
+.catalog-item{
+  border-left:2px solid var(--category-accent,#263541);
+  transition:border-color .16s ease,background .16s ease,transform .16s ease,box-shadow .16s ease;
+}
+.catalog-item:hover:not(:disabled){
+  border-color:var(--category-accent,#263541);
+  background:linear-gradient(90deg,var(--category-glow,#29b6f622),transparent 75%),#101b25;
+  transform:translateX(2px);
+}
+.catalog-item-active{
+  border-color:var(--category-accent,#29b6f6)!important;
+  background:linear-gradient(90deg,var(--category-glow,#29b6f633),transparent 85%),#12202b!important;
+  box-shadow:inset 2px 0 0 var(--category-accent,#29b6f6),0 0 22px -10px var(--category-accent,#29b6f6);
+}
 .catalog-item-title{display:flex;align-items:center;gap:8px;min-width:0}
 .catalog-item-title>span:last-child{min-width:0}
 .catalog-item-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--category-accent,#94a3b8)}
 .catalog-item small{padding-left:22px}
-.catalog-component-icon{color:var(--category-accent,#29b6f6);background:#0b1219;border-color:var(--category-accent,#1c2a36)}
-@media(prefers-reduced-motion:reduce){.bp-node,.catalog-item{transition:none}.catalog-item:hover:not(:disabled){transform:none}}
+.catalog-component-icon{
+  color:var(--category-accent,#29b6f6);
+  background:linear-gradient(145deg,var(--category-glow,#29b6f622),transparent 70%),#0b1219;
+  border-color:var(--category-accent,#1c2a36);
+  box-shadow:0 0 16px -8px var(--category-accent,#29b6f6);
+}
 
-/* Make selection and connection direction easy to read on the dark canvas. */
-.react-flow__edge.selected .react-flow__edge-path{stroke:#67e8f9;stroke-width:3}
-.react-flow__edge-path{transition:stroke .14s ease,stroke-width .14s ease}
-.react-flow__connection-path{stroke:#67e8f9;stroke-width:2}
+/* ---------- Edges and connection drawing ---------- */
+.react-flow__edge-path{transition:stroke .16s ease,stroke-width .16s ease,filter .16s ease}
+.react-flow__edge:hover .react-flow__edge-path{stroke-width:2.5}
+.react-flow__edge.selected .react-flow__edge-path{stroke:#67e8f9;stroke-width:3;filter:drop-shadow(0 0 5px #67e8f980)}
+.react-flow__connection-path{stroke:#67e8f9;stroke-width:2;stroke-dasharray:6 5;animation:bp-connect-flow .8s linear infinite;filter:drop-shadow(0 0 4px #67e8f966)}
+@keyframes bp-connect-flow{to{stroke-dashoffset:-11}}
+
+/* ---------- Keyboard focus ---------- */
+.catalog-item:focus-visible{outline:2px solid var(--category-accent,#29b6f6);outline-offset:2px}
+
+@media(prefers-reduced-motion:reduce){
+  .bp-node,.catalog-item,.react-flow__edge-path{transition:none}
+  .catalog-item:hover:not(:disabled){transform:none}
+  .react-flow__connection-path{animation:none;stroke-dasharray:none}
+}

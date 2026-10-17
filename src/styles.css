@@ -1531,3 +1531,113 @@ body:has(.app-shell) :not(.lp-root, .lp-root *) .component-library-controls sele
     padding: 0 6px !important;
   }
 }
+
+/* =====================================================================
+   ANCHON polish layer
+   PASTE AT THE VERY END of your main stylesheet (the large one).
+   Additive only: no layout, sizing, positioning or class names change,
+   so every existing feature keeps working. Delete this block to revert.
+   ===================================================================== */
+
+:root{
+  --anchon-elev-1:inset 0 1px 0 #ffffff0a,0 10px 28px -18px #000d;
+  --anchon-elev-2:inset 0 1px 0 #ffffff10,0 22px 60px -24px #000f;
+  --anchon-ring:0 0 0 3px #29b6f622;
+  --anchon-ease:cubic-bezier(.2,.7,.2,1);
+}
+::selection{background:#29b6f64d;color:#fff}
+
+/* ---------- Top bar ---------- */
+html body .app-shell.app-shell>.topbar{
+  background:linear-gradient(180deg,#0d151d,#091017);
+  border-bottom-color:#1b2a36;
+  box-shadow:0 1px 0 #29b6f60d,0 12px 30px -24px #000;
+}
+
+/* ---------- Buttons: smoother states (colours/sizes stay as defined) ---------- */
+html body .app-shell.app-shell :is(.primary-btn,.outline-btn,.toolbar-actions button,.event-actions button,.nav-btn,.danger-btn,.danger-outline,.warning-outline,.icon-btn,.catalog-learn-btn,.panel-toggle-button,.topbar-library-button,.topbar-add-component-button,.component-library-close){
+  transition:background-color .16s var(--anchon-ease),border-color .16s var(--anchon-ease),box-shadow .16s var(--anchon-ease),color .16s ease,transform .16s var(--anchon-ease);
+}
+html body .app-shell.app-shell :is(.primary-btn,.topbar-add-component-button){
+  background-image:linear-gradient(180deg,#ffffff30,#ffffff00 62%);
+  box-shadow:inset 0 1px 0 #ffffff40,0 6px 18px -10px #29b6f6;
+}
+html body .app-shell.app-shell :is(.primary-btn,.topbar-add-component-button):not(:disabled):hover{
+  box-shadow:inset 0 1px 0 #ffffff55,0 10px 26px -10px #29b6f6;
+}
+html body .app-shell.app-shell :is(.nav-btn,.outline-btn,.toolbar-actions button,.event-actions button,.icon-btn,.catalog-learn-btn,.panel-toggle-button,.topbar-library-button,.component-library-close):not(:disabled):hover{
+  border-color:#3b586b;background-color:#122130;
+}
+html body .app-shell.app-shell :is(.danger-btn,.danger-outline):not(:disabled):hover{
+  border-color:#8a3037;background-color:#f8717114;box-shadow:0 0 18px -8px #f87171;
+}
+html body .app-shell.app-shell :is(.primary-btn,.nav-btn,.icon-btn,.topbar-library-button,.topbar-add-component-button):not(:disabled):active{transform:translateY(1px)}
+
+/* ---------- Surfaces: low specificity so page-specific styles still win ---------- */
+:where(.app-shell) :is(.panel,.section-block,.generator-form,.generated-result,.generator-hero,.control-hero,.stat){
+  background-image:linear-gradient(180deg,#ffffff05,transparent 45%);
+  box-shadow:var(--anchon-elev-1);
+}
+:where(.app-shell) .stat strong{font-variant-numeric:tabular-nums}
+:where(.app-shell) .feature-card{
+  background-image:linear-gradient(180deg,#ffffff05,transparent 50%);
+  box-shadow:var(--anchon-elev-1);
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s var(--anchon-ease);
+}
+:where(.app-shell) .feature-card:hover{box-shadow:var(--anchon-elev-2),0 0 0 1px #29b6f61f;transform:translateY(-2px)}
+:where(.app-shell) :is(.suggested-component,.suggested-edge,.team-row,.activity-row){transition:background-color .16s ease}
+:where(.app-shell) .suggested-component:hover{background-color:#0b141c}
+
+/* ---------- Floating workspace surfaces: same layout, richer depth ---------- */
+.workspace.workspace>:is(.left-panel,.right-panel){box-shadow:var(--anchon-elev-2)}
+.workspace.workspace>.canvas-column>.component-dock.component-dock-open{box-shadow:var(--anchon-elev-2)}
+.floating-ai-chat-panel{box-shadow:var(--anchon-elev-2)}
+.tutorial-card{box-shadow:var(--anchon-elev-2),0 0 0 1px #35c9ee1a}
+
+/* the AI chat button gets a single, slow attention ring (box-shadow only, never moves) */
+.floating-ai-chat-trigger{animation:anchon-ring 3.6s ease-out infinite}
+.floating-ai-chat-trigger:hover{animation:none}
+@keyframes anchon-ring{
+  0%{box-shadow:0 10px 36px #0009,0 0 0 0 #35c9ee55}
+  70%,100%{box-shadow:0 10px 36px #0009,0 0 0 14px #35c9ee00}
+}
+
+/* ---------- Canvas chrome ---------- */
+.react-flow__minimap-mask{fill:#060a0fb8}
+.canvas .react-flow__controls-button{transition:background-color .15s ease}
+.canvas .react-flow__node{transition:filter .15s ease}
+
+/* ---------- Landing page refinements (class names and layout unchanged) ---------- */
+.lp-hero::after{
+  width:520px;height:520px;
+  background:radial-gradient(circle,#58d5ff24,#0aa0dc10 45%,transparent 70%);
+  animation:lp-aurora 14s ease-in-out infinite alternate;
+}
+@keyframes lp-aurora{
+  from{transform:translateX(-50%) translate(-8%,0) scale(1)}
+  to{transform:translateX(-50%) translate(9%,7%) scale(1.18)}
+}
+.lp-marquee-track{position:relative}
+.lp-marquee-track::before,.lp-marquee-track::after{
+  content:"";position:absolute;top:0;bottom:0;width:clamp(48px,12vw,160px);z-index:2;pointer-events:none;
+}
+.lp-marquee-track::before{left:0;background:linear-gradient(90deg,#090f15,transparent)}
+.lp-marquee-track::after{right:0;background:linear-gradient(270deg,#090f15,transparent)}
+.lp-feature-card{isolation:isolate;transition:border-color .25s ease,background .25s ease,box-shadow .25s ease}
+.lp-feature-card::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .3s ease;
+  background:radial-gradient(380px circle at var(--mx,50%) var(--my,0%),#58d5ff1f,transparent 62%);
+}
+.lp-feature-card:hover{box-shadow:0 24px 60px -30px #000,0 0 0 1px #58d5ff14}
+.lp-feature-card:hover::before{opacity:1}
+.lp-feature-card:focus-visible{outline:2px solid var(--lp-cyan);outline-offset:3px}
+.lp-nav-cta{box-shadow:inset 0 1px 0 #58d5ff1a}
+.lp-btn-primary:focus-visible,.lp-btn-outline:focus-visible{outline:2px solid var(--lp-cyan);outline-offset:3px}
+.lp-closing-inner{box-shadow:inset 0 1px 0 #ffffff0a,0 30px 80px -40px #0a8fc0}
+.lp-step{transition:background-color .2s ease}
+.lp-step:hover{background:linear-gradient(180deg,#58d5ff08,transparent)}
+
+@media(prefers-reduced-motion:reduce){
+  .floating-ai-chat-trigger,.lp-hero::after{animation:none}
+  :where(.app-shell) .feature-card:hover{transform:none}
+}
