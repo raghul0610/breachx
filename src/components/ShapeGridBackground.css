@@ -4,21 +4,27 @@
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: #060a0f;
+  background: #101114;
 }
 
-.shape-grid-background .shape-grid {
+.shape-grid-background .swarm-cursor {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
+}
+
+.shape-grid-background .swarm-cursor-canvas {
+  opacity: 0.82;
 }
 
 .shape-grid-background::after {
   content: "";
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background:
-    radial-gradient(ellipse at 50% 15%, rgba(18, 34, 51, 0.2), transparent 62%),
-    linear-gradient(180deg, rgba(6, 10, 15, 0.12), rgba(6, 10, 15, 0.48));
+    radial-gradient(ellipse at 50% 10%, rgba(205, 207, 216, 0.12), transparent 60%),
+    linear-gradient(180deg, rgba(16, 17, 20, 0.02), rgba(16, 17, 20, 0.35));
 }
