@@ -10,13 +10,13 @@ export function ShapeGridBackground() {
         lineWidth={0.8}
         direction="diagonal"
         speed={0.18}
-        lineColor="#242236"
-        hoverColor="#45d9ff"
-        hoverFillColor="#45d9ff"
+        lineColor="#555861"
+        hoverColor="#e2e4eb"
+        hoverFillColor="#d1d3dc"
         fillOpacity={0.12}
         radius={1.7}
         trail={0.75}
-        glow={0.28}
+        glow={0.42}
         fade={0.78}
         opacity={0.72}
         clickCascade
