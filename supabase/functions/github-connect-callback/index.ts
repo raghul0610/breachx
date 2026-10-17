@@ -50,7 +50,7 @@ async function appJwt(appId: string, pem: string) {
   const header = b64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
   const payload = b64url(JSON.stringify({ iat: now - 30, exp: now + 8 * 60, iss: appId }));
   const unsigned = header + "." + payload;
-  const keyData = pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, "");
+  const keyData = pem.replace(/-----BEGIN (?:RSA )?PRIVATE KEY-----|-----END (?:RSA )?PRIVATE KEY-----|\s/g, "");
   const binary = atob(keyData);
   const keyBytes = Uint8Array.from(binary, c => c.charCodeAt(0));
   const key = await crypto.subtle.importKey("pkcs8", keyBytes, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
