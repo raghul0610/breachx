@@ -412,7 +412,7 @@ function ParticipantEditor({
     return {
       ...edge,
       type: "tooltipEdge",
-      animated: false,
+      animated: edge.animated ?? true,
       data: { ...(edge.data ?? {}) },
       label: compactEdgeLabel(edge.label, sourceCategory, sourceLabel, targetCategory, targetLabel),
       style: { ...edge.style, stroke: accent, strokeWidth: edge.selected ? 4.5 : 3.5 },
