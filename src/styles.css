@@ -1239,14 +1239,14 @@ body::-webkit-scrollbar,
 .github-connection-development{margin-top:20px;padding:14px 16px}.github-building-pill{flex:none;padding:5px 8px;border:1px solid #5b4a2b;border-radius:5px;background:#211a0c;color:#e7c77b;font:700 9px ui-monospace,monospace;letter-spacing:.04em}.inferred-requirements-card .brief-card-heading{margin-bottom:10px}.inferred-requirements-card .brief-card-heading p{margin-top:3px}
 
 
-/* Keep semantic edge colors visible without oversized strokes or labels. */
-.canvas .react-flow__edge-path { stroke-width: 2px !important; }
-.canvas .react-flow__edge.selected .react-flow__edge-path { stroke-width: 3px !important; }
+/* Keep semantic edge colors visible and labels legible on the architecture canvas. */
+.canvas .react-flow__edge-path { stroke-width: 3.5px !important; }
+.canvas .react-flow__edge.selected .react-flow__edge-path { stroke-width: 4.5px !important; }
 .canvas .react-flow__edge-text {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .02em;
 }
 .canvas .react-flow__edge-textbg { rx: 4px; ry: 4px; }
 .edge-inspector .catalog-inspector-title h3 { overflow-wrap:anywhere; line-height:1.35; }
