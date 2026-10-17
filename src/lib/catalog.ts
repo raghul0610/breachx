@@ -112,6 +112,23 @@ export const CATALOG = [
 
   // Common production platform components
   { typeKey: "schema_registry", label: "Schema Registry", category: "Messaging" },
+
+  // Niche infrastructure — specialist components for real production systems
+  { typeKey: "authoritative_dns", label: "Authoritative DNS Server", category: "Edge" },
+  { typeKey: "dns_resolver", label: "Recursive DNS Resolver", category: "Edge" },
+  { typeKey: "transcoding_server", label: "Media Transcoding Server", category: "Media" },
+  { typeKey: "media_origin", label: "Media Origin / Packager", category: "Media" },
+  { typeKey: "webrtc_sfu", label: "WebRTC SFU", category: "Realtime" },
+  { typeKey: "stun_turn", label: "STUN / TURN Server", category: "Network" },
+  { typeKey: "smtp_relay", label: "SMTP Relay", category: "Messaging" },
+  { typeKey: "push_gateway", label: "Push Notification Gateway", category: "Messaging" },
+  { typeKey: "ocr_service", label: "OCR / Document Vision", category: "AI / ML" },
+  { typeKey: "image_processor", label: "Image Processing Worker", category: "Media" },
+  { typeKey: "egress_gateway", label: "Egress Gateway", category: "Network" },
+  { typeKey: "policy_engine", label: "Policy Decision Engine", category: "Security" },
+  { typeKey: "certificate_authority", label: "Certificate Authority", category: "Security" },
+  { typeKey: "log_collector", label: "Log Collector / Forwarder", category: "Observability" },
+  { typeKey: "secrets_sidecar", label: "Secrets Sidecar / Agent", category: "Platform" },
 ] as const;
 
 export type CatalogItem = typeof CATALOG[number];
@@ -171,4 +188,19 @@ export const COMPONENT_CAPABILITIES: Record<string, ComponentCapability> = {
   feature_store:{capabilities:["consistent model features","online and offline feature access"],operationalComplexity:"high",costProfile:"high"},
   document_parser:{capabilities:["document extraction","unstructured content ingestion"],operationalComplexity:"medium",costProfile:"medium"},
   schema_registry:{capabilities:["event schema governance","message compatibility checks"],operationalComplexity:"medium",costProfile:"medium"},
+  authoritative_dns:{capabilities:["authoritative DNS records","domain-to-endpoint resolution"],operationalComplexity:"medium",costProfile:"low"},
+  dns_resolver:{capabilities:["recursive DNS lookup","DNS caching"],operationalComplexity:"medium",costProfile:"low"},
+  transcoding_server:{capabilities:["codec conversion","resolution and bitrate variants"],operationalComplexity:"high",costProfile:"high"},
+  media_origin:{capabilities:["media packaging","streaming origin delivery"],operationalComplexity:"high",costProfile:"high"},
+  webrtc_sfu:{capabilities:["selective media forwarding","group video scaling"],operationalComplexity:"high",costProfile:"high"},
+  stun_turn:{capabilities:["NAT traversal","media relay fallback"],operationalComplexity:"medium",costProfile:"medium"},
+  smtp_relay:{capabilities:["outbound email delivery","mail transfer and retry"],operationalComplexity:"medium",costProfile:"medium"},
+  push_gateway:{capabilities:["mobile/web push delivery","provider fan-out"],operationalComplexity:"medium",costProfile:"medium"},
+  ocr_service:{capabilities:["text extraction from images","document recognition"],operationalComplexity:"medium",costProfile:"medium"},
+  image_processor:{capabilities:["image resizing and conversion","thumbnail generation"],operationalComplexity:"medium",costProfile:"medium"},
+  egress_gateway:{capabilities:["controlled outbound traffic","egress policy enforcement"],operationalComplexity:"high",costProfile:"medium"},
+  policy_engine:{capabilities:["centralized policy decisions","attribute-based authorization"],operationalComplexity:"high",costProfile:"medium"},
+  certificate_authority:{capabilities:["certificate issuance","service identity trust"],operationalComplexity:"high",costProfile:"high"},
+  log_collector:{capabilities:["log collection","buffering and forwarding"],operationalComplexity:"medium",costProfile:"medium"},
+  secrets_sidecar:{capabilities:["runtime secret delivery","secret rotation integration"],operationalComplexity:"medium",costProfile:"medium"},
 };
