@@ -7,4 +7,12 @@ if (!url || !publishableKey) {
   throw new Error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY.");
 }
 
-export const supabase = createClient(url, publishableKey);
+export const supabase = createClient(url, publishableKey, {
+  auth: {
+    // Keep the user's session across refreshes and browser restarts.
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage,
+  },
+});
