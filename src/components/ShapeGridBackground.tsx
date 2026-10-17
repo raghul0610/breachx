@@ -1,26 +1,28 @@
-import ShapeGrid from "./ShapeGrid";
+import SwarmCursor from "./SwarmCursor";
 import "./ShapeGridBackground.css";
 
 export function ShapeGridBackground() {
   return (
     <div className="shape-grid-background" aria-hidden="true">
-      <ShapeGrid
-        shape="square"
-        cellSize={42}
-        lineWidth={0.8}
-        direction="diagonal"
-        speed={0.18}
-        lineColor="#555861"
-        hoverColor="#e2e4eb"
-        hoverFillColor="#d1d3dc"
-        fillOpacity={0.12}
-        radius={1.7}
-        trail={0.75}
-        glow={0.42}
-        fade={0.78}
-        opacity={0.72}
-        clickCascade
+      <SwarmCursor
+        count={650}
+        size={2.2}
+        shape="dot"
+        color="#cfd2dc"
+        accentColor="#c4b5fd"
+        spread={105}
+        speed={0.8}
+        swirl={0.55}
+        tail={0.42}
+        trail={0.45}
+        wander={0.42}
+        depth={0.6}
+        targets=""
+        idle="roam"
+        clickEffect="pulse"
         intro
+        enabled
+        style={{ width: "100%", height: "100%" }}
       />
     </div>
   );
