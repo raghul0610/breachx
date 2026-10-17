@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AnchonTechText } from "../components/AnchonTechText";
 import { ArrowRight, Workflow, Download, Layers } from "lucide-react";
 
 /* ─── helpers ─────────────────────────────────────────────── */
@@ -202,7 +203,7 @@ export function LandingPage({
           }
         >
           <div className="lp-eyebrow">SYSTEM ARCHITECTURE PLATFORM</div>
-          <KineticHeading reduced={reduced} />
+          <AnchonTechText />
           <p className="lp-hero-sub" id="lp-hero-heading">
             Design systems. Understand connections. Build better architecture.
           </p>
