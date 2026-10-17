@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Workflow, Download, Layers } from "lucide-react";
+import { ShapeGridBackground } from "../components/ShapeGridBackground";
 
 /* ─── helpers ─────────────────────────────────────────────── */
 function usePrefersReducedMotion() {
@@ -176,6 +177,7 @@ export function LandingPage({
 
   return (
     <div className="lp-root">
+      <ShapeGridBackground />
       {/* ── nav ── */}
       <nav className="lp-nav" aria-label="Main navigation">
         <span className="lp-nav-brand">ANCHON</span>
