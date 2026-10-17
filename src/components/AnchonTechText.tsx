@@ -187,7 +187,7 @@ export function AnchonTechText() {
       host.removeEventListener("pointerenter", onMove);
       host.removeEventListener("pointerleave", onLeave);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <div className="anchon-tech-wordmark-wrap">
