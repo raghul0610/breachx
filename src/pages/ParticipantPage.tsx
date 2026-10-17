@@ -862,7 +862,7 @@ function ParticipantEditor({
 
           <ReactFlow
             nodes={nodes}
-            edges={edges}
+            edges={renderEdges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             onNodesChange={handleNodesChange}
