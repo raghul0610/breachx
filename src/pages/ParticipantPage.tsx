@@ -9,6 +9,9 @@ import {
   ReactFlow,
   ReactFlowProvider,
   MarkerType,
+  BaseEdge,
+  getBezierPath,
+  type EdgeProps,
   useEdgesState,
   useNodesState,
   useReactFlow,
@@ -56,6 +59,25 @@ function readInferredRequirements(notes: string): InferredRequirements | null {
 }
 
 type EdgeExplanation = { purpose?: string; rationale?: string };
+
+function TooltipEdge(props: EdgeProps) {
+  const [edgePath] = getBezierPath(props);
+  const data = (props.data ?? {}) as EdgeExplanation & { tooltip?: string };
+  const description = data.tooltip || data.purpose || "Architecture connection between components.";
+  return (
+    <g>
+      <title>{description}</title>
+      <BaseEdge
+        {...props}
+        path={edgePath}
+        markerEnd={props.markerEnd}
+        markerStart={props.markerStart}
+        style={props.style}
+        interactionWidth={props.interactionWidth}
+      />
+    </g>
+  );
+}
 
 function edgeExplanation(edge: Edge, sourceLabel: string, targetLabel: string): Required<EdgeExplanation> {
   const data = (edge.data ?? {}) as EdgeExplanation;
@@ -305,6 +327,7 @@ function ParticipantEditor({
   const [persisting, setPersisting] = useState(false);
 
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
+  const edgeTypes = useMemo(() => ({ tooltipEdge: TooltipEdge }), []);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const updateSelectedEdge = (field: "label" | "purpose" | "rationale", value: string) => {
@@ -329,8 +352,12 @@ function ParticipantEditor({
     const sourceCategory = String(sourceNode?.data?.category ?? "");
     const targetCategory = String(targetNode?.data?.category ?? "");
     const accent = getCategoryAccent(sourceCategory);
+    const explanation = edgeExplanation(edge, sourceLabel, targetLabel);
+    const tooltip = [explanation.purpose, explanation.rationale].filter(Boolean).join(" ");
     return {
       ...edge,
+      type: "tooltipEdge",
+      data: { ...(edge.data ?? {}), tooltip },
       label: compactEdgeLabel(edge.label, sourceCategory, sourceLabel, targetCategory, targetLabel),
       style: { ...edge.style, stroke: accent, strokeWidth: 4 },
       markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 24, height: 24 },
@@ -781,6 +808,7 @@ function ParticipantEditor({
             nodes={nodes}
             edges={edges}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
             deleteKeyCode={null}
