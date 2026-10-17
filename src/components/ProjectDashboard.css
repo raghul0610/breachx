@@ -132,3 +132,14 @@
  .github-connection-heading { grid-template-columns: 30px minmax(0,1fr) !important; }
  .github-building-pill { grid-column: 2; margin: 0 !important; justify-self: start; }
 }
+
+
+/* Full-page animated ShapeGrid sits behind dashboard content. */
+.project-dashboard {
+  position: relative;
+  isolation: isolate;
+}
+.project-dashboard > :not(.shape-grid-background) {
+  position: relative;
+  z-index: 1;
+}
