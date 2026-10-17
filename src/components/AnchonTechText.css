@@ -1,0 +1,27 @@
+.anchon-tech-wordmark {
+  width: min(100%, 920px);
+  height: clamp(108px, 18vw, 190px);
+  margin: 0 auto;
+  position: relative;
+  overflow: visible;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.anchon-tech-wordmark__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 640px) {
+  .anchon-tech-wordmark {
+    height: clamp(88px, 22vw, 132px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anchon-tech-wordmark {
+    touch-action: auto;
+  }
+}
