@@ -63,7 +63,7 @@ type EdgeExplanation = { purpose?: string; rationale?: string };
 
 function TooltipEdge(props: EdgeProps) {
   const [edgePath, labelX, labelY] = getBezierPath(props);
-  const edgeColor = String(props.labelStyle?.fill ?? props.style?.stroke ?? "#38bdf8");
+  const edgeColor = String(props.style?.stroke ?? props.labelStyle?.fill ?? "#38bdf8");
   return (
     <g>
       <BaseEdge
@@ -83,6 +83,7 @@ function TooltipEdge(props: EdgeProps) {
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: "all",
               color: edgeColor,
+              WebkitTextFillColor: edgeColor,
               background: "#071018",
               border: `1px solid ${edgeColor}`,
               borderRadius: 5,
@@ -95,7 +96,7 @@ function TooltipEdge(props: EdgeProps) {
               whiteSpace: "nowrap",
             }}
           >
-            {props.label}
+            <span style={{ color: edgeColor, WebkitTextFillColor: edgeColor, font: "inherit", fontWeight: 900 }}>{props.label}</span>
           </div>
         </EdgeLabelRenderer>
       ) : null}
