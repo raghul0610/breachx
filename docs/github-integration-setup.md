@@ -1,6 +1,6 @@
 # ANCHON GitHub App integration
 
-Phase 1 connects a signed-in ANCHON user to a GitHub App installation and lists repositories explicitly selected during installation. Phase 2 adds a read-only repository structure scan: tracked file counts, directory structure, language counts, and summaries of common dependency/project manifests. It does not execute code, infer runtime data flows, or modify repositories.
+Phase 1 connects a signed-in ANCHON user to a GitHub App installation and lists repositories explicitly selected during installation. Phase 2 adds a read-only repository structure scan: tracked file counts, directory structure, language counts, and summaries of common dependency/project manifests. Phase 3 can create an editable ANCHON architecture draft from those results. Generated components and edges are heuristic hypotheses based on paths and manifests; they are not verified runtime data flows. The scan does not execute code or modify the source repository.
 
 ## GitHub App setup
 
@@ -34,5 +34,5 @@ Never place the GitHub App private key or service-role key in frontend/Vite envi
 - The service role is used only in Edge Functions after validating the caller or signed OAuth state.
 - State is HMAC-signed and expires after 10 minutes.
 - The repository list endpoint returns up to 100 repositories in the selected installation.
-- Disconnect/revoke, pagination, audit logging, webhook synchronization, source ingestion, and architecture analysis are follow-up tasks.
+- Disconnect/revoke, pagination, audit logging, webhook synchronization, and deeper source ingestion/runtime flow verification remain follow-up tasks.
 - Never execute repository scripts on the application server. Source analysis should run in an isolated worker/sandbox.

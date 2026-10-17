@@ -104,8 +104,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
           </div>
           <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> NEW PROJECT</button>
         </section>
-        <GitHubConnection />
-
+        <GitHubConnection onOpenProject={onOpenProject} />
         {error && <div className="project-error" role="alert">{error}</div>}
         {projects.length === 0 && !error ? (
           <section className="project-empty panel">
