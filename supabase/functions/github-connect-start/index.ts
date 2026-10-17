@@ -47,7 +47,11 @@ Deno.serve(async (req) => {
   const client = createClient(url!, anon!, { global: { headers: { Authorization: authorization } } });
   const { data: { user }, error } = await client.auth.getUser();
   if (error || !user) return json(req, { error: "Your ANCHON session is invalid or expired." }, 401);
-  const payload = btoa(JSON.stringify({ sub: user.id, ts: Date.now(), nonce: crypto.randomUUID() })).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+  const origin = req.headers.get("Origin") ?? "";
+  const configuredOrigin = (Deno.env.get("ANCHON_APP_URL") ?? "").replace(/\\/+$/, "");
+  const isAllowedPreview = /^https:\/\/breachx-[a-z0-9-]+-raghul06102006-7731s-projects\.vercel\.app$/.test(origin);
+  const returnOrigin = origin === configuredOrigin || isAllowedPreview ? origin : configuredOrigin;
+  const payload = btoa(JSON.stringify({ sub: user.id, ts: Date.now(), nonce: crypto.randomUUID(), origin: returnOrigin })).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
   const state = payload + "." + await sign(payload, secret!);
   const installUrl = new URL("https://github.com/apps/" + encodeURIComponent(slug!) + "/installations/new");
   installUrl.searchParams.set("state", state);
