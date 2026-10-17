@@ -1,10 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./AnchonTechText.css";
 
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
 /** ANCHON wordmark: interactive technical-outline lettering inspired by React Bits TechText. */
 export function AnchonTechText() {
+  const [theme, setTheme] = useState<"mono" | "midnight" | "violet">("mono");
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -102,6 +103,11 @@ export function AnchonTechText() {
         if (Math.abs(o.x) + Math.abs(o.y) + Math.abs(o.vx) + Math.abs(o.vy) > 0.08) moving = true;
       });
 
+      const palette = host!.dataset.theme === "midnight"
+        ? { fill: "#f8fafc", outline: "#cbd5e1", accent: "#ffffff", label: "#ffffff" }
+        : host!.dataset.theme === "violet"
+          ? { fill: "#f2eaff", outline: "#c4b5fd", accent: "#a78bfa", label: "#ddd6fe" }
+          : { fill: "#111827", outline: "#475569", accent: "#111827", label: "#334155" };
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx!.clearRect(0, 0, width, height);
       ctx!.font = `700 ${fontSize}px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
@@ -120,14 +126,14 @@ export function AnchonTechText() {
         ctx!.save();
         ctx!.translate(o.x, o.y);
         ctx!.globalAlpha = active ? 0.28 : 1;
-        ctx!.fillStyle = "#e7eaf2";
+        ctx!.fillStyle = palette.fill;
         ctx!.fillText(word[i], x, baseline);
         ctx!.globalAlpha = active ? 1 : 0.48;
-        ctx!.strokeStyle = "#9ca8bd";
+        ctx!.strokeStyle = palette.outline;
         ctx!.strokeText(word[i], x, baseline);
         if (active) {
           ctx!.globalAlpha = 0.92;
-          ctx!.strokeStyle = "#8b9cff";
+          ctx!.strokeStyle = palette.accent;
           ctx!.setLineDash([3, 4]);
           ctx!.strokeRect(box.x, box.y, box.w, box.h);
           ctx!.setLineDash([]);
@@ -141,11 +147,11 @@ export function AnchonTechText() {
             else if (d < box.w + box.h) { px += box.w; py += d - box.w; }
             else if (d < 2 * box.w + box.h) { px += box.w - (d - box.w - box.h); py += box.h; }
             else { py += box.h - (d - 2 * box.w - box.h); }
-            ctx!.fillStyle = "#a7b4ff";
+            ctx!.fillStyle = palette.accent;
             ctx!.fillRect(Math.round(px) - 1.5, Math.round(py) - 1.5, 3, 3);
           }
           ctx!.font = '10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
-          ctx!.fillStyle = "#a7b4ff";
+          ctx!.fillStyle = palette.label;
           ctx!.fillText(`${word[i]} · ${Math.round(box.w)}px`, box.x, box.y - 8);
           ctx!.font = `700 ${fontSize}px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
         }
@@ -184,8 +190,21 @@ export function AnchonTechText() {
   }, []);
 
   return (
-    <div ref={hostRef} className="anchon-tech-wordmark" role="img" aria-label="ANCHON">
-      <canvas ref={canvasRef} className="anchon-tech-wordmark__canvas" />
+    <div className="anchon-tech-wordmark-wrap">
+      <div ref={hostRef} data-theme={theme} className={`anchon-tech-wordmark anchon-tech-wordmark--${theme}`} role="img" aria-label="ANCHON">
+        <canvas ref={canvasRef} className="anchon-tech-wordmark__canvas" />
+      </div>
+      <div className="anchon-tech-themes" role="group" aria-label="Wordmark color themes">
+        <button type="button" className={theme === "mono" ? "is-active" : ""} onClick={() => setTheme("mono")} aria-pressed={theme === "mono"}>
+          <span className="anchon-theme-swatch anchon-theme-swatch--mono" /> Black &amp; white
+        </button>
+        <button type="button" className={theme === "midnight" ? "is-active" : ""} onClick={() => setTheme("midnight")} aria-pressed={theme === "midnight"}>
+          <span className="anchon-theme-swatch anchon-theme-swatch--midnight" /> Midnight
+        </button>
+        <button type="button" className={theme === "violet" ? "is-active" : ""} onClick={() => setTheme("violet")} aria-pressed={theme === "violet"}>
+          <span className="anchon-theme-swatch anchon-theme-swatch--violet" /> Violet
+        </button>
+      </div>
     </div>
   );
 }
