@@ -23,7 +23,7 @@ export const BlueprintNode = memo(({ data, selected }: NodeProps) => {
         <span className="node-category-icon"><CategoryIcon category={node.category} size={12} /></span>
         <span className="node-category">{node.category}</span>
       </div>
-      <div className="node-label" title={node.label}>{node.label}</div>
+      <div className="node-label" title={node.notes?.trim() ? `${node.label}: ${node.notes.trim().slice(0, 140)}${node.notes.trim().length > 140 ? "…" : ""}` : `${node.label} · ${node.category} component`}>{node.label}</div>
       {node.notes ? <div className="node-notes">{node.notes}</div> : null}
     </div>
   );
