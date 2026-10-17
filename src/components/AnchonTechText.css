@@ -1,11 +1,36 @@
-.anchon-tech-wordmark {
+.anchon-tech-wordmark-wrap {
   width: min(100%, 920px);
-  height: clamp(108px, 18vw, 190px);
   margin: 0 auto;
+}
+
+.anchon-tech-wordmark {
+  width: 100%;
+  height: clamp(108px, 18vw, 190px);
   position: relative;
-  overflow: visible;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 16px;
   touch-action: pan-y;
   user-select: none;
+  transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.anchon-tech-wordmark--mono {
+  background: #fff;
+  border-color: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.14);
+}
+
+.anchon-tech-wordmark--midnight {
+  background: #070a12;
+  border-color: #242b3b;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.2);
+}
+
+.anchon-tech-wordmark--violet {
+  background: linear-gradient(135deg, #100b20, #17102b 55%, #0c1020);
+  border-color: rgba(167, 139, 250, 0.32);
+  box-shadow: 0 18px 50px rgba(18, 8, 40, 0.25);
 }
 
 .anchon-tech-wordmark__canvas {
@@ -14,14 +39,87 @@
   height: 100%;
 }
 
+.anchon-tech-themes {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.anchon-tech-themes button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.42);
+  color: #aeb8c9;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+}
+
+.anchon-tech-themes button:hover,
+.anchon-tech-themes button:focus-visible {
+  border-color: rgba(165, 180, 252, 0.65);
+  color: #f8fafc;
+  outline: none;
+}
+
+.anchon-tech-themes button.is-active {
+  border-color: rgba(165, 180, 252, 0.75);
+  background: rgba(99, 102, 241, 0.13);
+  color: #f8fafc;
+}
+
+.anchon-theme-swatch {
+  width: 11px;
+  height: 11px;
+  display: inline-block;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.65);
+}
+
+.anchon-theme-swatch--mono {
+  background: linear-gradient(90deg, #fff 0 50%, #111827 50% 100%);
+}
+
+.anchon-theme-swatch--midnight {
+  background: linear-gradient(135deg, #070a12 0 50%, #f8fafc 50% 100%);
+}
+
+.anchon-theme-swatch--violet {
+  background: linear-gradient(135deg, #a78bfa, #100b20);
+}
+
 @media (max-width: 640px) {
   .anchon-tech-wordmark {
     height: clamp(88px, 22vw, 132px);
+    border-radius: 12px;
+  }
+
+  .anchon-tech-themes {
+    gap: 6px;
+  }
+
+  .anchon-tech-themes button {
+    padding: 5px 8px;
+    font-size: 10px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .anchon-tech-wordmark {
     touch-action: auto;
+    transition: none;
+  }
+
+  .anchon-tech-themes button {
+    transition: none;
   }
 }
