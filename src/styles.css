@@ -1545,3 +1545,21 @@ body,
   background-color: #000 !important;
   background-image: none !important;
 }
+
+
+/* Keep the LiquidChrome canvas behind page content while allowing it to show through landing sections. */
+.lp-root > :not(.shape-grid-background),
+.project-dashboard > :not(.shape-grid-background) {
+  position: relative;
+  z-index: 1;
+}
+.lp-root,
+.lp-root .lp-section,
+.lp-root .lp-section-alt,
+.lp-root .lp-marquee-track {
+  background-color: transparent !important;
+}
+.project-dashboard {
+  position: relative;
+  isolation: isolate;
+}
