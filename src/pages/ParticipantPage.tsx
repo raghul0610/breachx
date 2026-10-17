@@ -669,7 +669,6 @@ function ParticipantEditor({
       </header>
 
       <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
-        {(leftPanelOpen || rightPanelOpen) && <button type="button" className="workspace-popup-scrim" aria-label="Close open panel" onClick={() => { setComponentLibraryOpen(false); setLeftPanelOpen(false); setRightPanelOpen(false); }} />}
         {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
           <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
             <div className="requirements-mark"><FileText size={16} /></div>
@@ -694,7 +693,7 @@ function ParticipantEditor({
           </section>
 
 
-          <section className="brief-card inferred-requirements-card" aria-labelledby="inferred-requirements-title" style={{ marginTop: 14, padding: 12 }}>
+          <section className="brief-card inferred-requirements-card" aria-labelledby="inferred-requirements-title" style={{ marginTop: 14, padding: 12, fontSize: 10, lineHeight: 1.5 }}>
             <div className="brief-card-heading">
               <span className="brief-step">02</span>
               <div>
@@ -708,17 +707,17 @@ function ParticipantEditor({
             {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
             {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
             {inferredRequirements && <>
-              <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
+              <p className="inferred-requirements-summary">{inferredRequirements.summary}</p>
               <div style={{ marginTop: 14 }}>
-                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>
-                {inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}
+                <h3 className="inferred-requirements-subheading">FUNCTIONAL REQUIREMENTS</h3>
+                {inferredRequirements.functionalRequirements.length ? <ol className="inferred-requirements-list">{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}
               </div>
               <div style={{ marginTop: 14 }}>
-                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>
+                <h3 className="inferred-requirements-subheading">NON-FUNCTIONAL REQUIREMENTS</h3>
                 {inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}
               </div>
-              {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
-              <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
+              {inferredRequirements.assumptions.length > 0 && <details className="inferred-requirements-assumptions"><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
+              <p className="inferred-requirements-disclaimer">These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
             </>}
           </section>
 
