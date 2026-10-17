@@ -87,8 +87,9 @@ function TooltipEdge(props: EdgeProps) {
               borderRadius: 5,
               padding: "3px 5px",
               fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-              fontSize: 10,
-              fontWeight: 700,
+              fontSize: 11,
+              fontWeight: 800,
+              letterSpacing: "0.01em",
               whiteSpace: "nowrap",
             }}
           >
@@ -414,7 +415,7 @@ function ParticipantEditor({
       label: compactEdgeLabel(edge.label, sourceCategory, sourceLabel, targetCategory, targetLabel),
       style: { ...edge.style, stroke: accent, strokeWidth: edge.selected ? 3 : 2 },
       markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 16, height: 16 },
-      labelStyle: { ...edge.labelStyle, fill: accent, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 10, fontWeight: 700 },
+      labelStyle: { ...edge.labelStyle, fill: accent, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 11, fontWeight: 800 },
       labelBgStyle: { ...edge.labelBgStyle, fill: "#071018", fillOpacity: 0.98, stroke: accent, strokeWidth: 1 },
       labelBgPadding: [5, 3] as [number, number],
       labelBgBorderRadius: 4,
