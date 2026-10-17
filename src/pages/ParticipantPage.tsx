@@ -1034,11 +1034,11 @@ function ParticipantEditor({
                 const targetLabel = String(targetNode?.data?.label ?? selectedEdge.target);
                 const sourceCategory = String(sourceNode?.data?.category ?? "");
                 const targetCategory = String(targetNode?.data?.category ?? "");
-                const accent = getCategoryAccent(sourceCategory);
+                const accent = getConnectionAccent(sourceCategory, targetCategory);
                 const explanation = edgeExplanation(selectedEdge, sourceLabel, targetLabel);
                 return <>
                   <div className="catalog-inspector-title"><div className="catalog-component-icon" style={{ color: accent, borderColor: accent }}><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION · {sourceCategory || "SYSTEM"}</div><h3>{sourceLabel} → {targetLabel}</h3></div></div>
-                  <div className="edge-origin-indicator" style={{ borderColor: accent, color: accent }}><span style={{ background: accent }} /> EDGE COLOR FROM ORIGIN: {sourceCategory.toUpperCase() || "DEFAULT"}</div>
+                  <div className="edge-origin-indicator" style={{ borderColor: accent, color: accent }}><span style={{ background: accent }} /> EDGE COLOR FROM TARGET: {targetCategory.toUpperCase() || sourceCategory.toUpperCase() || "DEFAULT"}</div>
                   <div className="field">
                     <label>CANVAS LABEL · MAX 2 WORDS</label>
                     <input value={compactEdgeLabel(selectedEdge.label, sourceCategory, sourceLabel, targetCategory, targetLabel)} maxLength={40} onChange={(event) => updateSelectedEdge("label", event.target.value)} placeholder="e.g. Sends requests" />
