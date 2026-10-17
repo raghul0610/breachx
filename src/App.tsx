@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "./lib/supabase";
 import { LandingPage } from "./pages/LandingPage";
 import { ParticipantPage } from "./pages/ParticipantPage";
 import { ProjectDashboard } from "./components/ProjectDashboard";
@@ -43,6 +44,23 @@ function AppContent() {
 
 export default function App() {
   const [authRequested, setAuthRequested] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      if (data.session) setAuthRequested(true);
+      setSessionChecked(true);
+    }).catch(() => {
+      if (active) setSessionChecked(true);
+    });
+    return () => { active = false; };
+  }, []);
+
+  if (!sessionChecked) {
+    return <div className="auth-loading">Restoring your session…</div>;
+  }
 
   if (!authRequested) {
     return (

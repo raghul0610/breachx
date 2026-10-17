@@ -1225,3 +1225,16 @@ body::-webkit-scrollbar,
   .canvas .node-label { font-size:14px; }
   .canvas .react-flow__edge-text { font-size:12px; }
 }
+
+
+/* Architecture canvas refinement: more whitespace, curved source-colored edges, text-only labels. */
+.canvas .bp-node { width:250px; min-width:250px; max-width:250px; padding:15px 16px; }
+.canvas .node-label { font-size:15px; line-height:1.4; overflow-wrap:anywhere; }
+.canvas .node-notes { display:none !important; }
+.canvas .architecture-edge-label {
+  max-width:220px; padding:2px 4px; background:rgba(7,13,19,.88); border:0; border-radius:3px;
+  font:750 11px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.01em;
+  white-space:normal; text-align:center; text-shadow:0 1px 4px #000;
+}
+.canvas .react-flow__edge-path { stroke-linecap:round; }
+.canvas .react-flow__edge.selected .react-flow__edge-path { stroke-width:2.8px !important; }
