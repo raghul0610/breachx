@@ -198,6 +198,7 @@ function ParticipantEditor({
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
+  const [componentGroupBy, setComponentGroupBy] = useState<"layer" | "category">("layer");
   const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
   const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
   const chatDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
@@ -723,13 +724,17 @@ function ParticipantEditor({
             <div className="component-library-controls">
               <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="DNS, transcoding, queues, security…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
               <select aria-label="Filter by category" value={componentCategoryFilter} onChange={(event) => setComponentCategoryFilter(event.target.value)}><option value="all">All categories</option>{[...new Set(CATALOG.map((item) => item.category))].sort().map((category) => <option key={category} value={category}>{category}</option>)}</select>
+              <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="layer">Group by system layer</option><option value="category">Group by category</option></select>
               <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Default order</option><option value="name">Name A–Z</option><option value="category">Category A–Z</option></select>
             </div>
-            {[
-              { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
-              { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage, media and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration", "Media"] },
-              { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML"] },
-            ].map((group) => {
+            {(componentGroupBy === "category"
+              ? [...new Set(CATALOG.map((item) => item.category))].sort().map((category) => ({ title: category.toUpperCase(), description: `Components in the ${category} category`, categories: [category] }))
+              : [
+                { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
+                { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage, media and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration", "Media"] },
+                { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML"] },
+              ]
+            ).map((group) => {
               const query = componentSearch.trim().toLowerCase();
               const items = CATALOG.filter((item) => group.categories.includes(item.category))
                 .filter((item) => componentCategoryFilter === "all" || item.category === componentCategoryFilter)
