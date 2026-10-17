@@ -87,7 +87,7 @@ function compactEdgeLabel(label: unknown, sourceCategory: string, sourceLabel: s
   if (/data access|database|persistence/i.test(raw)) return "Access data";
   if (/api boundary|api request/i.test(raw)) return "API request";
   if (/async|queue|event/i.test(raw)) return "Queue events";
-  return raw.split(/\\s+/).filter(Boolean).slice(0, 3).join(" ");
+  return raw.split(/\s+/).filter(Boolean).slice(0, 3).join(" ");
 }
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -309,7 +309,7 @@ function ParticipantEditor({
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const updateSelectedEdge = (field: "label" | "purpose" | "rationale", value: string) => {
     if (!selectedEdgeId) return;
-    const words = value.trim().split(/\\s+/).filter(Boolean);
+    const words = value.trim().split(/\s+/).filter(Boolean);
     const nextValue = field === "label" && words.length > 3
       ? words.slice(0, 3).join(" ")
       : value;
@@ -917,6 +917,7 @@ function ParticipantEditor({
                 const sourceLabel = String(sourceNode?.data?.label ?? selectedEdge.source);
                 const targetLabel = String(targetNode?.data?.label ?? selectedEdge.target);
                 const sourceCategory = String(sourceNode?.data?.category ?? "");
+                const targetCategory = String(targetNode?.data?.category ?? "");
                 const accent = getCategoryAccent(sourceCategory);
                 const explanation = edgeExplanation(selectedEdge, sourceLabel, targetLabel);
                 return <>
