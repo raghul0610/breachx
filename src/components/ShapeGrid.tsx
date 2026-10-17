@@ -274,9 +274,9 @@ export default function ShapeGrid({
   opacity = 1,
   backgroundColor = 'transparent',
   paused = false,
-  dpr,
+  dpr = undefined,
   className = '',
-  style
+  style = undefined
 }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
