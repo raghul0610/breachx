@@ -309,8 +309,9 @@ function ParticipantEditor({
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const updateSelectedEdge = (field: "label" | "purpose" | "rationale", value: string) => {
     if (!selectedEdgeId) return;
-    const nextValue = field === "label"
-      ? value.trim().split(/\\s+/).filter(Boolean).slice(0, 3).join(" ")
+    const words = value.trim().split(/\\s+/).filter(Boolean);
+    const nextValue = field === "label" && words.length > 3
+      ? words.slice(0, 3).join(" ")
       : value;
     pushHistory();
     setEdges((current) => current.map((edge) => {
@@ -923,7 +924,7 @@ function ParticipantEditor({
                   <div className="edge-origin-indicator" style={{ borderColor: accent, color: accent }}><span style={{ background: accent }} /> EDGE COLOR FROM ORIGIN: {sourceCategory.toUpperCase() || "DEFAULT"}</div>
                   <div className="field">
                     <label>CANVAS LABEL · MAX 3 WORDS</label>
-                    <input value={String(selectedEdge.label ?? "")} maxLength={40} onChange={(event) => updateSelectedEdge("label", event.target.value)} placeholder="e.g. Sends requests" />
+                    <input value={compactEdgeLabel(selectedEdge.label, sourceCategory, sourceLabel, targetCategory, targetLabel)} maxLength={40} onChange={(event) => updateSelectedEdge("label", event.target.value)} placeholder="e.g. Sends requests" />
                   </div>
                   <div className="field">
                     <label>WHAT DOES THIS EDGE DO?</label>
