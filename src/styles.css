@@ -1228,3 +1228,19 @@ body::-webkit-scrollbar,
 
 
 .github-connection-development{margin-top:20px;padding:14px 16px}.github-building-pill{flex:none;padding:5px 8px;border:1px solid #5b4a2b;border-radius:5px;background:#211a0c;color:#e7c77b;font:700 9px ui-monospace,monospace;letter-spacing:.04em}.inferred-requirements-card .brief-card-heading{margin-bottom:10px}.inferred-requirements-card .brief-card-heading p{margin-top:3px}
+
+
+/* Architecture connections: origin-category color, stronger paths, readable short labels. */
+.canvas .react-flow__edge-path { stroke-width: 4 !important; }
+.canvas .react-flow__edge.selected .react-flow__edge-path { stroke-width: 5 !important; }
+.canvas .react-flow__edge-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+.canvas .react-flow__edge-textbg { rx: 5px; ry: 5px; }
+.edge-inspector .catalog-inspector-title h3 { overflow-wrap:anywhere; line-height:1.45; }
+.edge-origin-indicator { display:flex; align-items:center; gap:7px; margin:12px 0 4px; padding:8px; border:1px solid; border-radius:6px; background:#081018; font:700 9px ui-monospace,monospace; letter-spacing:.035em; }
+.edge-origin-indicator span { width:8px; height:8px; border-radius:50%; flex:none; box-shadow:0 0 8px currentColor; }
+.edge-inspector .field textarea { min-height:70px; resize:vertical; line-height:1.55; }
