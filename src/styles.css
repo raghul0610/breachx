@@ -1324,3 +1324,107 @@ body::-webkit-scrollbar,
   }
   .component-library-scrim { inset: 48px 0 0 !important; height: calc(100dvh - 48px) !important; }
 }
+
+
+/* ANCHON product UI design tokens — intentionally exclude the marketing landing page. */
+:root {
+  --anchon-font-ui: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --anchon-font-data: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --anchon-bg: #060a0f;
+  --anchon-surface: #0a1016;
+  --anchon-surface-raised: #0d161f;
+  --anchon-surface-input: #070c11;
+  --anchon-border: #263541;
+  --anchon-border-subtle: #1b2934;
+  --anchon-text: #edf2f7;
+  --anchon-muted: #8795a5;
+  --anchon-subtle: #6e7d8c;
+  --anchon-accent: #29b6f6;
+  --anchon-accent-hover: #72d8fa;
+  --anchon-danger: #f87171;
+  --anchon-radius: 8px;
+  --anchon-control-height: 36px;
+  --anchon-control-font-size: 12px;
+  --anchon-control-weight: 650;
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) {
+  font-family: var(--anchon-font-ui);
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(h1,h2,h3,h4,h5,h6) {
+  color: var(--anchon-text);
+  font-family: var(--anchon-font-ui);
+  letter-spacing: -0.02em;
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(p,li,label,small,span,div) {
+  text-wrap: pretty;
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(button, [role="button"], input, select, textarea) {
+  font-family: var(--anchon-font-ui);
+  font-size: var(--anchon-control-font-size);
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(button, [role="button"]) {
+  min-height: var(--anchon-control-height);
+  padding: 8px 12px;
+  border-radius: var(--anchon-radius);
+  font-weight: var(--anchon-control-weight);
+  line-height: 1.25;
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(input,select,textarea) {
+  min-height: var(--anchon-control-height);
+  padding: 8px 10px;
+  border-radius: var(--anchon-radius);
+  border-color: var(--anchon-border);
+  background-color: var(--anchon-surface-input);
+  color: var(--anchon-text);
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(button,input,select,textarea):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--anchon-accent) 78%, transparent);
+  outline-offset: 2px;
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(.primary-btn,.toolbar-actions button,.event-actions button,.nav-btn,.danger-btn,.danger-outline,.warning-outline,.icon-btn,.catalog-learn-btn,.panel-toggle-button,.topbar-library-button,.topbar-add-component-button,.component-library-close) {
+  min-height: var(--anchon-control-height);
+  padding: 8px 12px;
+  border-radius: var(--anchon-radius);
+  font-size: var(--anchon-control-font-size);
+  font-weight: var(--anchon-control-weight);
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(.section-kicker,.eyebrow,.counter,.field label,.status-pill,.warning-pill,.requirements-status,.help-box,.submission-rule,.tiny) {
+  font-family: var(--anchon-font-data);
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(.panel,.section-block,.generator-form,.generated-result,.generator-hero,.control-hero) {
+  border-color: var(--anchon-border-subtle);
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(.panel,.feature-card,.suggested-component,.catalog-item,.component-dock-item) {
+  border-radius: var(--anchon-radius);
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(.primary-btn,.topbar-add-component-button) {
+  background-color: var(--anchon-accent);
+  border-color: var(--anchon-accent);
+  color: #04111a;
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(.primary-btn,.topbar-add-component-button):hover {
+  background-color: var(--anchon-accent-hover);
+  border-color: var(--anchon-accent-hover);
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) :is(.danger-btn,.danger-outline) {
+  color: var(--anchon-danger);
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) .component-search-inline input,
+body:has(.app-shell) :not(.lp-root, .lp-root *) .component-library-search input {
+  min-height: 0;
+  padding: 0;
+  font-size: 12px;
+}
+body:has(.app-shell) :not(.lp-root, .lp-root *) .component-library-controls select {
+  min-height: var(--anchon-control-height);
+  font-size: 12px;
+}
+/* Keep the library centered horizontally but raise it above the canvas midpoint. */
+.workspace > .canvas-column > .component-dock.component-dock-open {
+  top: 42% !important;
+}
+@media (max-width: 760px) {
+  .workspace > .canvas-column > .component-dock.component-dock-open {
+    top: 43% !important;
+  }
+}
