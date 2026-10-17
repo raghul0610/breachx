@@ -82,7 +82,7 @@ function TooltipEdge(props: EdgeProps) {
               position: "absolute",
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: "all",
-              color: `${edgeColor} !important`,
+              color: edgeColor,
               background: "#071018",
               border: `1px solid ${edgeColor}`,
               borderRadius: 5,
