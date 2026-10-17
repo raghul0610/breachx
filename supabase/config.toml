@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.github-repositories]
 verify_jwt = true
+
+[functions.github-analyze-repository]
+verify_jwt = true
