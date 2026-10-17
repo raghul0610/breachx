@@ -1552,3 +1552,10 @@ body:has(.app-shell) :not(.lp-root, .lp-root *) .component-library-controls sele
   font-size: 11px !important;
   line-height: 1.5 !important;
 }
+
+
+/* Keep landing-page content above the full-viewport ShapeGrid canvas. */
+.lp-root > :not(.shape-grid-background) {
+  position: relative;
+  z-index: 1;
+}
