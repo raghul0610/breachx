@@ -1531,3 +1531,24 @@ body:has(.app-shell) :not(.lp-root, .lp-root *) .component-library-controls sele
     padding: 0 6px !important;
   }
 }
+
+
+/* Keep the Project identity and Architecture requirements typography aligned with the Project Brief description. */
+.requirements-panel .brief-card-heading h2,
+.requirements-panel .brief-card-heading p {
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}
+.requirements-panel .brief-card > button {
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+.requirements-panel .brief-card > p,
+.requirements-panel .brief-card .github-muted,
+.requirements-panel .brief-card li,
+.requirements-panel .brief-card details,
+.requirements-panel .brief-card summary,
+.requirements-panel .brief-card h3 {
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}
