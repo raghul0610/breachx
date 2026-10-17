@@ -83,7 +83,6 @@ function TooltipEdge(props: EdgeProps) {
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: "all",
               color: edgeColor,
-              WebkitTextFillColor: edgeColor,
               background: "#071018",
               border: `1px solid ${edgeColor}`,
               borderRadius: 5,
@@ -96,7 +95,7 @@ function TooltipEdge(props: EdgeProps) {
               whiteSpace: "nowrap",
             }}
           >
-            <span style={{ color: edgeColor, WebkitTextFillColor: edgeColor, font: "inherit", fontWeight: 900 }}>{props.label}</span>
+            {props.label}
           </div>
         </EdgeLabelRenderer>
       ) : null}
