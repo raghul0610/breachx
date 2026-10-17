@@ -10,6 +10,7 @@ import {
   ReactFlowProvider,
   MarkerType,
   BaseEdge,
+  EdgeLabelRenderer,
   getBezierPath,
   type EdgeProps,
   useEdgesState,
@@ -75,6 +76,30 @@ function TooltipEdge(props: EdgeProps) {
         style={props.style}
         interactionWidth={props.interactionWidth}
       />
+      {props.label ? (
+        <EdgeLabelRenderer>
+          <div
+            className="nodrag nopan"
+            title={description}
+            style={{
+              position: "absolute",
+              transform: `translate(-50%, -50%) translate(${props.labelX}px, ${props.labelY}px)`,
+              pointerEvents: "all",
+              color: String(props.style?.stroke ?? "#8bdcf5"),
+              background: "#071018",
+              border: `1px solid ${String(props.style?.stroke ?? "#8bdcf5")}`,
+              borderRadius: 5,
+              padding: "5px 8px",
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+              fontSize: 14,
+              fontWeight: 800,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {props.label}
+          </div>
+        </EdgeLabelRenderer>
+      ) : null}
     </g>
   );
 }
