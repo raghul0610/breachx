@@ -19,7 +19,7 @@ import {
 import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
-import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
+import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
@@ -53,6 +53,41 @@ function readInferredRequirements(notes: string): InferredRequirements | null {
   } catch {
     return null;
   }
+}
+
+type EdgeExplanation = { purpose?: string; rationale?: string };
+
+function edgeExplanation(edge: Edge, sourceLabel: string, targetLabel: string): Required<EdgeExplanation> {
+  const data = (edge.data ?? {}) as EdgeExplanation;
+  return {
+    purpose: data.purpose?.trim() || `Carries requests or data from ${sourceLabel} to ${targetLabel}.`,
+    rationale: data.rationale?.trim() || `This link lets ${sourceLabel} communicate with ${targetLabel}, enabling the system flow to work end to end.`,
+  };
+}
+
+function defaultEdgeLabel(sourceCategory: string, sourceLabel: string, targetCategory: string, targetLabel: string): string {
+  const target = targetLabel.toLowerCase();
+  const source = sourceLabel.toLowerCase();
+  if (/auth|identity|permission/.test(target)) return "Auth check";
+  if (/database|storage|cache|store/.test(target)) return "Store data";
+  if (/queue|worker|broker|messaging/.test(target)) return "Queue events";
+  if (/monitor|metric|log|observability/.test(target)) return "Send telemetry";
+  if (/Security/i.test(targetCategory)) return "Check traffic";
+  if (/Data|Storage/i.test(targetCategory)) return "Read/write data";
+  if (/Edge/i.test(sourceCategory) || /client|browser|mobile|user/.test(source)) return "Send request";
+  if (/API|Routing/i.test(sourceCategory)) return "Route request";
+  return "Data flow";
+}
+
+function compactEdgeLabel(label: unknown, sourceCategory: string, sourceLabel: string, targetCategory: string, targetLabel: string): string {
+  const raw = typeof label === "string" ? label.replace(/·/g, " ").trim() : "";
+  if (!raw) return defaultEdgeLabel(sourceCategory, sourceLabel, targetCategory, targetLabel);
+  if (/import/i.test(raw)) return "Imports modules";
+  if (/auth/i.test(raw)) return "Auth check";
+  if (/data access|database|persistence/i.test(raw)) return "Access data";
+  if (/api boundary|api request/i.test(raw)) return "API request";
+  if (/async|queue|event/i.test(raw)) return "Queue events";
+  return raw.split(/\\s+/).filter(Boolean).slice(0, 3).join(" ");
 }
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -272,6 +307,39 @@ function ParticipantEditor({
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
+  const updateSelectedEdge = (field: "label" | "purpose" | "rationale", value: string) => {
+    if (!selectedEdgeId) return;
+    const nextValue = field === "label"
+      ? value.trim().split(/\\s+/).filter(Boolean).slice(0, 3).join(" ")
+      : value;
+    pushHistory();
+    setEdges((current) => current.map((edge) => {
+      if (edge.id !== selectedEdgeId) return edge;
+      if (field === "label") return { ...edge, label: nextValue || "Data flow" };
+      const data = (edge.data ?? {}) as EdgeExplanation;
+      return { ...edge, data: { ...data, [field]: nextValue } };
+    }));
+  };
+  const renderEdges = useMemo(() => edges.map((edge) => {
+    const sourceNode = nodes.find((node) => node.id === edge.source);
+    const targetNode = nodes.find((node) => node.id === edge.target);
+    const sourceLabel = String(sourceNode?.data?.label ?? edge.source);
+    const targetLabel = String(targetNode?.data?.label ?? edge.target);
+    const sourceCategory = String(sourceNode?.data?.category ?? "");
+    const targetCategory = String(targetNode?.data?.category ?? "");
+    const accent = getCategoryAccent(sourceCategory);
+    return {
+      ...edge,
+      label: compactEdgeLabel(edge.label, sourceCategory, sourceLabel, targetCategory, targetLabel),
+      style: { ...edge.style, stroke: accent, strokeWidth: 4 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 24, height: 24 },
+      labelStyle: { ...edge.labelStyle, fill: accent, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 14, fontWeight: 800 },
+      labelBgStyle: { ...edge.labelBgStyle, fill: "#071018", fillOpacity: 0.96, stroke: accent, strokeWidth: 1 },
+      labelBgPadding: [8, 5] as [number, number],
+      labelBgBorderRadius: 5,
+      interactionWidth: 24,
+    };
+  }), [edges, nodes]);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
   const selectedCatalogItem = CATALOG.find((item) => item.typeKey === selectedCatalogTypeKey);
   const selectedKnowledge = selectedCatalogItem ? getComponentKnowledge(selectedCatalogItem) : null;
@@ -334,23 +402,26 @@ function ParticipantEditor({
 
   const onConnect = useCallback(
     (connection: Connection) => {
-
       pushHistory();
-
-      setEdges((current) =>
-        addEdge(
-          {
-            ...connection,
-            animated: true,
-            markerEnd: { type: MarkerType.ArrowClosed },
-          },
-          current,
-        ),
-      );
-      logActivity("EDGE_CREATED", {
-        source: connection.source,
-        target: connection.target,
-      });
+      const sourceNode = nodesRef.current.find((node) => node.id === connection.source);
+      const targetNode = nodesRef.current.find((node) => node.id === connection.target);
+      const sourceLabel = String(sourceNode?.data?.label ?? connection.source);
+      const targetLabel = String(targetNode?.data?.label ?? connection.target);
+      const sourceCategory = String(sourceNode?.data?.category ?? "");
+      const targetCategory = String(targetNode?.data?.category ?? "");
+      const label = defaultEdgeLabel(sourceCategory, sourceLabel, targetCategory, targetLabel);
+      setEdges((current) => addEdge({
+        ...connection,
+        label,
+        data: {
+          purpose: `Carries requests or data from ${sourceLabel} to ${targetLabel}.`,
+          rationale: `This link lets ${sourceLabel} communicate with ${targetLabel}, enabling the system flow to work end to end.`,
+        },
+        animated: true,
+        style: { stroke: getCategoryAccent(sourceCategory), strokeWidth: 4 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: getCategoryAccent(sourceCategory), width: 24, height: 24 },
+      }, current));
+      logActivity("EDGE_CREATED", { source: connection.source, target: connection.target });
     },
     [setEdges, submitted, pushHistory],
   );
@@ -838,10 +909,33 @@ function ParticipantEditor({
               </button>
             </>
           ) : selectedEdge ? (
-            <div className="catalog-inspector">
-              <div className="catalog-inspector-title"><div className="catalog-component-icon"><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION</div><h3>Directed connection</h3></div></div>
-              <p className="catalog-summary">This connection carries flow from <strong>{nodes.find((node) => node.id === selectedEdge.source)?.data.label ?? selectedEdge.source}</strong> to <strong>{nodes.find((node) => node.id === selectedEdge.target)?.data.label ?? selectedEdge.target}</strong>.</p>
-              <button className="danger-btn"  onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
+            <div className="catalog-inspector edge-inspector">
+              {(() => {
+                const sourceNode = nodes.find((node) => node.id === selectedEdge.source);
+                const targetNode = nodes.find((node) => node.id === selectedEdge.target);
+                const sourceLabel = String(sourceNode?.data?.label ?? selectedEdge.source);
+                const targetLabel = String(targetNode?.data?.label ?? selectedEdge.target);
+                const sourceCategory = String(sourceNode?.data?.category ?? "");
+                const accent = getCategoryAccent(sourceCategory);
+                const explanation = edgeExplanation(selectedEdge, sourceLabel, targetLabel);
+                return <>
+                  <div className="catalog-inspector-title"><div className="catalog-component-icon" style={{ color: accent, borderColor: accent }}><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION · {sourceCategory || "SYSTEM"}</div><h3>{sourceLabel} → {targetLabel}</h3></div></div>
+                  <div className="edge-origin-indicator" style={{ borderColor: accent, color: accent }}><span style={{ background: accent }} /> EDGE COLOR FROM ORIGIN: {sourceCategory.toUpperCase() || "DEFAULT"}</div>
+                  <div className="field">
+                    <label>CANVAS LABEL · MAX 3 WORDS</label>
+                    <input value={String(selectedEdge.label ?? "")} maxLength={40} onChange={(event) => updateSelectedEdge("label", event.target.value)} placeholder="e.g. Sends requests" />
+                  </div>
+                  <div className="field">
+                    <label>WHAT DOES THIS EDGE DO?</label>
+                    <textarea rows={3} value={explanation.purpose} onChange={(event) => updateSelectedEdge("purpose", event.target.value)} placeholder="Describe the responsibility of this connection." />
+                  </div>
+                  <div className="field">
+                    <label>WHY IS IT NECESSARY?</label>
+                    <textarea rows={3} value={explanation.rationale} onChange={(event) => updateSelectedEdge("rationale", event.target.value)} placeholder="Explain why these components need to communicate." />
+                  </div>
+                </>;
+              })()}
+              <button className="danger-btn" onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
             </div>
           ) : (
             <div className="empty-inspector">
