@@ -9,3 +9,126 @@
 .github-roadmap-copy p{margin:0;color:#8c9aa8;font-size:11px;line-height:1.6}
 .github-roadmap-status{flex:none;padding:6px 8px;border:1px solid #6b5424;border-radius:5px;background:#211b0d;color:#e8c878;font:700 9px ui-monospace,monospace;letter-spacing:.04em}
 @media(max-width:600px){.github-roadmap-card{align-items:flex-start;flex-wrap:wrap}.github-roadmap-status{margin-left:54px}}
+
+
+/* Dashboard typography and controls: calmer hierarchy, aligned with the rest of ANCHON. */
+.project-dashboard-content {
+  width: min(1180px, 100%);
+  padding: 22px 20px 30px;
+}
+.project-dashboard-hero {
+  align-items: flex-start;
+  padding: 14px 0 20px;
+  gap: 16px;
+}
+.project-dashboard-hero h1 {
+  margin: 8px 0 7px;
+  font: 700 clamp(21px, 2.4vw, 27px)/1.2 var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif);
+  letter-spacing: -0.035em;
+}
+.project-dashboard-hero p,
+.project-empty p {
+  font-size: 12px;
+  line-height: 1.55;
+}
+.project-grid { gap: 12px; margin-top: 16px; }
+.project-card { padding: 15px; }
+.project-card h2 {
+  margin: 13px 0 7px;
+  font: 650 15px/1.35 var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif);
+  letter-spacing: -0.015em;
+}
+.project-description { font-size: 12px; line-height: 1.55; min-height: 0; }
+.project-count,.project-updated,.project-status { font-size: 10px; font-weight: 500; }
+.project-actions { gap: 6px; margin-top: 12px; }
+.project-actions button { min-height: 34px; font-size: 11px; font-weight: 600; }
+.project-actions .icon-btn { min-width: 34px; min-height: 34px; }
+.project-empty { padding: 34px 18px; }
+.project-empty h2 { font: 650 16px/1.35 var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif); }
+.github-connection-development {
+  margin-top: 16px;
+  padding: 15px;
+  border-radius: 9px;
+}
+.github-connection-heading { display: flex; align-items: flex-start; gap: 12px; }
+.github-connection-icon {
+  width: 34px; height: 34px; display: grid; place-items: center; flex: none;
+  border: 1px solid #263541; border-radius: 8px; color: #9aa9b7; background: #0b141c;
+}
+.github-connection-title { min-width: 0; flex: 1; }
+.github-connection-title .section-kicker { font-size: 10px; font-weight: 600; letter-spacing: .07em; }
+.github-connection-title h2 {
+  margin: 8px 0 6px;
+  font: 650 16px/1.35 var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif);
+  letter-spacing: -0.015em;
+}
+.github-connection-title p { margin: 0; color: #8795a5; font-size: 12px; line-height: 1.55; }
+.github-building-pill {
+  flex: none; align-self: flex-start; padding: 5px 7px; border: 1px solid #6b5424;
+  border-radius: 5px; background: #211b0d; color: #e8c878;
+  font: 600 9px/1.3 var(--anchon-font-data, ui-monospace, monospace); letter-spacing: .03em;
+}
+.project-storage-note { margin-top: 16px; font-size: 10px; }
+@media(max-width:760px) {
+  .project-dashboard-content { padding: 16px 12px 24px; }
+  .project-dashboard-hero { align-items: flex-start; flex-direction: column; }
+  .project-dashboard-hero .primary-btn { width: auto; }
+  .github-connection-heading { flex-wrap: wrap; }
+  .github-building-pill { margin-left: 46px; }
+}
+
+
+/* Correct the dashboard's visual hierarchy: compact type and a single aligned GitHub card. */
+.project-dashboard-content { padding: 20px 20px 28px !important; }
+.project-dashboard-hero { padding: 10px 0 18px !important; }
+.project-dashboard-hero h1 {
+  font-family: var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif) !important;
+  font-size: clamp(20px, 2.1vw, 25px) !important;
+  font-weight: 650 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.035em !important;
+  margin: 7px 0 6px !important;
+}
+.project-dashboard-hero .section-kicker,
+.github-connection-title .section-kicker { font-size: 9px !important; font-weight: 550 !important; }
+.project-dashboard-hero p { font-size: 11px !important; }
+.project-dashboard-hero > div { min-width: 0; }
+.project-dashboard-hero > .primary-btn { flex: 0 0 auto; }
+.github-connection-development {
+  margin-top: 14px !important;
+  padding: 14px 16px !important;
+  min-height: 0 !important;
+}
+.github-connection-heading {
+  display: grid !important;
+  grid-template-columns: 30px minmax(0,1fr) auto !important;
+  align-items: start !important;
+  gap: 10px !important;
+}
+.github-connection-icon {
+  width: 30px !important; height: 30px !important;
+  border-radius: 7px !important;
+}
+.github-connection-title h2 {
+  font-family: var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif) !important;
+  font-size: 14px !important; font-weight: 600 !important; line-height: 1.35 !important;
+  letter-spacing: -0.015em !important; margin: 5px 0 !important;
+}
+.github-connection-title p { font-size: 11px !important; line-height: 1.5 !important; }
+.github-building-pill { font-size: 9px !important; font-weight: 500 !important; white-space: nowrap; }
+.project-grid { margin-top: 14px !important; gap: 12px !important; }
+.project-card { padding: 14px !important; }
+.project-card h2 {
+  font-family: var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif) !important;
+  font-size: 14px !important; font-weight: 600 !important; line-height: 1.35 !important;
+  letter-spacing: -0.015em !important; margin: 12px 0 6px !important;
+}
+.project-description { font-size: 11px !important; line-height: 1.5 !important; }
+.project-status { font-size: 9px !important; font-weight: 550 !important; }
+.project-count,.project-updated { font-size: 9px !important; font-weight: 450 !important; }
+.project-actions button { font-size: 10px !important; font-weight: 550 !important; }
+@media(max-width:760px) {
+ .project-dashboard-content { padding: 16px 12px 24px !important; }
+ .github-connection-heading { grid-template-columns: 30px minmax(0,1fr) !important; }
+ .github-building-pill { grid-column: 2; margin: 0 !important; justify-self: start; }
+}

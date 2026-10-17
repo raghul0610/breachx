@@ -196,6 +196,10 @@ function ParticipantEditor({
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
+  const [componentSearch, setComponentSearch] = useState("");
+  const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
+  const [componentGroupBy, setComponentGroupBy] = useState<"layer" | "category">("layer");
+  const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
   const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
   const chatDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(260);
@@ -375,6 +379,16 @@ function ParticipantEditor({
 
   const onConnect = useCallback(
     (connection: Connection) => {
+      const sourceNode = nodesRef.current.find((node) => node.id === connection.source);
+      const targetNode = nodesRef.current.find((node) => node.id === connection.target);
+      const sourceType = String(sourceNode?.data?.typeKey ?? "");
+      const targetType = String(targetNode?.data?.typeKey ?? "");
+      const dnsTypes = new Set(["dns", "authoritative_dns", "dns_resolver"]);
+      const databaseTypes = new Set(["database", "nosql_database", "graph_database", "time_series_db", "database_replica", "database_shard"]);
+      if ((dnsTypes.has(sourceType) && databaseTypes.has(targetType)) || (databaseTypes.has(sourceType) && dnsTypes.has(targetType))) {
+        window.alert("Connection needs a second look\n\nDNS resolves names to network endpoints; it does not carry database queries or application data. Connect the client or application to DNS for name resolution, then connect the application service to the database.\n\nYou can still model an unusual relationship with a labeled edge if your design has a specific reason.");
+        return;
+      }
 
       pushHistory();
 
@@ -611,7 +625,8 @@ function ParticipantEditor({
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
         <div className="topbar-right"><div className="topbar-actions"><div className="toolbar-actions topbar-toolbar-actions">
-              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); if (nextOpen) setRightPanelOpen(true); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
+              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); setRightPanelOpen(nextOpen); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
+              <label className="component-search-inline"><BookOpen size={13} /><input aria-label="Search architecture components" placeholder="Search components…" value={componentSearch} onChange={(event) => { setComponentSearch(event.target.value); setComponentLibraryOpen(true); setRightPanelOpen(true); }} onFocus={() => { setComponentLibraryOpen(true); setRightPanelOpen(true); }} /></label>
               <button type="button" className="topbar-add-component-button" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={"Add " + (selectedCatalogItem?.label ?? CATALOG[0].label) + " to the canvas"}><PlusCircle size={13} /> ADD COMPONENT</button>
               <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
               <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
@@ -638,7 +653,7 @@ function ParticipantEditor({
       </header>
 
       <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen || componentLibraryOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen || componentLibraryOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen || componentLibraryOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
-        {(leftPanelOpen || rightPanelOpen) && <button type="button" className="workspace-popup-scrim" aria-label="Close open panel" onClick={() => { setComponentLibraryOpen(false); setLeftPanelOpen(false); setRightPanelOpen(false); }} />}
+        {leftPanelOpen && <button type="button" className="workspace-popup-scrim" aria-label="Close requirements sidebar" onClick={() => setLeftPanelOpen(false)} />}
         {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
           <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
             <div className="requirements-mark"><FileText size={16} /></div>
@@ -704,14 +719,28 @@ function ParticipantEditor({
 
         <div className="canvas-column">
           {componentLibraryOpen && <><button type="button" className="component-library-scrim" aria-label="Close component library" onClick={() => setComponentLibraryOpen(false)} />
-          <section id="component-library-popup" className="component-dock component-dock-open" role="dialog" aria-modal="true" aria-label="Architecture component library" data-tutorial="component-library">
-            <div className="component-dock-heading"><div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY</div><p>Browse by system layer. Select a component, then add it to your canvas.</p></div><button type="button" className="component-library-close" onClick={() => setComponentLibraryOpen(false)} aria-label="Close component library"><X size={16} /></button></div>
-            {[
-              { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
-              { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration"] },
-              { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML"] },
-            ].map((group) => {
-              const items = CATALOG.filter((item) => group.categories.includes(item.category));
+          <section id="component-library-popup" className="component-dock component-dock-open" role="dialog" aria-modal="false" aria-label="Architecture component library" data-tutorial="component-library">
+            <div className="component-dock-heading"><div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY <span className="niche-library-tag">NICHE INFRASTRUCTURE INCLUDED</span></div><p>Search, filter, and sort production components. Select one to learn what it does before adding it.</p></div><button type="button" className="component-library-close" onClick={() => setComponentLibraryOpen(false)} aria-label="Close component library"><X size={16} /></button></div>
+            <div className="component-library-controls">
+              <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="DNS, transcoding, queues, security…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
+              <select aria-label="Filter by category" value={componentCategoryFilter} onChange={(event) => setComponentCategoryFilter(event.target.value)}><option value="all">All categories</option>{[...new Set(CATALOG.map((item) => item.category))].sort().map((category) => <option key={category} value={category}>{category}</option>)}</select>
+              <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="layer">Group by system layer</option><option value="category">Group by category</option></select>
+              <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Default order</option><option value="name">Name A–Z</option><option value="category">Category A–Z</option></select>
+            </div>
+            {(componentGroupBy === "category"
+              ? [...new Set(CATALOG.map((item) => item.category))].sort().map((category) => ({ title: category.toUpperCase(), description: `Components in the ${category} category`, categories: [category] }))
+              : [
+                { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
+                { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage, media and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration", "Media"] },
+                { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML"] },
+              ]
+            ).map((group) => {
+              const query = componentSearch.trim().toLowerCase();
+              const items = CATALOG.filter((item) => group.categories.includes(item.category))
+                .filter((item) => componentCategoryFilter === "all" || item.category === componentCategoryFilter)
+                .filter((item) => !query || `${item.label} ${item.category} ${item.typeKey}`.toLowerCase().includes(query))
+                .sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : componentSort === "category" ? a.category.localeCompare(b.category) || a.label.localeCompare(b.label) : 0);
+              if (items.length === 0) return null;
               return (
                 <div className="component-lane" key={group.title}>
                   <div className="component-lane-label">
@@ -757,8 +786,8 @@ function ParticipantEditor({
             deleteKeyCode={null}
             onConnect={onConnect}
             onReconnect={onReconnect}
-            onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); canvasRef.current?.focus({ preventScroll: true }); }}
-            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); canvasRef.current?.focus({ preventScroll: true }); }}
+            onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
+            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
             onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); }}
             onDragOver={(event) => {
               event.preventDefault();
