@@ -116,7 +116,7 @@ export function AnchonTechText() {
         const m = ctx!.measureText(word[i]);
         const o = offsets[i];
         const box = boxes[i];
-        const active = !reduced && pointer.inside && Math.hypot(box.cx - focusX, box.cy - focusY) < 145;
+        const active = !reduced && Math.hypot(box.cx - focusX, box.cy - focusY) < (pointer.inside ? 145 : 54);
         ctx!.save();
         ctx!.translate(o.x, o.y);
         ctx!.globalAlpha = active ? 0.28 : 1;
