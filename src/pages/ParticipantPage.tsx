@@ -653,7 +653,7 @@ function ParticipantEditor({
       </header>
 
       <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen || componentLibraryOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen || componentLibraryOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen || componentLibraryOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
-        {(leftPanelOpen || rightPanelOpen) && <button type="button" className="workspace-popup-scrim" aria-label="Close open panel" onClick={() => { setComponentLibraryOpen(false); setLeftPanelOpen(false); setRightPanelOpen(false); }} />}
+        {leftPanelOpen && <button type="button" className="workspace-popup-scrim" aria-label="Close requirements sidebar" onClick={() => setLeftPanelOpen(false)} />}
         {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
           <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
             <div className="requirements-mark"><FileText size={16} /></div>
