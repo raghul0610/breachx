@@ -1,0 +1,8 @@
+[functions.github-connect-start]
+verify_jwt = true
+
+[functions.github-connect-callback]
+verify_jwt = false
+
+[functions.github-repositories]
+verify_jwt = true
