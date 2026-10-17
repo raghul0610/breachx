@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Copy, FolderPlus, Pencil, Plus, Trash2, Workflow } from "lucide-react";
+import { ArrowLeft, Copy, FolderPlus, Github, Pencil, Plus, Trash2, Workflow } from "lucide-react";
 import {
   createProject,
   deleteProject,
@@ -102,6 +102,15 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
             <p>Keep each system design separate. Your private projects sync to your account across devices.</p>
           </div>
           <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> NEW PROJECT</button>
+        </section>
+        <section className="github-roadmap-card panel" aria-labelledby="github-roadmap-title">
+          <div className="github-roadmap-icon"><Github size={19} /></div>
+          <div className="github-roadmap-copy">
+            <div className="section-kicker">REPOSITORY INTEGRATION</div>
+            <h2 id="github-roadmap-title">GitHub connection</h2>
+            <p>Connect and analyze GitHub repositories from ANCHON. This integration is still being built and is not available yet.</p>
+          </div>
+          <span className="github-roadmap-status">IN DEVELOPMENT</span>
         </section>
         {error && <div className="project-error" role="alert">{error}</div>}
         {projects.length === 0 && !error ? (
