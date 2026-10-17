@@ -1290,3 +1290,37 @@ body::-webkit-scrollbar,
   .component-library-search { flex-basis:100%; }
   .component-library-controls select { flex-basis:calc(50% - 4px); }
 }
+
+
+/* Keep the component library centered while the inspector remains available on the right. */
+.workspace > .canvas-column > .component-dock.component-dock-open {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  width: min(1040px, calc(100vw - 96px)) !important;
+  max-width: calc(100vw - 48px) !important;
+  max-height: min(76dvh, 720px) !important;
+  margin: 0 !important;
+  overflow-y: auto !important;
+}
+.component-library-scrim {
+  position: fixed !important;
+  inset: 48px 0 0 !important;
+  z-index: 41 !important;
+  width: 100vw !important;
+  height: calc(100dvh - 48px) !important;
+  background: rgba(0,0,0,.24) !important;
+}
+.workspace > .right-panel { z-index: 42 !important; }
+@media(max-width:760px) {
+  .workspace > .canvas-column > .component-dock.component-dock-open {
+    top: 52% !important;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: 76dvh !important;
+  }
+  .component-library-scrim { inset: 48px 0 0 !important; height: calc(100dvh - 48px) !important; }
+}
