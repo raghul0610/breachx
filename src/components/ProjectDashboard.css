@@ -1,134 +1,204 @@
-.project-dashboard{height:100dvh;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}.project-dashboard::-webkit-scrollbar{display:none;width:0;height:0}.project-dashboard-content{flex:0 0 auto;min-height:max-content;width:min(1200px,100%);margin:0 auto;padding:28px 22px 36px}.project-dashboard-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 0 24px;border-bottom:1px solid #1b2934}.project-dashboard-hero h1{font:850 clamp(22px,3vw,32px) ui-monospace,monospace;margin:9px 0}.project-dashboard-hero p,.project-empty p{color:#8795a5;font-size:12px;line-height:1.6;margin:0}.project-dashboard-hero .section-kicker{display:flex;align-items:center;gap:7px}.project-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}.project-card{padding:17px;min-width:0}.project-card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.project-status{font:800 9px ui-monospace,monospace;letter-spacing:.07em;color:#74d1f7;border:1px solid #234353;background:#0a1821;padding:5px 7px;border-radius:5px}.project-status.is-submitted{color:#a7f3d0;border-color:#215c49;background:#0b2019}.project-count,.project-updated{font:9px ui-monospace,monospace;color:#71808e}.project-card h2{font:800 17px ui-monospace,monospace;overflow-wrap:anywhere;margin:17px 0 8px}.project-description{color:#91a0ae;font-size:11px;line-height:1.6;min-height:36px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.project-updated{margin-top:15px;padding-top:12px;border-top:1px solid #1b2934}.project-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:14px}.project-actions .primary-btn{margin-right:auto}.project-actions .icon-btn{min-width:32px;min-height:32px}.project-delete{color:#f87171;border-color:#5e2226}.project-empty{margin-top:22px;padding:45px 20px;text-align:center;display:flex;align-items:center;flex-direction:column;gap:10px;color:#29b6f6}.project-empty h2{margin:5px 0 0;color:#edf2f7;font:800 17px ui-monospace,monospace}.project-empty .primary-btn{margin-top:10px}.project-error{margin-top:16px;padding:12px;border:1px solid #74323a;border-radius:8px;color:#fca5a5;background:#211015;font-size:12px;line-height:1.5}.project-storage-note{margin-top:22px;color:#647483;font:10px ui-monospace,monospace;line-height:1.6}@media(max-width:760px){.project-dashboard-content{padding:16px 12px}.project-dashboard-hero{align-items:flex-start;flex-direction:column}.project-grid{grid-template-columns:1fr}.project-card-top{align-items:flex-start;flex-direction:column}.project-actions .primary-btn{width:100%;margin-right:0}.project-actions{display:grid;grid-template-columns:1fr repeat(3,36px)}}
+/* Project dashboard: restyle only. Class names, layout structure, scrolling
+   behaviour and breakpoints are preserved from the previous version. */
+
+@property --pd-angle{syntax:"<angle>";inherits:false;initial-value:0deg}
+
+.project-dashboard{
+  --pd-bg:#070b11;
+  --pd-surface:#0d141c;
+  --pd-surface-2:#111b25;
+  --pd-border:#1a2733;
+  --pd-border-strong:#2a3c4b;
+  --pd-text:#edf2f7;
+  --pd-muted:#8795a5;
+  --pd-accent:#38bdf8;
+  --pd-accent-2:#818cf8;
+
+  /* scrolling behaviour: unchanged */
+  height:100dvh;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;
+
+  /* quiet aurora + dot grid, fixed behind the scrolling content */
+  background-color:var(--pd-bg);
+  background-image:
+    radial-gradient(900px 420px at 12% -8%,#38bdf81f,transparent 65%),
+    radial-gradient(760px 380px at 92% -4%,#818cf81c,transparent 62%),
+    radial-gradient(#ffffff0b 1px,transparent 1px);
+  background-size:auto,auto,24px 24px;
+  background-attachment:fixed;
+}
+.project-dashboard::-webkit-scrollbar{display:none;width:0;height:0}
+
+.project-dashboard-content{
+  flex:0 0 auto;min-height:max-content;width:min(1180px,100%);margin:0 auto;padding:22px 20px 32px;
+}
+
+/* ---------- Hero ---------- */
+.project-dashboard-hero{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  padding:12px 0 20px;border-bottom:1px solid var(--pd-border);
+}
+.project-dashboard-hero>div{min-width:0}
+.project-dashboard-hero>.primary-btn{flex:0 0 auto}
+.project-dashboard-hero .section-kicker{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:600;letter-spacing:.06em;color:#78b8d4}
+.project-dashboard-hero h1{
+  margin:8px 0 6px;
+  font:650 clamp(21px,2.3vw,27px)/1.2 var(--anchon-font-ui,Inter,ui-sans-serif,system-ui,sans-serif);
+  letter-spacing:-.035em;
+  color:var(--pd-text);
+  /* the one animated flourish: a slow light sweep across the title */
+  background:linear-gradient(110deg,#e8eef5 38%,#8fdcff 50%,#e8eef5 62%);
+  background-size:260% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:pd-shine 7s ease-in-out infinite;
+}
+@keyframes pd-shine{0%,55%{background-position:120% 0}100%{background-position:-120% 0}}
+.project-dashboard-hero p,.project-empty p{color:var(--pd-muted);font-size:12px;line-height:1.6;margin:0}
+
+/* ---------- Project grid + cards ---------- */
+.project-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+
+.project-card.project-card{
+  position:relative;isolation:isolate;min-width:0;padding:16px;border-radius:12px;
+  background:linear-gradient(180deg,#ffffff06,transparent 40%),var(--pd-surface);
+  border:1px solid var(--pd-border);
+  box-shadow:inset 0 1px 0 #ffffff0a,0 10px 30px -18px #000;
+  transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease;
+}
+/* spotlight: follows the cursor if --mx/--my are set (optional), otherwise sits at the top */
+.project-card.project-card::before{
+  content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(340px circle at var(--mx,50%) var(--my,0%),#38bdf81c,transparent 62%);
+  opacity:0;transition:opacity .25s ease;
+}
+/* rotating gradient border, appears on hover/focus only */
+.project-card.project-card::after{
+  content:"";position:absolute;inset:-1px;z-index:1;border-radius:inherit;pointer-events:none;padding:1px;
+  background:conic-gradient(from var(--pd-angle),transparent 0deg,#38bdf8 70deg,#818cf8 130deg,transparent 200deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:0;transition:opacity .25s ease;
+}
+.project-card.project-card:hover,
+.project-card.project-card:focus-within{
+  border-color:var(--pd-border-strong);transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 #ffffff0f,0 18px 40px -18px #000,0 0 0 1px #38bdf81a;
+}
+.project-card.project-card:hover::before,
+.project-card.project-card:focus-within::before{opacity:1}
+.project-card.project-card:hover::after,
+.project-card.project-card:focus-within::after{opacity:1;animation:pd-spin 4s linear infinite}
+@keyframes pd-spin{to{--pd-angle:360deg}}
+
+.project-card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.project-status{
+  display:inline-flex;align-items:center;gap:6px;
+  font:550 9.5px ui-monospace,monospace;letter-spacing:.06em;
+  color:#74d1f7;border:1px solid #234353;background:#0a1821;padding:5px 8px;border-radius:999px;
+}
+.project-status::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.project-status.is-submitted{color:#a7f3d0;border-color:#215c49;background:#0b2019}
+.project-count,.project-updated{font:450 9.5px ui-monospace,monospace;color:#71808e}
+
+.project-card h2{
+  margin:13px 0 6px;overflow-wrap:anywhere;color:var(--pd-text);
+  font:600 15px/1.35 var(--anchon-font-ui,Inter,ui-sans-serif,system-ui,sans-serif);
+  letter-spacing:-.015em;
+}
+.project-description{
+  color:#93a2b0;font-size:11.5px;line-height:1.6;min-height:0;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.project-updated{margin-top:14px;padding-top:11px;border-top:1px solid var(--pd-border)}
+
+/* ---------- Actions ---------- */
+.project-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:13px}
+.project-actions .primary-btn{margin-right:auto}
+.project-actions button{min-height:34px;font-size:10.5px;font-weight:600;transition:box-shadow .16s ease,transform .16s ease,border-color .16s ease,background-color .16s ease}
+.project-actions .icon-btn{min-width:34px;min-height:34px}
+.project-actions .primary-btn:hover,.project-dashboard-hero>.primary-btn:hover,.project-empty .primary-btn:hover{
+  transform:translateY(-1px);box-shadow:0 8px 22px -10px var(--pd-accent),inset 0 1px 0 #ffffff26;
+}
+.project-actions .icon-btn:hover{border-color:var(--pd-border-strong);background-color:#ffffff0a}
+.project-delete{color:#f87171;border-color:#5e2226}
+.project-actions .project-delete:hover{border-color:#8a3037;background-color:#f8717112;box-shadow:0 0 18px -8px #f87171}
+.project-dashboard button:focus-visible,.project-dashboard a:focus-visible{outline:2px solid var(--pd-accent);outline-offset:2px}
+
+/* ---------- Empty / error / notes ---------- */
+.project-empty{
+  margin-top:22px;padding:36px 18px;text-align:center;
+  display:flex;align-items:center;flex-direction:column;gap:10px;color:#29b6f6;
+  border:1px dashed var(--pd-border-strong);border-radius:12px;
+  background:radial-gradient(520px 200px at 50% 0%,#38bdf812,transparent 70%),#0b121a;
+}
+.project-empty h2{margin:5px 0 0;color:var(--pd-text);font:650 16px/1.35 var(--anchon-font-ui,Inter,ui-sans-serif,system-ui,sans-serif)}
+.project-empty .primary-btn{margin-top:10px}
+.project-error{margin-top:16px;padding:12px;border:1px solid #74323a;border-radius:8px;color:#fca5a5;background:#211015;font-size:12px;line-height:1.5}
+.project-storage-note{margin-top:18px;color:#647483;font:10px ui-monospace,monospace;line-height:1.6}
 .autosave-error{display:block;margin-top:4px;color:#fca5a5;font:9px ui-monospace,monospace;max-width:300px;line-height:1.4}
 
-.github-roadmap-card{display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px;min-width:0;border-color:#263845}
+/* ---------- GitHub connection card ---------- */
+.github-connection-development{
+  margin-top:14px;padding:15px 16px;min-height:0;border-radius:12px;
+  border:1px solid var(--pd-border);
+  background:linear-gradient(120deg,#818cf80f,transparent 55%),var(--pd-surface);
+  box-shadow:inset 0 1px 0 #ffffff0a;
+}
+.github-connection-heading{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:start;gap:10px}
+.github-connection-icon{
+  width:30px;height:30px;display:grid;place-items:center;flex:none;border-radius:8px;
+  border:1px solid #2a3947;color:#a8b6c3;background:#0b141c;box-shadow:0 0 16px -8px var(--pd-accent-2);
+}
+.github-connection-title{min-width:0;flex:1}
+.github-connection-title .section-kicker{font-size:9.5px;font-weight:600;letter-spacing:.06em;color:#78b8d4}
+.github-connection-title h2{
+  margin:5px 0;color:var(--pd-text);
+  font:600 14px/1.35 var(--anchon-font-ui,Inter,ui-sans-serif,system-ui,sans-serif);letter-spacing:-.015em;
+}
+.github-connection-title p{margin:0;color:var(--pd-muted);font-size:11.5px;line-height:1.55}
+.github-building-pill{
+  flex:none;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  padding:5px 9px;border:1px solid #6b5424;border-radius:999px;background:#211b0d;color:#e8c878;
+  font:500 9px/1.3 var(--anchon-font-data,ui-monospace,monospace);letter-spacing:.03em;
+}
+.github-building-pill::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;animation:pd-pulse 1.8s ease-in-out infinite}
+@keyframes pd-pulse{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+
+/* legacy roadmap card (kept in case it is still rendered) */
+.github-roadmap-card{
+  display:flex;align-items:center;gap:14px;margin-top:18px;padding:16px;min-width:0;
+  border-color:var(--pd-border-strong);border-radius:12px;
+  background:linear-gradient(120deg,#818cf80f,transparent 55%),var(--pd-surface);
+}
 .github-roadmap-icon{display:grid;place-items:center;flex:none;width:40px;height:40px;border:1px solid #2b3945;border-radius:9px;color:#9aa9b7;background:#0b141c}
 .github-roadmap-copy{flex:1;min-width:0}
 .github-roadmap-copy .section-kicker{color:#78b8d4;font:700 9px ui-monospace,monospace;letter-spacing:.08em}
-.github-roadmap-copy h2{margin:6px 0;color:#edf2f7;font:800 14px ui-monospace,monospace}
+.github-roadmap-copy h2{margin:6px 0;color:var(--pd-text);font:800 14px ui-monospace,monospace}
 .github-roadmap-copy p{margin:0;color:#8c9aa8;font-size:11px;line-height:1.6}
-.github-roadmap-status{flex:none;padding:6px 8px;border:1px solid #6b5424;border-radius:5px;background:#211b0d;color:#e8c878;font:700 9px ui-monospace,monospace;letter-spacing:.04em}
-@media(max-width:600px){.github-roadmap-card{align-items:flex-start;flex-wrap:wrap}.github-roadmap-status{margin-left:54px}}
+.github-roadmap-status{flex:none;padding:6px 9px;border:1px solid #6b5424;border-radius:999px;background:#211b0d;color:#e8c878;font:700 9px ui-monospace,monospace;letter-spacing:.04em}
 
-
-/* Dashboard typography and controls: calmer hierarchy, aligned with the rest of ANCHON. */
-.project-dashboard-content {
-  width: min(1180px, 100%);
-  padding: 22px 20px 30px;
+/* ---------- Responsive ---------- */
+@media(max-width:760px){
+  .project-dashboard-content{padding:16px 12px 24px}
+  .project-dashboard-hero{align-items:flex-start;flex-direction:column}
+  .project-dashboard-hero>.primary-btn{width:auto}
+  .project-grid{grid-template-columns:1fr}
+  .project-card-top{align-items:flex-start;flex-direction:column}
+  .project-actions{display:grid;grid-template-columns:1fr repeat(3,36px)}
+  .project-actions .primary-btn{width:100%;margin-right:0}
+  .github-connection-heading{grid-template-columns:30px minmax(0,1fr)}
+  .github-building-pill{grid-column:2;margin:0;justify-self:start}
 }
-.project-dashboard-hero {
-  align-items: flex-start;
-  padding: 14px 0 20px;
-  gap: 16px;
-}
-.project-dashboard-hero h1 {
-  margin: 8px 0 7px;
-  font: 700 clamp(21px, 2.4vw, 27px)/1.2 var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif);
-  letter-spacing: -0.035em;
-}
-.project-dashboard-hero p,
-.project-empty p {
-  font-size: 12px;
-  line-height: 1.55;
-}
-.project-grid { gap: 12px; margin-top: 16px; }
-.project-card { padding: 15px; }
-.project-card h2 {
-  margin: 13px 0 7px;
-  font: 650 15px/1.35 var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif);
-  letter-spacing: -0.015em;
-}
-.project-description { font-size: 12px; line-height: 1.55; min-height: 0; }
-.project-count,.project-updated,.project-status { font-size: 10px; font-weight: 500; }
-.project-actions { gap: 6px; margin-top: 12px; }
-.project-actions button { min-height: 34px; font-size: 11px; font-weight: 600; }
-.project-actions .icon-btn { min-width: 34px; min-height: 34px; }
-.project-empty { padding: 34px 18px; }
-.project-empty h2 { font: 650 16px/1.35 var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif); }
-.github-connection-development {
-  margin-top: 16px;
-  padding: 15px;
-  border-radius: 9px;
-}
-.github-connection-heading { display: flex; align-items: flex-start; gap: 12px; }
-.github-connection-icon {
-  width: 34px; height: 34px; display: grid; place-items: center; flex: none;
-  border: 1px solid #263541; border-radius: 8px; color: #9aa9b7; background: #0b141c;
-}
-.github-connection-title { min-width: 0; flex: 1; }
-.github-connection-title .section-kicker { font-size: 10px; font-weight: 600; letter-spacing: .07em; }
-.github-connection-title h2 {
-  margin: 8px 0 6px;
-  font: 650 16px/1.35 var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif);
-  letter-spacing: -0.015em;
-}
-.github-connection-title p { margin: 0; color: #8795a5; font-size: 12px; line-height: 1.55; }
-.github-building-pill {
-  flex: none; align-self: flex-start; padding: 5px 7px; border: 1px solid #6b5424;
-  border-radius: 5px; background: #211b0d; color: #e8c878;
-  font: 600 9px/1.3 var(--anchon-font-data, ui-monospace, monospace); letter-spacing: .03em;
-}
-.project-storage-note { margin-top: 16px; font-size: 10px; }
-@media(max-width:760px) {
-  .project-dashboard-content { padding: 16px 12px 24px; }
-  .project-dashboard-hero { align-items: flex-start; flex-direction: column; }
-  .project-dashboard-hero .primary-btn { width: auto; }
-  .github-connection-heading { flex-wrap: wrap; }
-  .github-building-pill { margin-left: 46px; }
+@media(max-width:600px){
+  .github-roadmap-card{align-items:flex-start;flex-wrap:wrap}
+  .github-roadmap-status{margin-left:54px}
 }
 
-
-/* Correct the dashboard's visual hierarchy: compact type and a single aligned GitHub card. */
-.project-dashboard-content { padding: 20px 20px 28px !important; }
-.project-dashboard-hero { padding: 10px 0 18px !important; }
-.project-dashboard-hero h1 {
-  font-family: var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif) !important;
-  font-size: clamp(20px, 2.1vw, 25px) !important;
-  font-weight: 650 !important;
-  line-height: 1.2 !important;
-  letter-spacing: -0.035em !important;
-  margin: 7px 0 6px !important;
-}
-.project-dashboard-hero .section-kicker,
-.github-connection-title .section-kicker { font-size: 9px !important; font-weight: 550 !important; }
-.project-dashboard-hero p { font-size: 11px !important; }
-.project-dashboard-hero > div { min-width: 0; }
-.project-dashboard-hero > .primary-btn { flex: 0 0 auto; }
-.github-connection-development {
-  margin-top: 14px !important;
-  padding: 14px 16px !important;
-  min-height: 0 !important;
-}
-.github-connection-heading {
-  display: grid !important;
-  grid-template-columns: 30px minmax(0,1fr) auto !important;
-  align-items: start !important;
-  gap: 10px !important;
-}
-.github-connection-icon {
-  width: 30px !important; height: 30px !important;
-  border-radius: 7px !important;
-}
-.github-connection-title h2 {
-  font-family: var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif) !important;
-  font-size: 14px !important; font-weight: 600 !important; line-height: 1.35 !important;
-  letter-spacing: -0.015em !important; margin: 5px 0 !important;
-}
-.github-connection-title p { font-size: 11px !important; line-height: 1.5 !important; }
-.github-building-pill { font-size: 9px !important; font-weight: 500 !important; white-space: nowrap; }
-.project-grid { margin-top: 14px !important; gap: 12px !important; }
-.project-card { padding: 14px !important; }
-.project-card h2 {
-  font-family: var(--anchon-font-ui, Inter, ui-sans-serif, system-ui, sans-serif) !important;
-  font-size: 14px !important; font-weight: 600 !important; line-height: 1.35 !important;
-  letter-spacing: -0.015em !important; margin: 12px 0 6px !important;
-}
-.project-description { font-size: 11px !important; line-height: 1.5 !important; }
-.project-status { font-size: 9px !important; font-weight: 550 !important; }
-.project-count,.project-updated { font-size: 9px !important; font-weight: 450 !important; }
-.project-actions button { font-size: 10px !important; font-weight: 550 !important; }
-@media(max-width:760px) {
- .project-dashboard-content { padding: 16px 12px 24px !important; }
- .github-connection-heading { grid-template-columns: 30px minmax(0,1fr) !important; }
- .github-building-pill { grid-column: 2; margin: 0 !important; justify-self: start; }
+@media(prefers-reduced-motion:reduce){
+  .project-dashboard-hero h1{animation:none;background-position:50% 0}
+  .project-card.project-card,.project-actions button{transition:none}
+  .project-card.project-card:hover,.project-card.project-card:focus-within{transform:none}
+  .project-card.project-card:hover::after,.project-card.project-card:focus-within::after{animation:none}
+  .github-building-pill::before{animation:none}
 }
