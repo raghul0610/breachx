@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Workflow, Download, Layers } from "lucide-react";
+import { ShapeGridBackground } from "../components/ShapeGridBackground";
 
 /* ─── helpers ─────────────────────────────────────────────── */
 function usePrefersReducedMotion() {
@@ -31,50 +32,11 @@ function useInView(threshold = 0.15) {
   return { ref, visible };
 }
 
-/* ─── kinetic heading ─────────────────────────────────────── */
-const ANCHON_LETTERS = "ANCHON".split("");
-
-function KineticHeading({ reduced }: { reduced: boolean }) {
-  const [pointer, setPointer] = useState({ x: 0.5, y: 0.5 });
-  const ref = useRef<HTMLHeadingElement>(null);
-
-  useEffect(() => {
-    if (reduced) return;
-    const handler = (e: PointerEvent) => {
-      const el = ref.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      setPointer({
-        x: (e.clientX - rect.left) / rect.width,
-        y: (e.clientY - rect.top) / rect.height,
-      });
-    };
-    window.addEventListener("pointermove", handler, { passive: true });
-    return () => window.removeEventListener("pointermove", handler);
-  }, [reduced]);
-
+/* ─── static wordmark ────────────────────────────────────── */
+function KineticHeading() {
   return (
-    <h1 className="lp-hero-title" ref={ref} aria-label="ANCHON">
-      {ANCHON_LETTERS.map((ch, i) => {
-        const dx = reduced ? 0 : (pointer.x - 0.5) * (8 + i * 2);
-        const dy = reduced ? 0 : (pointer.y - 0.5) * (4 + i * 1.5);
-        return (
-          <span
-            key={i}
-            className="lp-letter"
-            style={
-              reduced
-                ? {}
-                : {
-                    transform: `translate(${dx}px, ${dy}px)`,
-                    transitionDelay: `${i * 40}ms`,
-                  }
-            }
-          >
-            {ch}
-          </span>
-        );
-      })}
+    <h1 className="lp-hero-title" aria-label="ANCHON">
+      <span>ANCHON</span>
     </h1>
   );
 }
@@ -176,17 +138,7 @@ export function LandingPage({
 
   return (
     <div className="lp-root">
-      {/* ── nav ── */}
-      <nav className="lp-nav" aria-label="Main navigation">
-        <span className="lp-nav-brand">ANCHON</span>
-        <div className="lp-nav-links">
-          <button className="lp-nav-link" onClick={onOpenDesigner}>Designer</button>
-          </div>
-        <button className="lp-nav-cta" onClick={onOpenDesigner} aria-label="Get Started">
-          Get Started
-        </button>
-      </nav>
-
+      <ShapeGridBackground />
       {/* ── hero ── */}
       <section className="lp-hero" aria-labelledby="lp-hero-heading">
         <div
@@ -202,7 +154,7 @@ export function LandingPage({
           }
         >
           <div className="lp-eyebrow">SYSTEM ARCHITECTURE PLATFORM</div>
-          <KineticHeading reduced={reduced} />
+          <KineticHeading />
           <p className="lp-hero-sub" id="lp-hero-heading">
             Design systems. Understand connections. Build better architecture.
           </p>
