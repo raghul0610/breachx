@@ -44,8 +44,35 @@ const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
   "AI / ML": { icon: BrainCircuit, tone: "ai" },
 };
 
+const CATEGORY_ACCENTS: Record<string, string> = {
+  edge: "#38bdf8",
+  security: "#fb7185",
+  network: "#60a5fa",
+  routing: "#818cf8",
+  compute: "#a78bfa",
+  api: "#22d3ee",
+  realtime: "#2dd4bf",
+  integration: "#34d399",
+  data: "#fbbf24",
+  analytics: "#facc15",
+  storage: "#f59e0b",
+  reliability: "#4ade80",
+  messaging: "#c084fc",
+  orchestration: "#e879f9",
+  observability: "#2dd4bf",
+  platform: "#94a3b8",
+  external: "#fb923c",
+  banking: "#f87171",
+  ai: "#c4b5fd",
+  neutral: "#94a3b8",
+};
+
 export function getCategoryVisual(category: string): CategoryVisual {
   return CATEGORY_VISUALS[category] ?? DEFAULT_VISUAL;
+}
+
+export function getCategoryAccent(category: string): string {
+  return CATEGORY_ACCENTS[getCategoryVisual(category).tone] ?? CATEGORY_ACCENTS.neutral;
 }
 
 export function CategoryIcon({
