@@ -11,6 +11,7 @@ import {
 } from "../lib/storage";
 import { deleteOwnedProject } from "../lib/projectsRepository";
 import "./ProjectDashboard.css";
+import { ShapeGridBackground } from "./ShapeGridBackground";
 import { InteractiveTutorial } from "./InteractiveTutorial";
 
 export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void; onOpenProject: (projectId: string) => void }) {
@@ -89,6 +90,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
 
   return (
     <div className="app-shell project-dashboard">
+      <ShapeGridBackground />
       <header className="topbar">
         <button className="nav-btn" onClick={onBack}><ArrowLeft size={14} /> HOME</button>
         <div><strong>ANCHON</strong><span className="topbar-sub"> // PROJECT WORKSPACE</span></div>

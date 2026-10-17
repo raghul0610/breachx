@@ -1,0 +1,26 @@
+.shape-grid-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #000;
+}
+
+.shape-grid-background .liquid-chrome {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+.shape-grid-background .liquid-chrome__canvas {
+  opacity: 1;
+}
+
+.shape-grid-background::before,
+.shape-grid-background::after {
+  content: none !important;
+  display: none !important;
+}
