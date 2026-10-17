@@ -63,6 +63,7 @@ type EdgeExplanation = { purpose?: string; rationale?: string };
 
 function TooltipEdge(props: EdgeProps) {
   const [edgePath, labelX, labelY] = getBezierPath(props);
+  const edgeColor = String(props.labelStyle?.fill ?? props.style?.stroke ?? "#38bdf8");
   return (
     <g>
       <BaseEdge
@@ -70,7 +71,7 @@ function TooltipEdge(props: EdgeProps) {
         path={edgePath}
         markerEnd={props.markerEnd}
         markerStart={props.markerStart}
-        style={props.style}
+        style={{ ...props.style, stroke: edgeColor, strokeWidth: Math.max(Number(props.style?.strokeWidth ?? 3), 3.5) }}
         interactionWidth={props.interactionWidth}
       />
       {props.label ? (
@@ -81,15 +82,16 @@ function TooltipEdge(props: EdgeProps) {
               position: "absolute",
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: "all",
-              color: String(props.style?.stroke ?? "#8bdcf5"),
+              color: `${edgeColor} !important`,
               background: "#071018",
-              border: `1px solid ${String(props.style?.stroke ?? "#8bdcf5")}`,
+              border: `1px solid ${edgeColor}`,
               borderRadius: 5,
-              padding: "3px 5px",
+              padding: "4px 7px",
               fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-              fontSize: 11,
-              fontWeight: 800,
-              letterSpacing: "0.01em",
+              fontSize: 12,
+              fontWeight: 900,
+              letterSpacing: "0.02em",
+              textShadow: `0 0 8px ${edgeColor}55`,
               whiteSpace: "nowrap",
             }}
           >
@@ -413,9 +415,9 @@ function ParticipantEditor({
       animated: false,
       data: { ...(edge.data ?? {}) },
       label: compactEdgeLabel(edge.label, sourceCategory, sourceLabel, targetCategory, targetLabel),
-      style: { ...edge.style, stroke: accent, strokeWidth: edge.selected ? 3 : 2 },
+      style: { ...edge.style, stroke: accent, strokeWidth: edge.selected ? 4.5 : 3.5 },
       markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 16, height: 16 },
-      labelStyle: { ...edge.labelStyle, fill: accent, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 11, fontWeight: 800 },
+      labelStyle: { ...edge.labelStyle, fill: accent, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12, fontWeight: 900 },
       labelBgStyle: { ...edge.labelBgStyle, fill: "#071018", fillOpacity: 0.98, stroke: accent, strokeWidth: 1 },
       labelBgPadding: [5, 3] as [number, number],
       labelBgBorderRadius: 4,
