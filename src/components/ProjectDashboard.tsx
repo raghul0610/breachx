@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Copy, FolderPlus, Pencil, Plus, Trash2, Workflow } from "lucide-react";
+import { ArrowLeft, Copy, FolderPlus, Github, Pencil, Plus, Trash2, Workflow } from "lucide-react";
 import {
   createProject,
   deleteProject,
@@ -12,7 +12,6 @@ import {
 import { deleteOwnedProject } from "../lib/projectsRepository";
 import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
-import { GitHubConnection } from "./GitHubConnection";
 
 export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void; onOpenProject: (projectId: string) => void }) {
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
@@ -104,7 +103,17 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
           </div>
           <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> NEW PROJECT</button>
         </section>
-        <GitHubConnection onOpenProject={onOpenProject} />
+        <section className="github-connection panel github-connection-development" aria-labelledby="github-connection-title">
+          <div className="github-connection-heading">
+            <div className="github-connection-icon"><Github size={20} /></div>
+            <div className="github-connection-title">
+              <div className="section-kicker"><Workflow size={13} /> REPOSITORY INTEGRATION</div>
+              <h2 id="github-connection-title">Connect GitHub</h2>
+              <p>Repository connection and codebase analysis are currently being built. This feature will be available in a future update.</p>
+            </div>
+            <span className="github-building-pill">IN BUILDING</span>
+          </div>
+        </section>
         {error && <div className="project-error" role="alert">{error}</div>}
         {projects.length === 0 && !error ? (
           <section className="project-empty panel">
