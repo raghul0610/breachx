@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Copy, FolderPlus, Github, Pencil, Plus, Trash2, Workflow } from "lucide-react";
+import { ArrowLeft, Copy, FolderPlus, Pencil, Plus, Trash2, Workflow } from "lucide-react";
 import {
   createProject,
   deleteProject,
@@ -12,6 +12,7 @@ import {
 import { deleteOwnedProject } from "../lib/projectsRepository";
 import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
+import { GitHubConnection } from "./GitHubConnection";
 
 export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void; onOpenProject: (projectId: string) => void }) {
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
@@ -103,15 +104,8 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
           </div>
           <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> NEW PROJECT</button>
         </section>
-        <section className="github-roadmap-card panel" aria-labelledby="github-roadmap-title">
-          <div className="github-roadmap-icon"><Github size={19} /></div>
-          <div className="github-roadmap-copy">
-            <div className="section-kicker">REPOSITORY INTEGRATION</div>
-            <h2 id="github-roadmap-title">GitHub connection</h2>
-            <p>Connect and analyze GitHub repositories from ANCHON. This integration is still being built and is not available yet.</p>
-          </div>
-          <span className="github-roadmap-status">IN DEVELOPMENT</span>
-        </section>
+        <GitHubConnection />
+
         {error && <div className="project-error" role="alert">{error}</div>}
         {projects.length === 0 && !error ? (
           <section className="project-empty panel">
