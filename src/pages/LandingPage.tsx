@@ -139,17 +139,6 @@ export function LandingPage({
   return (
     <div className="lp-root">
       <ShapeGridBackground />
-      {/* ── nav ── */}
-      <nav className="lp-nav" aria-label="Main navigation">
-        <span className="lp-nav-brand">ANCHON</span>
-        <div className="lp-nav-links">
-          <button className="lp-nav-link" onClick={onOpenDesigner}>Designer</button>
-          </div>
-        <button className="lp-nav-cta" onClick={onOpenDesigner} aria-label="Get Started">
-          Get Started
-        </button>
-      </nav>
-
       {/* ── hero ── */}
       <section className="lp-hero" aria-labelledby="lp-hero-heading">
         <div
