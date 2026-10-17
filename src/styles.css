@@ -1296,12 +1296,12 @@ body::-webkit-scrollbar,
 .workspace > .canvas-column > .component-dock.component-dock-open {
   position: fixed !important;
   top: 50% !important;
-  left: 50% !important;
+  left: calc(50% - 150px) !important;
   right: auto !important;
   bottom: auto !important;
   transform: translate(-50%, -50%) !important;
-  width: min(1040px, calc(100vw - 96px)) !important;
-  max-width: calc(100vw - 48px) !important;
+  width: min(1040px, calc(100vw - 420px)) !important;
+  max-width: calc(100vw - 420px) !important;
   max-height: min(76dvh, 720px) !important;
   margin: 0 !important;
   overflow-y: auto !important;
