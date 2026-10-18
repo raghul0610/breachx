@@ -1794,3 +1794,53 @@ body, .app-shell, .home, .lp-root {
 .app-shell:not(.lp-root) .canvas { background:#0b0912!important; }
 .app-shell:not(.lp-root) .canvas-toolbar { padding:10px 14px!important; }
 @media(max-width:760px){.app-shell:not(.lp-root) .component-dock-item{flex-basis:142px!important;width:142px!important;min-height:64px!important}.app-shell:not(.lp-root) .left-panel{padding:12px!important}.app-shell:not(.lp-root) .right-panel{padding:12px!important}}
+
+
+/* ANCHON workspace refinement: shared visual language, non-blocking AI chat, and consistent popup controls. */
+.app-shell:not(.lp-root) .request-flow-button {
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:30px;
+  padding:0 11px;border:1px solid rgba(196,181,253,.38);border-radius:8px;
+  color:#171121;background:#c4b5fd;font:650 10px var(--anchon-font-ui,Inter,sans-serif);
+  letter-spacing:.035em;white-space:nowrap;cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.app-shell:not(.lp-root) .request-flow-button:hover:not(:disabled) { background:#ddd2ff;border-color:#ddd2ff;box-shadow:0 0 0 3px rgba(196,181,253,.1); }
+.app-shell:not(.lp-root) .request-flow-button:disabled { opacity:.72;cursor:progress; }
+.app-shell:not(.lp-root) .request-flow-button.is-running { color:#e9e2ff;background:rgba(139,123,216,.18);border-color:rgba(196,181,253,.42); }
+.app-shell:not(.lp-root) .request-flow-status { color:#c4b5fd;font:500 9px var(--anchon-font-ui,Inter,sans-serif); }
+.app-shell:not(.lp-root) .request-flow-edge .react-flow__edge-path { transition:stroke .2s ease,stroke-width .2s ease,filter .2s ease; }
+.app-shell:not(.lp-root) .request-flow-node-active .bp-node { border-color:#ddd2ff!important;box-shadow:0 0 0 2px rgba(196,181,253,.22),0 0 26px rgba(196,181,253,.3),0 12px 28px #0009!important; }
+.app-shell:not(.lp-root) .request-flow-node-complete .bp-node { border-color:rgba(196,181,253,.65)!important; }
+.app-shell:not(.lp-root) .canvas-toolbar { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+.app-shell:not(.lp-root) .canvas-toolbar > div:first-child { min-width:0; }
+.app-shell:not(.lp-root) :is(.component-library-close,.floating-ai-chat-panel-heading button,.panel-toggle-button) {
+  display:inline-flex;align-items:center;justify-content:center;align-self:center;flex:0 0 30px;
+  width:30px;height:30px;min-width:30px;min-height:30px;padding:0;line-height:1;
+  box-sizing:border-box;vertical-align:middle;
+}
+.app-shell:not(.lp-root) .component-library-close svg,
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading button svg,
+.app-shell:not(.lp-root) .panel-toggle-button svg { display:block;flex:none;margin:0; }
+.app-shell:not(.lp-root) .component-dock-heading { align-items:center!important; }
+.app-shell:not(.lp-root) .component-library-close { position:relative;top:0;right:0;margin:0; }
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading { min-height:30px;gap:12px; }
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading button { margin:0; }
+.app-shell:not(.lp-root) .catalog-inspector,
+.app-shell:not(.lp-root) .catalog-inspector-title,
+.app-shell:not(.lp-root) .catalog-summary,
+.app-shell:not(.lp-root) .catalog-hint { color:#e7e2f3; }
+.app-shell:not(.lp-root) .catalog-inspector { border-color:rgba(205,207,216,.18)!important;background:linear-gradient(145deg,rgba(30,30,37,.97),rgba(17,18,23,.98))!important; }
+.app-shell:not(.lp-root) .catalog-component-icon { border-color:rgba(205,207,216,.2)!important;background:rgba(205,207,216,.07)!important;color:#d1c9e8!important; }
+.app-shell:not(.lp-root) .catalog-component-icon svg { color:#d1c9e8!important; }
+.app-shell:not(.lp-root) .catalog-inspector .section-kicker,
+.app-shell:not(.lp-root) .catalog-inspector h3 { color:#e4deef!important; }
+.app-shell:not(.lp-root) .catalog-summary strong { color:#f5f2ff; }
+.app-shell:not(.lp-root) .catalog-inspector :is(.catalog-hint,.catalog-summary,.catalog-knowledge-section p,.catalog-knowledge-section li) { color:#b9b5c5!important; }
+.app-shell:not(.lp-root) .catalog-inspector :is(button,.catalog-learn-btn) { border-color:rgba(205,207,216,.2); }
+@media(max-width:760px) {
+  .app-shell:not(.lp-root) .canvas-toolbar { align-items:flex-start;flex-wrap:wrap; }
+  .app-shell:not(.lp-root) .request-flow-status { flex-basis:100%; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell:not(.lp-root) .request-flow-edge .react-flow__edge-path,
+  .app-shell:not(.lp-root) .request-flow-button { transition:none!important; }
+}
