@@ -1941,3 +1941,42 @@ body, .app-shell, .home, .lp-root {
   .app-shell:not(.lp-root) .workspace > .panel-resizer-right { right:calc(var(--right-panel-width,300px) + 11px)!important; }
   .app-shell:not(.lp-root) .requirements-panel-header { grid-template-columns:28px 28px minmax(0,1fr) 28px!important;gap:6px!important; }
 }
+
+
+/* Workspace request trace: reuse the landing explorer's lavender signal and step-by-step flow. */
+.app-shell:not(.lp-root) .run-request-canvas { min-height:40px!important;padding:0 15px!important;gap:9px!important;border:1px solid rgba(196,181,253,.82)!important;border-radius:9px!important;background:linear-gradient(135deg,#c4b5fd,#a996f6)!important;color:#171126!important;font:800 10px/1 var(--anchon-font-ui)!important;letter-spacing:.055em!important;box-shadow:0 5px 22px rgba(172,151,255,.16)!important; }
+.app-shell:not(.lp-root) .run-request-canvas:hover { transform:translateY(-1px);background:#ded5ff!important;box-shadow:0 8px 25px #b8a8f72a!important; }
+.app-shell:not(.lp-root) .run-request-canvas:disabled { opacity:.42!important;cursor:not-allowed!important;transform:none!important; }
+.request-trace-spinner { width:12px;height:12px;border:2px solid rgba(23,17,38,.25);border-top-color:#171126;border-radius:50%;animation:anchon-trace-spin .7s linear infinite; }
+@keyframes anchon-trace-spin { to { transform:rotate(360deg); } }
+.app-shell:not(.lp-root) .request-trace-status { position:absolute;z-index:15;left:50%;bottom:18px;transform:translateX(-50%);display:flex;align-items:center;gap:11px;width:max-content;max-width:calc(100% - 32px);padding:11px 13px;border:1px solid rgba(196,181,253,.28);border-radius:12px;color:#e9e2ff;background:rgba(15,12,24,.96);box-shadow:0 14px 38px #0008;backdrop-filter:blur(14px);pointer-events:auto; }
+.request-trace-status > div { display:flex;flex-direction:column;gap:4px;min-width:0; }
+.request-trace-status strong { font:800 9px/1.4 var(--anchon-font-data);letter-spacing:.1em;color:#c4b5fd; }
+.request-trace-status span:not(.request-trace-status-dot) { color:#bcb3ce;font-size:11px;line-height:1.45;overflow-wrap:anywhere; }
+.request-trace-status > button { display:grid;place-items:center;flex:none;width:25px;height:25px;border:1px solid rgba(196,181,253,.2);border-radius:7px;background:rgba(196,181,253,.07);color:#dcd2ff;cursor:pointer; }
+.request-trace-status-dot { width:8px;height:8px;flex:none;border-radius:50%;background:#a78bfa;box-shadow:0 0 0 4px rgba(167,139,250,.12); }
+.request-trace-status-dot.is-running { animation:anchon-trace-pulse 1s ease-in-out infinite; }
+@keyframes anchon-trace-pulse { 50% { box-shadow:0 0 0 7px rgba(167,139,250,.02);opacity:.55; } }
+.app-shell:not(.lp-root) .react-flow__node.request-trace-node.is-active .bp-node { border-color:#c4b5fd!important;box-shadow:0 0 0 2px rgba(196,181,253,.24),0 0 28px rgba(167,139,250,.22),0 16px 40px #0008!important; }
+.app-shell:not(.lp-root) .react-flow__node.request-trace-node.is-complete .bp-node { border-color:rgba(110,231,183,.62)!important;box-shadow:0 0 0 1px rgba(110,231,183,.09),0 12px 30px #0006!important; }
+.app-shell:not(.lp-root) .react-flow__edge.request-trace-edge.is-active .react-flow__edge-path { stroke:#c4b5fd!important;stroke-width:4!important;filter:drop-shadow(0 0 7px rgba(196,181,253,.8))!important;stroke-dasharray:8 7!important;animation:anchon-flow-dash .7s linear infinite!important; }
+.app-shell:not(.lp-root) .react-flow__edge.request-trace-edge.is-complete .react-flow__edge-path { filter:drop-shadow(0 0 4px rgba(110,231,183,.35))!important; }
+@keyframes anchon-flow-dash { to { stroke-dashoffset:-30; } }
+
+/* Ask ANCHON stays non-modal: no page scrim, blur, or blocked canvas interaction. */
+.app-shell:not(.lp-root) .floating-ai-chat-panel { background:rgba(15,12,24,.985)!important;border-color:rgba(196,181,253,.28)!important;color:#f0eaff!important;box-shadow:0 18px 55px rgba(0,0,0,.55)!important;backdrop-filter:none!important;z-index:70!important; }
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading { color:#c4b5fd!important;min-height:34px; }
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading button,.app-shell:not(.lp-root) .component-library-close,.app-shell:not(.lp-root) .panel-toggle-button { display:grid!important;place-items:center!important;align-self:center!important;box-sizing:border-box!important;flex:0 0 32px!important;width:32px!important;min-width:32px!important;height:32px!important;padding:0!important;border:1px solid rgba(196,181,253,.23)!important;border-radius:9px!important;background:rgba(196,181,253,.07)!important;color:#d9ceff!important;line-height:1!important; }
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading button svg,.app-shell:not(.lp-root) .component-library-close svg,.app-shell:not(.lp-root) .panel-toggle-button svg { display:block;flex:none; }
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading button:hover,.app-shell:not(.lp-root) .component-library-close:hover,.app-shell:not(.lp-root) .panel-toggle-button:hover { border-color:rgba(196,181,253,.52)!important;background:rgba(196,181,253,.13)!important; }
+.app-shell:not(.lp-root) .ai-chat-scrim { display:none!important; }
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-inspector,.app-shell:not(.lp-root) .workspace > .right-panel .catalog-detail-block { border-color:rgba(196,181,253,.17)!important;background:linear-gradient(145deg,rgba(28,23,42,.9),rgba(15,12,23,.96))!important; }
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-component-icon,.app-shell:not(.lp-root) .workspace > .right-panel .catalog-inspector-title .catalog-component-icon { border-color:rgba(196,181,253,.25)!important;background:rgba(196,181,253,.1)!important;color:#c4b5fd!important; }
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-inspector .section-kicker,.app-shell:not(.lp-root) .workspace > .right-panel .catalog-detail-block > strong { color:#c4b5fd!important; }
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-summary,.app-shell:not(.lp-root) .workspace > .right-panel .catalog-detail-block p { color:#b8b0ca!important; }
+.app-shell:not(.lp-root) .workspace > .canvas-column > .component-dock.component-dock-open { border-color:rgba(196,181,253,.25)!important;background:rgba(15,12,24,.99)!important;box-shadow:0 22px 80px rgba(0,0,0,.68)!important;backdrop-filter:none!important; }
+.app-shell:not(.lp-root) .component-dock-heading { align-items:center!important;gap:16px!important; }
+.app-shell:not(.lp-root) .component-dock-heading > div:first-child { min-width:0; }
+.app-shell:not(.lp-root) .component-dock-heading .component-library-close { align-self:flex-start!important;position:relative!important;top:0!important;right:0!important;margin:0!important; }
+.app-shell:not(.lp-root) .component-library-scrim { background:rgba(0,0,0,.2)!important;backdrop-filter:none!important; }
+@media(prefers-reduced-motion:reduce) { .request-trace-spinner,.request-trace-status-dot.is-running,.app-shell:not(.lp-root) .react-flow__edge.request-trace-edge.is-active .react-flow__edge-path { animation:none!important; } }
