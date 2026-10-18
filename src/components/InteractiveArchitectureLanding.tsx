@@ -4,6 +4,7 @@ import {
   Layers3, LockKeyhole, Play, RotateCcw, Server, ShieldCheck, Sparkles,
   Workflow, Zap,
 } from "lucide-react";
+import SwarmCursor from "./SwarmCursor";
 import "./InteractiveArchitectureLanding.css";
 
 type FlowNode = {
@@ -77,11 +78,13 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
       </div>
 
       <section className="iad-hero">
-        <div className="iad-brandline"><span className="iad-brand-mark"><Workflow size={16} /></span> ANCHON <span className="iad-brand-divider" /> SYSTEM DESIGN, MADE VISIBLE</div>
+        <div className="iad-brandline"><span className="iad-brand-mark"><Workflow size={16} /></span> SYSTEM DESIGN, MADE VISIBLE</div>
         <div className="iad-headline-wrap">
-          <p className="iad-overline"><span className="iad-live-dot" /> INTERACTIVE SYSTEM BLUEPRINT</p>
-          <h1>Every application<br /><span>is a system.</span></h1>
-          <p className="iad-intro">Follow a request through the architecture. Explore the components, see how they connect, and learn why each boundary exists.</p>
+          <p className="iad-overline"><span className="iad-live-dot" /> AI-POWERED SYSTEM ARCHITECTURE DESIGNER</p>
+          <h1 className="iad-brand-title">ANCHON<span className="iad-brand-title-period">.</span></h1>
+          <p className="iad-hero-tagline">Think in systems. Design with clarity.</p>
+          <p className="iad-intro">Turn an application idea into a living system blueprint. Explore the flow, understand every boundary, and build architecture that makes sense.</p>
+          <button className="iad-hero-cta" onClick={onOpenDesigner}>Start designing <ArrowRight size={15} /></button>
         </div>
       </section>
 
@@ -149,10 +152,28 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         {finished && <div className="iad-success"><Check size={14} /> Request completed. You just traced a client request through routing, compute, persistence, and back.</div>}
       </section>
 
+      <section className="iad-spiral-section" aria-labelledby="iad-spiral-title">
+        <div className="iad-spiral-copy">
+          <p className="iad-overline"><span className="iad-live-dot" /> 03 / SYSTEM BLUEPRINTS</p>
+          <h2 id="iad-spiral-title">Complex systems.<br /><span>One clear picture.</span></h2>
+          <p>See how services, data stores, gateways, and infrastructure form a system. Start with the big picture, then follow each connection down to the detail.</p>
+          <div className="iad-spiral-legend"><span><i className="iad-legend-purple" /> SERVICES</span><span><i className="iad-legend-blue" /> DATA FLOW</span><span><i className="iad-legend-green" /> INFRASTRUCTURE</span></div>
+        </div>
+        <div className="iad-spiral-visual" aria-label="Animated spiral of connected system architecture components" role="img">
+          <div className="iad-spiral-glow" />
+          <div className="iad-spiral-ring iad-spiral-ring-outer"><span className="iad-spiral-node iad-spiral-node-api"><Server size={15} /> API</span><span className="iad-spiral-node iad-spiral-node-cache"><Zap size={14} /> CACHE</span></div>
+          <div className="iad-spiral-ring iad-spiral-ring-middle"><span className="iad-spiral-node iad-spiral-node-service"><Workflow size={15} /> SERVICES</span><span className="iad-spiral-node iad-spiral-node-queue"><GitBranch size={14} /> QUEUE</span></div>
+          <div className="iad-spiral-ring iad-spiral-ring-inner"><span className="iad-spiral-node iad-spiral-node-db"><Database size={15} /> DATA</span><span className="iad-spiral-node iad-spiral-node-auth"><LockKeyhole size={14} /> AUTH</span></div>
+          <div className="iad-spiral-core"><Workflow size={27} /><strong>ANCHON</strong><span>SYSTEM CORE</span></div>
+          <span className="iad-spiral-orbit-dot iad-spiral-dot-one" /><span className="iad-spiral-orbit-dot iad-spiral-dot-two" /><span className="iad-spiral-orbit-dot iad-spiral-dot-three" />
+        </div>
+      </section>
+
       <section className="iad-bottom">
         <div className="iad-bottom-copy"><span className="iad-overline">YOUR TURN</span><h2>Now design <span>your own.</span></h2><p>ANCHON turns your application idea into a connected, inspectable architecture. Build it visually or let AI propose a starting point.</p></div>
         <button className="iad-open-btn" onClick={onOpenDesigner}>Open architecture designer <ArrowRight size={16} /></button>
       </section>
+      <div className="iad-cursor-overlay" aria-hidden="true"><SwarmCursor count={360} size={2.1} color="#bcb3d6" accentColor="#c4b5fd" spread={90} speed={0.72} swirl={0.62} tail={0.46} trail={0.48} wander={0.5} depth={0.62} targets="" idle="roam" clickEffect="pulse" intro enabled style={{ width: "100%", height: "100%" }} /></div>
       <div className="iad-footnote"><span><LockKeyhole size={11} /> BUILT FOR CLEARER SYSTEM THINKING</span><span><Layers3 size={11} /> VISUALIZE · CONNECT · REFINE</span><span><Zap size={11} /> INTERACTIVE BY DESIGN</span></div>
     </main>
   );
