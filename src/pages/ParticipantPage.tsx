@@ -195,6 +195,7 @@ function ParticipantEditor({
   const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [requestTraceStep, setRequestTraceStep] = useState(-1);
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
@@ -232,6 +233,39 @@ function ParticipantEditor({
       document.body.classList.remove("workspace-resizing", "workspace-resizing-horizontal", "workspace-resizing-vertical");
     };
   }, [resizeDrag]);
+
+  const requestTraceEdges = useMemo(() => {
+    const ids = new Set(nodes.map((node) => node.id));
+    const validEdges = edges.filter((edge) => ids.has(edge.source) && ids.has(edge.target) && edge.source !== edge.target);
+    const outgoing = new Map<string, Edge[]>();
+    validEdges.forEach((edge) => outgoing.set(edge.source, [...(outgoing.get(edge.source) ?? []), edge]));
+    const incomingIds = new Set(validEdges.map((edge) => edge.target));
+    const queue = nodes.filter((node) => !incomingIds.has(node.id)).map((node) => node.id);
+    const visitedEdges = new Set<string>();
+    const ordered: Edge[] = [];
+    while (queue.length) {
+      const source = queue.shift()!;
+      for (const edge of outgoing.get(source) ?? []) {
+        if (visitedEdges.has(edge.id)) continue;
+        visitedEdges.add(edge.id); ordered.push(edge); queue.push(edge.target);
+      }
+    }
+    validEdges.forEach((edge) => { if (!visitedEdges.has(edge.id)) ordered.push(edge); });
+    return ordered;
+  }, [nodes, edges]);
+
+  useEffect(() => {
+    if (requestTraceStep < 0 || requestTraceStep >= requestTraceEdges.length) return;
+    const timeout = window.setTimeout(() => setRequestTraceStep((step) => step + 1), 900);
+    return () => window.clearTimeout(timeout);
+  }, [requestTraceStep, requestTraceEdges.length]);
+
+  const runRequestTrace = useCallback(() => {
+    if (!requestTraceEdges.length) { setRequestTraceStep(-1); return; }
+    setChatOpen(false); setComponentLibraryOpen(false); setRequestTraceStep(0);
+    setSelectedId(requestTraceEdges[0].source); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null);
+    void fitView({ padding: 0.22, duration: 500 });
+  }, [requestTraceEdges, fitView]);
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { edgesRef.current = edges; }, [edges]);
@@ -314,7 +348,27 @@ function ParticipantEditor({
 
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const edgeTypes = useMemo(() => ({ curvedArchitectureEdge: CurvedArchitectureEdge }), []);
-  const renderedEdges = useMemo(() => edges.map((edge) => { const source = nodes.find((item) => item.id === edge.source); const accent = getCategoryAccent(String(source?.data?.category ?? "")); return { ...edge, type: "curvedArchitectureEdge", animated: true, style: { ...edge.style, stroke: accent }, markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 22, height: 22 }, label: typeof edge.label === "string" ? edge.label : "", labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20 }; }), [edges, nodes]);
+  const renderedEdges = useMemo(() => edges.map((edge) => {
+    const source = nodes.find((item) => item.id === edge.source);
+    const accent = getCategoryAccent(String(source?.data?.category ?? ""));
+    const traceIndex = requestTraceEdges.findIndex((traceEdge) => traceEdge.id === edge.id);
+    const isTraceActive = traceIndex === requestTraceStep;
+    const isTraceComplete = requestTraceStep > traceIndex && traceIndex >= 0;
+    return {
+      ...edge, type: "curvedArchitectureEdge", animated: true,
+      className: isTraceActive ? "request-trace-edge is-active" : isTraceComplete ? "request-trace-edge is-complete" : "request-trace-edge",
+      style: { ...edge.style, stroke: accent, strokeWidth: isTraceActive ? 4 : isTraceComplete ? 3 : 2.1, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.28 : 1 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 22, height: 22 },
+      label: typeof edge.label === "string" ? edge.label : "",
+      labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20,
+    };
+  }), [edges, nodes, requestTraceEdges, requestTraceStep]);
+  const tracedNodes = useMemo(() => nodes.map((node) => {
+    const activeEdge = requestTraceEdges[requestTraceStep];
+    const active = requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length && (activeEdge?.source === node.id || activeEdge?.target === node.id);
+    const complete = requestTraceStep > 0 && requestTraceEdges.slice(0, Math.min(requestTraceStep, requestTraceEdges.length)).some((edge) => edge.source === node.id || edge.target === node.id);
+    return { ...node, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : ""].filter(Boolean).join(" ") };
+  }), [nodes, requestTraceEdges, requestTraceStep]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -771,13 +825,20 @@ function ParticipantEditor({
               <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
-            <button type="button" className="run-request-canvas" onClick={() => { setChatOpen(true); setComponentLibraryOpen(false); }} data-tutorial="canvas-run-request" title="Tell ANCHON what to build or change">
-              <Sparkles size={14} /> RUN REQUEST <span aria-hidden="true">↗</span>
+            <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!requestTraceEdges.length}>
+              {requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? <span className="request-trace-spinner" aria-hidden="true" /> : <Sparkles size={14} />}
+              {requestTraceStep >= requestTraceEdges.length && requestTraceEdges.length > 0 ? "REPLAY FLOW" : requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? "TRACING FLOW…" : "RUN REQUEST"}
+              <span aria-hidden="true">↗</span>
             </button>
           </div>
 
+          {requestTraceStep >= 0 && <div className="request-trace-status" role="status" aria-live="polite">
+            <span className={requestTraceStep < requestTraceEdges.length ? "request-trace-status-dot is-running" : "request-trace-status-dot"} />
+            <div><strong>{requestTraceStep >= requestTraceEdges.length ? "FLOW COMPLETE" : "DATA FLOW · STEP " + (requestTraceStep + 1) + " OF " + requestTraceEdges.length}</strong><span>{requestTraceStep >= requestTraceEdges.length ? "Followed every connection in your architecture." : (() => { const edge = requestTraceEdges[requestTraceStep]; const from = nodes.find((node) => node.id === edge?.source)?.data.label ?? edge?.source; const to = nodes.find((node) => node.id === edge?.target)?.data.label ?? edge?.target; return from + " → " + to; })()}</span></div>
+            {requestTraceStep >= requestTraceEdges.length && <button type="button" onClick={() => setRequestTraceStep(-1)} aria-label="Dismiss flow result"><X size={14} /></button>}
+          </div>}
           <ReactFlow
-            nodes={nodes}
+            nodes={tracedNodes}
             edges={renderedEdges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
@@ -937,7 +998,6 @@ function ParticipantEditor({
         {chatOpen ? <X size={19} /> : <MessageSquare size={19} />}
         <span>{chatOpen ? "CLOSE AI" : "ASK ANCHON"}</span>
       </button>
-      {chatOpen && <button type="button" className="ai-chat-scrim" aria-label="Close Ask ANCHON panel" onClick={() => setChatOpen(false)} />}
       <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
         <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" onClick={() => setChatOpen(false)} aria-label="Close AI chat"><X size={16} /></button></div>
                   <ArchitectureAIChat
