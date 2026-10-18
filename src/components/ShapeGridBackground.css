@@ -28,3 +28,10 @@
     radial-gradient(ellipse at 50% 10%, rgba(205, 207, 216, 0.12), transparent 60%),
     linear-gradient(180deg, rgba(16, 17, 20, 0.02), rgba(16, 17, 20, 0.35));
 }
+
+/* Keep the particle canvas above dashboard cards without blocking their controls. */
+.shape-grid-background{z-index:auto;background:transparent!important;overflow:visible}
+.shape-grid-background::after{z-index:0}
+.shape-grid-background .swarm-cursor{z-index:50;overflow:visible}
+.shape-grid-background .swarm-cursor-canvas{position:fixed;z-index:50;inset:0;opacity:.78;pointer-events:none}
+.shape-grid-background .swarm-cursor-content{position:relative;z-index:50}
