@@ -4,10 +4,10 @@ export type LayoutNode = Pick<Node, "id" | "position">;
 export type LayoutConnection = Pick<Edge, "source" | "target">;
 
 export const AI_LAYOUT = {
-  horizontalGap: 300,
-  verticalGap: 176,
-  originX: 120,
-  originY: 120,
+  horizontalGap: 258,
+  verticalGap: 150,
+  originX: 84,
+  originY: 84,
 } as const;
 
 /**

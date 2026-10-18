@@ -1794,3 +1794,150 @@ body, .app-shell, .home, .lp-root {
 .app-shell:not(.lp-root) .canvas { background:#0b0912!important; }
 .app-shell:not(.lp-root) .canvas-toolbar { padding:10px 14px!important; }
 @media(max-width:760px){.app-shell:not(.lp-root) .component-dock-item{flex-basis:142px!important;width:142px!important;min-height:64px!important}.app-shell:not(.lp-root) .left-panel{padding:12px!important}.app-shell:not(.lp-root) .right-panel{padding:12px!important}}
+
+
+/* Screenshot follow-up: symmetric sidebar gutters and a genuinely aligned brief header. */
+.app-shell:not(.lp-root) .workspace > .left-panel {
+  left:18px!important;
+  right:auto!important;
+  top:12px!important;
+  bottom:12px!important;
+  box-sizing:border-box!important;
+  padding:16px!important;
+  gap:0!important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel {
+  right:18px!important;
+  left:auto!important;
+  top:12px!important;
+  bottom:12px!important;
+  box-sizing:border-box!important;
+  padding:16px!important;
+}
+.app-shell:not(.lp-root) .workspace > .panel-resizer-left {
+  left:calc(var(--left-panel-width,260px) + 18px)!important;
+}
+.app-shell:not(.lp-root) .workspace > .panel-resizer-right {
+  right:calc(var(--right-panel-width,300px) + 21px)!important;
+}
+.app-shell:not(.lp-root) .requirements-panel {
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:0!important;
+  overflow-x:hidden!important;
+}
+.app-shell:not(.lp-root) .requirements-panel-header {
+  display:grid!important;
+  grid-template-columns:30px 30px minmax(0,1fr) 28px!important;
+  grid-template-rows:auto!important;
+  align-items:start!important;
+  gap:8px!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  padding:2px 0 16px!important;
+  margin:0 0 14px!important;
+  border-bottom:1px solid rgba(196,181,253,.14)!important;
+}
+.app-shell:not(.lp-root) .requirements-panel-header .panel-toggle-button {
+  position:static!important;
+  grid-column:4!important;
+  grid-row:1!important;
+  justify-self:end!important;
+  align-self:start!important;
+  width:28px!important;
+  min-width:28px!important;
+  height:34px!important;
+  margin:0!important;
+  padding:5px!important;
+}
+.app-shell:not(.lp-root) .requirements-panel-header .requirements-mark {
+  position:static!important;
+  grid-column:2!important;
+  grid-row:1!important;
+  width:30px!important;
+  height:30px!important;
+  margin:0!important;
+}
+.app-shell:not(.lp-root) .requirements-panel-header > div:last-child {
+  grid-column:3!important;
+  grid-row:1!important;
+  min-width:0!important;
+  width:100%!important;
+  margin:0!important;
+}
+.app-shell:not(.lp-root) .requirements-panel-header .section-kicker {
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.4!important;
+}
+.app-shell:not(.lp-root) .requirements-panel-header p {
+  max-width:100%!important;
+  margin:5px 0 0!important;
+  font-size:11px!important;
+  line-height:1.5!important;
+  overflow-wrap:anywhere!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .brief-card {
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  margin:0 0 12px!important;
+  padding:13px!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .brief-card-heading {
+  display:grid!important;
+  grid-template-columns:24px minmax(0,1fr)!important;
+  align-items:start!important;
+  gap:9px!important;
+  width:100%!important;
+  margin:0 0 11px!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .brief-card-heading > div {
+  min-width:0!important;
+  width:100%!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .brief-card-heading h2 {
+  margin:1px 0 4px!important;
+  line-height:1.4!important;
+  overflow-wrap:anywhere!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .brief-card-heading p {
+  margin:0!important;
+  line-height:1.5!important;
+  overflow-wrap:anywhere!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .field {
+  width:100%!important;
+  min-width:0!important;
+  margin:10px 0 0!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .field input,
+.app-shell:not(.lp-root) .requirements-panel .field textarea {
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .brief-card .primary-btn {
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  line-height:1.4!important;
+  padding:9px 10px!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .requirements-status {
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin-top:2px!important;
+}
+.app-shell:not(.lp-root) .workspace > .collapsed-panel-strip-left {
+  margin-left:6px;
+}
+@media(max-width:760px) {
+  .app-shell:not(.lp-root) .workspace > .left-panel { left:8px!important;right:auto!important;top:8px!important;bottom:8px!important; }
+  .app-shell:not(.lp-root) .workspace > .right-panel { right:8px!important;left:auto!important;top:8px!important;bottom:8px!important; }
+  .app-shell:not(.lp-root) .workspace > .panel-resizer-left { left:calc(var(--left-panel-width,260px) + 8px)!important; }
+  .app-shell:not(.lp-root) .workspace > .panel-resizer-right { right:calc(var(--right-panel-width,300px) + 11px)!important; }
+  .app-shell:not(.lp-root) .requirements-panel-header { grid-template-columns:28px 28px minmax(0,1fr) 28px!important;gap:6px!important; }
+}
