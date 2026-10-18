@@ -20,7 +20,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Send, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles, Play, ArrowRight } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
@@ -92,6 +92,37 @@ function layoutArchitecture(nodes: Node<BlueprintNodeData>[], edges: Edge[]): No
     const layer = depth.get(item.id) ?? 0, items = layers.get(layer) ?? [item];
     return { ...item, position: { x: layer * columnWidth, y: top + items.findIndex((candidate) => candidate.id === item.id) * rowHeight } };
   });
+}
+
+
+type FlowSequenceStep = { kind: "node" | "edge"; id: string };
+
+function buildFlowSequence(nodes: Node<BlueprintNodeData>[], edges: Edge[]): FlowSequenceStep[] {
+  const nodeIds = new Set(nodes.map((node) => node.id));
+  const outgoing = new Map<string, Edge[]>();
+  const incoming = new Set<string>();
+  for (const edge of edges) {
+    if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) continue;
+    outgoing.set(edge.source, [...(outgoing.get(edge.source) ?? []), edge]);
+    incoming.add(edge.target);
+  }
+  const visitedNodes = new Set<string>();
+  const visitedEdges = new Set<string>();
+  const sequence: FlowSequenceStep[] = [];
+  const visit = (nodeId: string) => {
+    if (visitedNodes.has(nodeId)) return;
+    visitedNodes.add(nodeId);
+    sequence.push({ kind: "node", id: nodeId });
+    for (const edge of outgoing.get(nodeId) ?? []) {
+      if (visitedEdges.has(edge.id)) continue;
+      visitedEdges.add(edge.id);
+      sequence.push({ kind: "edge", id: edge.id });
+      visit(edge.target);
+    }
+  };
+  nodes.filter((node) => !incoming.has(node.id)).forEach((node) => visit(node.id));
+  nodes.forEach((node) => visit(node.id));
+  return sequence;
 }
 
 const initialNodes: Node<BlueprintNodeData>[] = [
@@ -195,6 +226,7 @@ function ParticipantEditor({
   const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [flowRun, setFlowRun] = useState<{ sequence: FlowSequenceStep[]; step: number } | null>(null);
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
@@ -232,6 +264,23 @@ function ParticipantEditor({
       document.body.classList.remove("workspace-resizing", "workspace-resizing-horizontal", "workspace-resizing-vertical");
     };
   }, [resizeDrag]);
+
+  useEffect(() => {
+    if (!flowRun || flowRun.step >= flowRun.sequence.length) return;
+    const timeout = window.setTimeout(() => {
+      setFlowRun((current) => current && current.step < current.sequence.length
+        ? { ...current, step: current.step + 1 }
+        : current);
+    }, 620);
+    return () => window.clearTimeout(timeout);
+  }, [flowRun]);
+
+  const runRequestFlow = useCallback(() => {
+    const sequence = buildFlowSequence(nodesRef.current, edgesRef.current);
+    if (sequence.length === 0) return;
+    setFlowRun({ sequence, step: 0 });
+    logActivity("REQUEST_FLOW_STARTED", { nodeCount: nodesRef.current.length, edgeCount: edgesRef.current.length });
+  }, []);
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { edgesRef.current = edges; }, [edges]);
@@ -314,7 +363,34 @@ function ParticipantEditor({
 
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const edgeTypes = useMemo(() => ({ curvedArchitectureEdge: CurvedArchitectureEdge }), []);
-  const renderedEdges = useMemo(() => edges.map((edge) => { const source = nodes.find((item) => item.id === edge.source); const accent = getCategoryAccent(String(source?.data?.category ?? "")); return { ...edge, type: "curvedArchitectureEdge", animated: true, style: { ...edge.style, stroke: accent }, markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 22, height: 22 }, label: typeof edge.label === "string" ? edge.label : "", labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20 }; }), [edges, nodes]);
+  const renderedEdges = useMemo(() => edges.map((edge) => {
+    const source = nodes.find((item) => item.id === edge.source);
+    const accent = getCategoryAccent(String(source?.data?.category ?? ""));
+    const sequence = flowRun?.sequence ?? [];
+    const edgeStep = sequence.findIndex((item) => item.kind === "edge" && item.id === edge.id);
+    const isFlowComplete = Boolean(flowRun && edgeStep >= 0 && edgeStep < flowRun.step);
+    const isFlowActive = Boolean(flowRun && edgeStep >= 0 && edgeStep === flowRun.step);
+    return {
+      ...edge,
+      type: "curvedArchitectureEdge",
+      animated: isFlowActive || (!flowRun && Boolean(edge.animated)),
+      className: isFlowActive ? "request-flow-edge request-flow-edge-active" : isFlowComplete ? "request-flow-edge request-flow-edge-complete" : "request-flow-edge",
+      style: { ...edge.style, stroke: isFlowActive || isFlowComplete ? "#c4b5fd" : accent, strokeWidth: isFlowActive ? 4 : isFlowComplete ? 3 : 2.1, filter: isFlowActive ? "drop-shadow(0 0 7px rgba(196,181,253,.9))" : undefined },
+      markerEnd: { type: MarkerType.ArrowClosed, color: isFlowActive || isFlowComplete ? "#c4b5fd" : accent, width: 22, height: 22 },
+      label: typeof edge.label === "string" ? edge.label : "",
+      labelStyle: { ...edge.labelStyle, fill: accent },
+      interactionWidth: 20,
+    };
+  }), [edges, nodes, flowRun]);
+  const renderedNodes = useMemo(() => nodes.map((node) => {
+    if (!flowRun) return node;
+    const sequence = flowRun.sequence;
+    const nodeStep = sequence.findIndex((item) => item.kind === "node" && item.id === node.id);
+    const complete = nodeStep >= 0 && nodeStep < flowRun.step;
+    const active = nodeStep >= 0 && nodeStep === flowRun.step;
+    return { ...node, className: [node.className, complete ? "request-flow-node-complete" : "", active ? "request-flow-node-active" : ""].filter(Boolean).join(" ") };
+  }), [nodes, flowRun]);
+  const flowFinished = Boolean(flowRun && flowRun.step >= flowRun.sequence.length);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -771,13 +847,17 @@ function ParticipantEditor({
               </span>
               <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
+              <button type="button" className={`request-flow-button ${flowRun && !flowFinished ? "is-running" : ""}`} onClick={flowFinished ? () => runRequestFlow() : runRequestFlow} disabled={nodes.length === 0 || Boolean(flowRun && !flowFinished)} data-tutorial="run-request" aria-label="Trace data flow through the architecture">
+                <Play size={13} fill="currentColor" /> {flowRun && !flowFinished ? "TRACING FLOW…" : flowFinished ? "REPLAY FLOW" : "RUN REQUEST"} <ArrowRight size={13} />
+              </button>
+              {flowRun && <span className="request-flow-status" role="status">{flowFinished ? "Flow reached the end" : `Tracing step ${Math.min(flowRun.step + 1, flowRun.sequence.length)} of ${flowRun.sequence.length}`}</span>}
             </div>
 
 
           </div>
 
           <ReactFlow
-            nodes={nodes}
+            nodes={renderedNodes}
             edges={renderedEdges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
@@ -937,7 +1017,6 @@ function ParticipantEditor({
         {chatOpen ? <X size={19} /> : <MessageSquare size={19} />}
         <span>{chatOpen ? "CLOSE AI" : "ASK ANCHON"}</span>
       </button>
-      {chatOpen && <button type="button" className="ai-chat-scrim" aria-label="Close Ask ANCHON panel" onClick={() => setChatOpen(false)} />}
       <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
         <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" onClick={() => setChatOpen(false)} aria-label="Close AI chat"><X size={16} /></button></div>
                   <ArchitectureAIChat
