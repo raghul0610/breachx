@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import { Workflow } from "lucide-react";
 import { listProjects, mergeProjectsFromCloud, replaceProjectsFromCloud } from "../lib/storage";
 import { listOwnedProjects, saveOwnedProjects } from "../lib/projectsRepository";
 import "./AuthGate.css";
@@ -184,8 +185,9 @@ function AuthScreen({ error, onError }: { error: string; onError: (message: stri
   return (
     <main className="auth-screen">
       <section className="auth-card">
+        <div className="auth-brand-mark"><Workflow size={19} /></div>
         <div className="auth-kicker">PRIVATE ARCHITECTURE WORKSPACE</div>
-        <h1>ANCHON</h1>
+        <h1>ANCHON<span>.</span></h1>
         <p className="auth-intro">Sign in to access your projects across devices.</p>
         <div className="auth-tabs">
           <button className={mode === "sign-in" ? "active" : ""} onClick={() => { setMode("sign-in"); setMessage(""); }}>SIGN IN</button>
@@ -203,7 +205,9 @@ function AuthScreen({ error, onError }: { error: string; onError: (message: stri
         {mode === "sign-in" && <button className="auth-link" onClick={() => { setMode("reset"); setMessage(""); }}>Forgot password?</button>}
         {mode === "reset" && <button className="auth-link" onClick={() => { setMode("sign-in"); setMessage(""); }}>Back to sign in</button>}
         <div className="auth-divider"><span>OR</span></div>
-        <button className="auth-google" onClick={() => void googleSignIn()} disabled={busy}>CONTINUE WITH GOOGLE</button>
+        <button className="auth-google" onClick={() => void googleSignIn()} disabled={busy}>
+          <svg className="auth-google-mark" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 3.05 13.22l7.98 6.19C12.93 13.72 18.02 9.5 24 9.5Z" transform="translate(0 4)"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.76 7.18l7.73 6C44.42 37.96 46.98 31.84 46.98 24.55Z"/><path fill="#FBBC05" d="M10.03 28.59a14.4 14.4 0 0 1 0-9.18l-7.98-6.19a23.9 23.9 0 0 0 0 21.56l7.98-6.19Z" transform="translate(0 4)"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.44-4.89 2.3-8.18 2.3-5.98 0-11.07-4.22-12.97-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z" transform="translate(0 -2)"/></svg><span>Continue with Google</span>
+        </button>
         {message && <p className="auth-message" role="status">{message}</p>}
         {error && <p className="auth-error" role="alert">{error}</p>}
         <p className="auth-footnote">Email confirmation and Google sign-in require the corresponding Supabase Auth providers and redirect URLs to be configured.</p>
