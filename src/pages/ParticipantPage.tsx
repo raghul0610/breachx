@@ -695,7 +695,7 @@ function ParticipantEditor({
               <button
                 className="primary-btn compact"
                 data-tutorial="run-request"
-                onClick={() => { setChatOpen(true); setComponentLibraryOpen(false); }}
+                onClick={runRequestTrace}
                 title="Describe what you want ANCHON to design or change"
               >
                 <Sparkles size={13} /> RUN REQUEST
