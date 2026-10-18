@@ -15,7 +15,7 @@ export const BlueprintNode = memo(({ data, selected }: NodeProps) => {
   const node = data as BlueprintNodeData;
   const visual = getCategoryVisual(node.category);
   return (
-    <div className={`bp-node bp-node--${visual.tone} ${selected ? "selected" : ""}`}>
+    <div className={`bp-node bp-node--${visual.tone} bp-node--kind-${node.typeKey.replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase()} ${selected ? "selected" : ""}`}>
       <Handle type="target" position={Position.Top} className="handle" />
       <Handle type="source" position={Position.Bottom} className="handle" />
       <Handle type="target" position={Position.Left} className="handle" />
