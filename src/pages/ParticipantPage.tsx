@@ -640,12 +640,11 @@ function ParticipantEditor({
               </button>
               <button
                 className="primary-btn compact"
-                data-tutorial="continue"
-                disabled={!canSubmit || persisting}
-                onClick={() => save("submitted")}
+                data-tutorial="run-request"
+                onClick={() => { setChatOpen(true); setComponentLibraryOpen(false); }}
+                title="Describe what you want ANCHON to design or change"
               >
-                <Send size={13} />{" "}
-                {submitted ? "UPDATE SUBMITTED PROJECT" : "SAVE BLUEPRINT & CONTINUE"}
+                <Sparkles size={13} /> RUN REQUEST
               </button>
             </div></div><span className="status-pill">
           {submitted ? "SUBMITTED · EDITABLE" : saveStatus === "saving" ? "SAVING…" : saveStatus === "error" ? "SAVE ERROR" : "SAVING TO CLOUD"}
@@ -772,8 +771,9 @@ function ParticipantEditor({
               <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
-
-
+            <button type="button" className="run-request-canvas" onClick={() => { setChatOpen(true); setComponentLibraryOpen(false); }} data-tutorial="canvas-run-request" title="Tell ANCHON what to build or change">
+              <Sparkles size={14} /> RUN REQUEST <span aria-hidden="true">↗</span>
+            </button>
           </div>
 
           <ReactFlow
