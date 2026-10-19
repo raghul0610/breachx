@@ -2238,3 +2238,6 @@ body, .app-shell, .home, .lp-root {
     width: min(390px,calc(100vw - 24px)) !important;
   }
 }
+
+.app-shell:not(.lp-root) .catalog-add-btn { border:1px solid rgba(196,181,253,.56)!important;color:#f4efff!important;background:linear-gradient(135deg,#8b5cf6,#6d28d9)!important;box-shadow:0 4px 16px rgba(109,40,217,.2)!important; }
+.app-shell:not(.lp-root) .catalog-add-btn:hover { background:linear-gradient(135deg,#a78bfa,#7c3aed)!important; }
