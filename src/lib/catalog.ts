@@ -38,7 +38,7 @@ export const CATALOG = [
   { typeKey: "cache", label: "Cache", category: "Cache", keywords: ["redis", "memcached", "key-value cache", "in-memory", "ttl"] },
   { typeKey: "database", label: "SQL Database", category: "Database" },
   { typeKey: "nosql_database", label: "NoSQL Database", category: "Database" },
-  { typeKey: "search_engine", label: "Search Engine", category: "Data" },
+  { typeKey: "search_engine", label: "Search Engine", category: "Search & Discovery" },
   { typeKey: "graph_database", label: "Graph Database", category: "Database" },
   { typeKey: "time_series_db", label: "Time-Series Database", category: "Database" },
   { typeKey: "data_warehouse", label: "Data Warehouse", category: "Analytics" },
