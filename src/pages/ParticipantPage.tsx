@@ -405,22 +405,25 @@ function ParticipantEditor({
     const accent = getCategoryAccent(String(source?.data?.category ?? ""));
     const traceIndex = requestTraceEdges.findIndex((traceEdge) => traceEdge.id === edge.id);
     const isTraceActive = traceIndex === requestTraceStep;
-    const isTraceComplete = requestTraceStep > traceIndex && traceIndex >= 0;
+    const isTraceComplete = requestTraceStep > 0 && traceIndex >= 0 && traceIndex < requestTraceStep;
+    const hasFinding = Boolean(evaluationResult?.findings.some((finding) => finding.edgeIds?.includes(edge.id ?? "")));
     return {
       ...edge, type: "curvedArchitectureEdge", animated: true,
-      className: isTraceActive ? "request-trace-edge is-active" : isTraceComplete ? "request-trace-edge is-complete" : "request-trace-edge",
-      style: { ...edge.style, stroke: accent, strokeWidth: isTraceActive ? 4 : isTraceComplete ? 3 : 2.1, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.28 : 1 },
-      markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 22, height: 22 },
+      className: ["request-trace-edge", isTraceActive ? "is-active" : "", isTraceComplete ? "is-complete" : "", hasFinding ? "architecture-edge-issue" : ""].filter(Boolean).join(" "),
+      style: { ...edge.style, stroke: hasFinding ? "#fb7185" : accent, strokeWidth: hasFinding ? 3.4 : isTraceActive ? 4 : isTraceComplete ? 3 : 2.1, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.28 : 1 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: hasFinding ? "#fb7185" : accent, width: 22, height: 22 },
       label: typeof edge.label === "string" ? edge.label : "",
-      labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20,
+      labelStyle: { ...edge.labelStyle, fill: hasFinding ? "#fda4af" : accent }, interactionWidth: 20,
     };
-  }), [edges, nodes, requestTraceEdges, requestTraceStep]);
+  }), [edges, nodes, requestTraceEdges, requestTraceStep, evaluationResult]);
   const tracedNodes = useMemo(() => nodes.map((node) => {
     const activeEdge = requestTraceEdges[requestTraceStep];
     const active = requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length && (activeEdge?.source === node.id || activeEdge?.target === node.id);
     const complete = requestTraceStep > 0 && requestTraceEdges.slice(0, Math.min(requestTraceStep, requestTraceEdges.length)).some((edge) => edge.source === node.id || edge.target === node.id);
-    return { ...node, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : ""].filter(Boolean).join(" ") };
-  }), [nodes, requestTraceEdges, requestTraceStep]);
+    const nodeFindings = evaluationResult?.findings.filter((finding) => finding.nodeIds?.includes(node.id)) ?? [];
+    const highestSeverity = (["critical", "high", "medium", "low"] as const).find((severity) => nodeFindings.some((finding) => finding.severity === severity));
+    return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
+  }), [nodes, requestTraceEdges, requestTraceStep, evaluationResult]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
