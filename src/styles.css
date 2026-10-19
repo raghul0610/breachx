@@ -1829,19 +1829,19 @@ body, .app-shell, .home, .lp-root {
 }
 .app-shell:not(.lp-root) .requirements-panel-header {
   display:grid!important;
-  grid-template-columns:30px 30px minmax(0,1fr) 28px!important;
+  grid-template-columns:30px minmax(0,1fr) 28px!important;
   grid-template-rows:auto!important;
   align-items:start!important;
   gap:8px!important;
   width:100%!important;
   box-sizing:border-box!important;
-  padding:2px 0 16px!important;
-  margin:0 0 14px!important;
+  padding:0 0 12px!important;
+  margin:0 0 12px!important;
   border-bottom:1px solid rgba(196,181,253,.14)!important;
 }
 .app-shell:not(.lp-root) .requirements-panel-header .panel-toggle-button {
   position:static!important;
-  grid-column:4!important;
+  grid-column:3!important;
   grid-row:1!important;
   justify-self:end!important;
   align-self:start!important;
@@ -2088,4 +2088,69 @@ body, .app-shell, .home, .lp-root {
 }
 .app-shell:not(.lp-root) .component-lane .component-dock-items {
   scrollbar-color: rgba(167,139,250,.35) transparent;
+}
+
+
+/* Current tutorial and workspace controls use ANCHON's violet language. */
+.app-shell:not(.lp-root) .tutorial-card-actions .tutorial-primary-button,
+.app-shell:not(.lp-root) .tutorial-card-actions .tutorial-secondary-button {
+  border-color: rgba(196,181,253,.55)!important;
+  color: #eee7ff!important;
+  background: linear-gradient(135deg,rgba(139,92,246,.25),rgba(167,139,250,.13))!important;
+}
+.app-shell:not(.lp-root) .tutorial-card-actions .tutorial-primary-button {
+  color: #171023!important;
+  background: linear-gradient(135deg,#d8caff,#a78bfa)!important;
+}
+.app-shell:not(.lp-root) .tutorial-card-actions .tutorial-primary-button:hover,
+.app-shell:not(.lp-root) .tutorial-card-actions .tutorial-secondary-button:hover {
+  border-color: #d8caff!important;
+  background: linear-gradient(135deg,#c4b5fd,#a78bfa)!important;
+}
+.app-shell:not(.lp-root) .component-search-inline {
+  padding: 0 8px!important;
+  border-color: rgba(196,181,253,.22)!important;
+  background: #0b0912!important;
+  box-shadow: none!important;
+}
+.app-shell:not(.lp-root) .component-search-inline:focus-within {
+  border-color: #a78bfa!important;
+  box-shadow: 0 0 0 2px rgba(167,139,250,.12)!important;
+}
+.app-shell:not(.lp-root) .component-search-inline input {
+  border: 0!important;
+  outline: 0!important;
+  box-shadow: none!important;
+  border-radius: 0!important;
+  background: transparent!important;
+  padding: 0!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger {
+  border-color: rgba(196,181,253,.65)!important;
+  color: #f0eaff!important;
+  background: linear-gradient(135deg,#8b5cf6,#6d28d9)!important;
+  box-shadow: 0 10px 36px #0009,0 0 0 4px rgba(167,139,250,.14)!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger:hover {
+  border-color: #ddd0ff!important;
+  color: #fff!important;
+  background: linear-gradient(135deg,#a78bfa,#7c3aed)!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat,
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat :is(label,.section-kicker,.ai-chat-message,.ai-chat-empty) {
+  color: #d8ccf5!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat :is(input,textarea,select) {
+  border-color: rgba(196,181,253,.3)!important;
+  color: #f0eaff!important;
+  background: #100c19!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat :is(button,.primary-btn) {
+  border-color: rgba(196,181,253,.5)!important;
+  color: #eee7ff!important;
+  background: rgba(139,92,246,.2)!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat :is(button,.primary-btn):hover {
+  border-color: #c4b5fd!important;
+  background: rgba(139,92,246,.34)!important;
 }
