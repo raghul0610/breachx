@@ -905,11 +905,11 @@ function ParticipantEditor({
           </div>}
           {activeEvaluationResult && <section className="architecture-evaluation-panel" aria-label="Architecture judge results" aria-live="polite">
             <div className="architecture-evaluation-header">
-              <div className="architecture-evaluation-status-icon">{activeEvaluationResult.findings.some((finding) => finding.severity === "critical") ? <ShieldAlert size={17} /> : evaluationResult.findings.some((finding) => finding.severity === "high") ? <AlertTriangle size={17} /> : <CheckCircle2 size={17} />}</div>
-              <div className="architecture-evaluation-heading"><strong>ARCHITECTURE JUDGE</strong><span>{activeEvaluationResult.findings.length ? evaluationResult.findings.length + " finding(s) · score " + activeEvaluationResult.score + "/100" : "No material rule-based findings · " + evaluationResult.score + "/100"}</span></div>
+              <div className="architecture-evaluation-status-icon">{activeEvaluationResult.findings.some((finding) => finding.severity === "critical") ? <ShieldAlert size={17} /> : activeEvaluationResult.findings.some((finding) => finding.severity === "high") ? <AlertTriangle size={17} /> : <CheckCircle2 size={17} />}</div>
+              <div className="architecture-evaluation-heading"><strong>ARCHITECTURE JUDGE</strong><span>{activeEvaluationResult.findings.length ? activeEvaluationResult.findings.length + " finding(s) · score " + activeEvaluationResult.score + "/100" : "No material rule-based findings · " + activeEvaluationResult.score + "/100"}</span></div>
               <button type="button" onClick={() => { setEvaluationResult(null); setEvaluationFingerprint(null); setSelectedFindingId(null); }} aria-label="Dismiss evaluation results"><X size={14} /></button>
             </div>
-            {evaluationResult.findings.length === 0
+            {activeEvaluationResult.findings.length === 0
               ? <p className="architecture-evaluation-clean">No material issues were detected by the local rule checks. This is not a guarantee of production safety; verify deployment settings and implementation details.</p>
               : <div className="architecture-evaluation-findings">
                 {activeEvaluationResult.findings.slice(0, 5).map((finding) => <button type="button" key={finding.id} className={"architecture-evaluation-finding severity-" + finding.severity + (selectedFindingId === finding.id ? " is-selected" : "")} onClick={() => {
@@ -922,7 +922,7 @@ function ParticipantEditor({
                   <span className="architecture-finding-severity"><AlertTriangle size={13} />{finding.severity.toUpperCase()}</span>
                   <span className="architecture-finding-copy"><strong>{finding.title}</strong><span>{finding.description}</span><em>FIX: {finding.recommendation}</em></span>
                 </button>)}
-                {evaluationResult.findings.length > 5 && <p className="architecture-evaluation-more">Showing 5 of {evaluationResult.findings.length} findings. Start with critical and high severity issues.</p>}
+                {activeEvaluationResult.findings.length > 5 && <p className="architecture-evaluation-more">Showing 5 of {activeEvaluationResult.findings.length} findings. Start with critical and high severity issues.</p>}
               </div>}
           </section>}
           <ReactFlow
