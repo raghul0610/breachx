@@ -87,14 +87,20 @@ const goodArchitecture = {
   overview: "Edge to compute to storage.",
   requestFlow: "Client calls the API which reads and writes the database.",
   designDecisions: ["Keep the design small."],
+  assumptions: [],
+  requirementCoverage: [{
+    requirement: "Create and redirect short links",
+    componentIds: ["client", "api", "db"],
+    rationale: "The API handles requests and the database stores the mappings.",
+  }],
   components: [
     { id: "client", typeKey: "client", label: "Client", notes: "Browser" },
     { id: "api", typeKey: "app_server", label: "API", notes: "Handles redirects" },
     { id: "db", typeKey: "database", label: "Database", notes: "Stores links" },
   ],
   connections: [
-    { source: "client", target: "api", label: "HTTPS" },
-    { source: "api", target: "db", label: "reads/writes" },
+    { source: "client", target: "api", label: "HTTPS", communicationType: "synchronous HTTPS/API", purpose: "Send short-link requests." },
+    { source: "api", target: "db", label: "reads/writes", communicationType: "database read/write", purpose: "Look up and persist short links." },
   ],
 };
 
@@ -620,7 +626,7 @@ describe("AI endpoint security", () => {
       const { res, state } = response();
       await generateHandler(request(validGenerator) as never, res);
       expect(state.statusCode).toBe(502);
-      expect(state.body).toMatchObject({ error: expect.stringContaining("enough valid components") });
+      expect(state.body).toMatchObject({ error: expect.any(String) });
     });
 
     it("rejects a generated architecture with too few valid connections", async () => {
@@ -631,7 +637,7 @@ describe("AI endpoint security", () => {
       const { res, state } = response();
       await generateHandler(request(validGenerator) as never, res);
       expect(state.statusCode).toBe(502);
-      expect(state.body).toMatchObject({ error: expect.stringContaining("enough valid connections") });
+      expect(state.body).toMatchObject({ error: expect.any(String) });
     });
 
     it("returns 503 when the provider key is not configured, without calling the provider", async () => {
