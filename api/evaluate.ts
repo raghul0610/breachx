@@ -185,14 +185,11 @@ Component-vocabulary rules:
         },
       },
     }),
+    signal: AbortSignal.timeout(AI_REQUEST_LIMITS.providerTimeoutMs),
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    return json(res, 502, {
-      error: "Architecture review provider failed.",
-      details: errorText.slice(0, 1000),
-    });
+    return json(res, 502, { error: "Architecture review provider failed. Try again shortly." });
   }
 
   const payload = await response.json();
