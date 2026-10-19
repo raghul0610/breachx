@@ -22,6 +22,7 @@ vi.mock("@supabase/supabase-js", () => ({
 
 import evaluateHandler from "../api/evaluate";
 import generateHandler from "../api/generate-architecture";
+import inferHandler from "../api/infer-requirements";
 import {
   AI_REQUEST_LIMITS,
   describeProviderFailure,
@@ -648,6 +649,31 @@ describe("AI endpoint security", () => {
         expect(state.statusCode).toBe(503);
       }
       expect(providerCalls()).toHaveLength(0);
+    });
+  });
+
+  describe("requirements inference security", () => {
+    it("rejects anonymous inference requests before calling the provider", async () => {
+      const { res, state } = response();
+      await inferHandler(request(validEvaluation, {
+        headers: { "content-type": "application/json" },
+      }) as never, res);
+      expect(state.statusCode).toBe(401);
+      expect(providerCalls()).toHaveLength(0);
+    });
+
+    it("runs inference only for an authenticated, valid graph", async () => {
+      mocks.providerResponse = () => providerContent({
+        summary: "A small URL shortener.",
+        functionalRequirements: ["Create short links."],
+        nonFunctionalRequirements: ["Protect stored links."],
+        assumptions: [],
+      });
+      const { res, state } = response();
+      await inferHandler(request(validEvaluation) as never, res);
+      expect(state.statusCode).toBe(200);
+      expect(state.body).toMatchObject({ summary: "A small URL shortener." });
+      expect(providerCalls()).toHaveLength(1);
     });
   });
 
