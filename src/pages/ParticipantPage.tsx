@@ -1024,7 +1024,7 @@ function ParticipantEditor({
           </div>
         </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
       </div>
-      <button type="button" className="floating-ai-chat-trigger" style={{ transform: `translate(${-chatOffset.x}px, ${-chatOffset.y}px)` }} onPointerDown={(event) => { if (event.button !== 0) return; chatDragRef.current = { pointerX: event.clientX, pointerY: event.clientY, originX: chatOffset.x, originY: chatOffset.y, moved: false }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { const drag = chatDragRef.current; if (!drag || !event.currentTarget.hasPointerCapture(event.pointerId)) return; const dx = event.clientX - drag.pointerX; const dy = event.clientY - drag.pointerY; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) setChatOffset({ x: drag.originX - dx, y: drag.originY - dy }); }} onPointerUp={(event) => { const drag = chatDragRef.current; chatDragRef.current = null; if (drag?.moved) event.preventDefault(); else setChatOpen((open) => !open); }} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Toggle Ask ANCHON chat" title="Drag to move · click to toggle chat">
+      <button type="button" className="floating-ai-chat-trigger" onClick={() => setChatOpen((open) => !open)} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Toggle Ask ANCHON chat" title="Toggle Ask ANCHON">
         <MessageSquare size={19} />
         <span>ASK ANCHON</span>
       </button>
