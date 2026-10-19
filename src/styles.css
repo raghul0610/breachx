@@ -2154,3 +2154,25 @@ body, .app-shell, .home, .lp-root {
   border-color: #c4b5fd!important;
   background: rgba(139,92,246,.34)!important;
 }
+
+
+/* Center Ask ANCHON over the workspace instead of pinning it to the right edge.
+   Use the independent translate property so the drag transform can still move it. */
+.app-shell:not(.lp-root) .floating-ai-chat-trigger {
+  left: 50%!important;
+  right: auto!important;
+  translate: -50% 0;
+}
+@media(max-width:760px) {
+  .app-shell:not(.lp-root) .floating-ai-chat-trigger {
+    left: 50%!important;
+    right: auto!important;
+  }
+}
+
+/* Project Brief is a side panel, not a modal: keep the canvas visible and clickable. */
+.app-shell:not(.lp-root) .workspace-popup-scrim {
+  background: transparent!important;
+  backdrop-filter: none!important;
+  pointer-events: none!important;
+}
