@@ -880,7 +880,7 @@ function ParticipantEditor({
               <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
-            <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!requestTraceEdges.length}>
+            <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!nodes.length}>
               {requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? <span className="request-trace-spinner" aria-hidden="true" /> : <Sparkles size={14} />}
               {requestTraceStep >= requestTraceEdges.length && requestTraceEdges.length > 0 ? "REPLAY FLOW" : requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? "TRACING FLOW…" : "RUN REQUEST"}
               <span aria-hidden="true">↗</span>
@@ -892,6 +892,28 @@ function ParticipantEditor({
             <div><strong>{requestTraceStep >= requestTraceEdges.length ? "FLOW COMPLETE" : "DATA FLOW · STEP " + (requestTraceStep + 1) + " OF " + requestTraceEdges.length}</strong><span>{requestTraceStep >= requestTraceEdges.length ? "Followed every connection in your architecture." : (() => { const edge = requestTraceEdges[requestTraceStep]; const from = nodes.find((node) => node.id === edge?.source)?.data.label ?? edge?.source; const to = nodes.find((node) => node.id === edge?.target)?.data.label ?? edge?.target; return from + " → " + to; })()}</span></div>
             {requestTraceStep >= requestTraceEdges.length && <button type="button" onClick={() => setRequestTraceStep(-1)} aria-label="Dismiss flow result"><X size={14} /></button>}
           </div>}
+          {evaluationResult && <section className="architecture-evaluation-panel" aria-label="Architecture judge results" aria-live="polite">
+            <div className="architecture-evaluation-header">
+              <div className="architecture-evaluation-status-icon">{evaluationResult.findings.some((finding) => finding.severity === "critical") ? <ShieldAlert size={17} /> : evaluationResult.findings.some((finding) => finding.severity === "high") ? <AlertTriangle size={17} /> : <CheckCircle2 size={17} />}</div>
+              <div className="architecture-evaluation-heading"><strong>ARCHITECTURE JUDGE</strong><span>{evaluationResult.findings.length ? evaluationResult.findings.length + " finding(s) · score " + evaluationResult.score + "/100" : "No material rule-based findings · " + evaluationResult.score + "/100"}</span></div>
+              <button type="button" onClick={() => { setEvaluationResult(null); setSelectedFindingId(null); }} aria-label="Dismiss evaluation results"><X size={14} /></button>
+            </div>
+            {evaluationResult.findings.length === 0
+              ? <p className="architecture-evaluation-clean">No material issues were detected by the local rule checks. This is not a guarantee of production safety; verify deployment settings and implementation details.</p>
+              : <div className="architecture-evaluation-findings">
+                {evaluationResult.findings.slice(0, 5).map((finding) => <button type="button" key={finding.id} className={"architecture-evaluation-finding severity-" + finding.severity + (selectedFindingId === finding.id ? " is-selected" : "")} onClick={() => {
+                  setSelectedFindingId(finding.id);
+                  const firstNodeId = finding.nodeIds?.[0];
+                  if (firstNodeId) { setSelectedId(firstNodeId); setSelectedEdgeId(null); void fitView({ nodes: [{ id: firstNodeId }], padding: 0.38, duration: 450 }); }
+                  const firstEdgeId = finding.edgeIds?.[0];
+                  if (firstEdgeId) { setSelectedEdgeId(firstEdgeId); setSelectedId(null); }
+                }}>
+                  <span className="architecture-finding-severity"><AlertTriangle size={13} />{finding.severity.toUpperCase()}</span>
+                  <span className="architecture-finding-copy"><strong>{finding.title}</strong><span>{finding.description}</span><em>FIX: {finding.recommendation}</em></span>
+                </button>)}
+                {evaluationResult.findings.length > 5 && <p className="architecture-evaluation-more">Showing 5 of {evaluationResult.findings.length} findings. Start with critical and high severity issues.</p>}
+              </div>}
+          </section>}
           <ReactFlow
             nodes={tracedNodes}
             edges={renderedEdges}
