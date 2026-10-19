@@ -17,7 +17,7 @@ export function ShapeGridBackground() {
         trail={0.45}
         wander={0.42}
         depth={0.6}
-        targets=""
+        targets=".project-dashboard .project-card, .project-dashboard .primary-btn, .project-dashboard .nav-btn"
         idle="roam"
         clickEffect="pulse"
         intro
