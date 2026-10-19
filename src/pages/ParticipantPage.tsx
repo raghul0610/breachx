@@ -199,7 +199,7 @@ function ParticipantEditor({
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
-  const [componentGroupBy, setComponentGroupBy] = useState<"layer" | "category">("layer");
+  const [componentGroupBy, setComponentGroupBy] = useState<"layer" | "category">("category");
   const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
   const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
   const chatDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
@@ -807,11 +807,11 @@ function ParticipantEditor({
             <div className="component-library-controls">
               <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="Try WhatsApp, Netflix, Amazon, VS Code, ChatGPT…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
               <select aria-label="Filter by category" value={componentCategoryFilter} onChange={(event) => setComponentCategoryFilter(event.target.value)}><option value="all">All categories</option>{[...new Set(CATALOG.map((item) => item.category))].sort().map((category) => <option key={category} value={category}>{category}</option>)}</select>
-              <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="layer">Group by system layer</option><option value="category">Group by category</option></select>
+              <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="category">Group by category</option><option value="layer">Group by system layer</option></select>
               <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Default order</option><option value="name">Name A–Z</option><option value="category">Category A–Z</option></select>
             </div>
             {(componentGroupBy === "category"
-              ? [...new Set(CATALOG.map((item) => item.category))].sort().map((category) => ({ title: category.toUpperCase(), description: `Components in the ${category} category`, categories: [category] }))
+              ? [...new Set(CATALOG.map((item) => item.category))].sort((a, b) => a.localeCompare(b)).map((category) => ({ title: category.toUpperCase(), description: ({ "AI / ML": "Models, embeddings, retrieval, and AI runtime", "API": "Public and internal API interfaces", "Cache": "Fast, temporary in-memory data", "Database": "Structured, document, graph, time-series, and vector databases", "Compute": "Application runtimes, workers, and containers", "Edge": "Client entry points and edge delivery", "Messaging": "Queues, events, streams, and message delivery", "Media": "Media processing, encoding, and delivery", "Network": "Private networking and traffic distribution", "Observability": "Logs, metrics, traces, and alerts", "Routing": "Request routing and API entry points", "Security": "Identity, access control, and protection", "Storage": "Files, objects, and durable blobs", "Reliability": "Resilience, recovery, and health", "Platform": "Shared configuration and platform services", "External": "Third-party services and integrations" } as Record<string, string>)[category] ?? `Components for ${category.toLowerCase()}`, categories: [category] }))
               : [
                 { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
                 { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage, media and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration", "Media", "Messaging & Social", "Media & Streaming", "Commerce & Marketplace", "Developer Tools", "AI Assistant Apps", "Search & Discovery", "Collaboration & Productivity", "Maps & Delivery"] },
