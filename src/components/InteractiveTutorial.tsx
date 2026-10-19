@@ -21,17 +21,17 @@ const TUTORIALS: Record<string, { title: string; steps: TutorialStep[] }> = {
   workspace: {
     title: "Architecture workspace tour",
     steps: [
-      { selector: ".topbar", title: "1. Workspace controls", description: "The top bar keeps the project identity, cloud-save status, Undo, Redo, Export PDF, Save Draft, and Save Blueprint & Continue together. Watch the save status before leaving." },
+      { selector: ".topbar", title: "1. Workspace controls", description: "The top bar keeps the project identity, component search, Undo/Redo, Export PDF, Save Draft, and Run Request together. Run Request traces the data flow through your architecture; it does not ask the AI to redesign it." },
       { selector: "[data-tutorial='requirements']", title: "2. Project brief", description: "The brief sidebar starts collapsed to give the canvas more room. Open BRIEF from the left edge to edit the project name and review component and connection counts.", activate: "brief" },
       { selector: "[data-tutorial='component-library']", title: "3. Component library popup", description: "Browse the component library. The Inspector opens alongside it; choosing a catalog item shows its details without adding it to the canvas.", activate: "component-library" },
-      { selector: "[data-tutorial='create-component']", title: "4. Add components", description: "Select a component and choose Add Component. You can also drag a component card onto the canvas.", activate: "component-library" },
+      { selector: "[data-tutorial='component-library']", title: "4. Add components", description: "Keep the Component Library open while you browse. Select a component to inspect its purpose in the right panel, then choose Add Component to place it on the canvas. You can also drag a component card directly onto the canvas.", activate: "component-library" },
       { selector: "[data-tutorial='canvas']", title: "5. Canvas", description: "Arrange nodes on the canvas, connect handles to show flow, and use zoom controls to navigate.", activate: "canvas" },
       { selector: "[data-tutorial='inspector']", title: "6. Inspector", description: "Review catalog details, edit a component, or delete the selected component or connection.", activate: "inspector" },
       { selector: "[data-tutorial='architecture-ai-chat']", title: "7. Ask ANCHON", description: "Open Ask ANCHON to plan or apply architecture changes, then review generated changes before saving.", activate: "ai-chat" },
       { selector: "[data-tutorial-connections='true']", title: "8. Connect components", description: "Drag from one component handle to another to create a directed connection. Select an edge to open its details in the Inspector or delete it." },
       { selector: "[data-tutorial='save-draft']", title: "9. Save your work", description: "Changes autosave and the top-right status shows progress. Save Draft explicitly persists your current design; use it if you want confirmation before leaving." },
       { selector: "[data-tutorial='export-pdf']", title: "10. Export PDF", description: "Export PDF creates a shareable document from the current architecture. Review its layout and content before using it as project documentation." },
-      { selector: "[data-tutorial='continue']", title: "11. Save blueprint & continue", description: "Use this when your design is ready for the next workflow. ANCHON requires a description, at least three components, and two connections. You can keep editing or export the design afterward." },
+      { selector: "[data-tutorial='run-request']", title: "11. Run Request — trace the flow", description: "Run Request animates the request through connected nodes from the entry point to the response. Watch each node and connection activate to learn how data travels through the architecture. Replay Flow runs the trace again; this action does not invoke AI." },
     ],
   },
   generator: {
