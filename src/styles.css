@@ -2241,3 +2241,52 @@ body, .app-shell, .home, .lp-root {
 
 .app-shell:not(.lp-root) .catalog-add-btn { border:1px solid rgba(196,181,253,.56)!important;color:#f4efff!important;background:linear-gradient(135deg,#8b5cf6,#6d28d9)!important;box-shadow:0 4px 16px rgba(109,40,217,.2)!important; }
 .app-shell:not(.lp-root) .catalog-add-btn:hover { background:linear-gradient(135deg,#a78bfa,#7c3aed)!important; }
+
+
+/* Architecture judge: visible, actionable findings without obscuring the canvas. */
+.bp-node--issue { position: relative; }
+.bp-node--issue-critical { border-color: #fb7185 !important; box-shadow: 0 0 0 1px rgba(251,113,133,.32), 0 0 24px rgba(244,63,94,.12) !important; }
+.bp-node--issue-high { border-color: #fb923c !important; box-shadow: 0 0 0 1px rgba(251,146,60,.28), 0 0 20px rgba(249,115,22,.1) !important; }
+.bp-node--issue-medium { border-color: #fbbf24 !important; }
+.bp-node--issue-low { border-color: #a78bfa !important; }
+.bp-node-issue-badge {
+  position: absolute; z-index: 8; top: -11px; right: -10px;
+  min-width: 23px; height: 23px; padding: 0 5px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+  color: #fff; background: #be123c; border: 2px solid #0b0811;
+  box-shadow: 0 2px 12px rgba(0,0,0,.45); font-size: 10px; font-weight: 800;
+}
+.bp-node-issue-badge--high { background: #c2410c; }
+.bp-node-issue-badge--medium { background: #a16207; color: #fff7d6; }
+.bp-node-issue-badge--low { background: #6d28d9; }
+.architecture-edge-issue path { stroke: #fb7185 !important; stroke-width: 3.5 !important; }
+.architecture-evaluation-panel {
+  position: absolute; z-index: 9; left: 16px; bottom: 16px;
+  width: min(470px, calc(100% - 32px)); max-height: min(48vh, 430px);
+  overflow: auto; border: 1px solid rgba(196,181,253,.3); border-radius: 15px;
+  background: rgba(12,9,20,.96); color: #f3efff;
+  box-shadow: 0 16px 48px rgba(0,0,0,.45), 0 0 24px rgba(139,92,246,.08);
+  backdrop-filter: blur(18px); padding: 12px;
+}
+.architecture-evaluation-header { display:flex; align-items:center; gap:10px; padding-bottom:10px; border-bottom:1px solid rgba(196,181,253,.15); }
+.architecture-evaluation-status-icon { display:flex; color:#c4b5fd; }
+.architecture-evaluation-heading { display:flex; flex:1; flex-direction:column; gap:3px; min-width:0; }
+.architecture-evaluation-heading strong { font-size:10px; letter-spacing:.12em; color:#ddd0ff; }
+.architecture-evaluation-heading span { font-size:11px; color:#a69bb9; }
+.architecture-evaluation-header>button { display:grid; place-items:center; width:27px; height:27px; border-radius:8px; border:1px solid rgba(196,181,253,.18); color:#c4b5fd; background:rgba(196,181,253,.06); cursor:pointer; }
+.architecture-evaluation-clean { margin:11px 2px 2px; color:#b5aeca; font-size:12px; line-height:1.6; }
+.architecture-evaluation-findings { display:grid; gap:7px; padding-top:9px; }
+.architecture-evaluation-finding { width:100%; display:grid; grid-template-columns:70px minmax(0,1fr); gap:9px; padding:9px; text-align:left; border-radius:10px; border:1px solid rgba(196,181,253,.14); color:#e8e1f5; background:rgba(255,255,255,.025); cursor:pointer; }
+.architecture-evaluation-finding:hover,.architecture-evaluation-finding.is-selected { background:rgba(139,92,246,.1); border-color:rgba(196,181,253,.38); }
+.architecture-finding-severity { display:flex; align-items:flex-start; gap:4px; font-size:9px; font-weight:800; letter-spacing:.05em; color:#fca5a5; padding-top:2px; }
+.severity-high .architecture-finding-severity { color:#fdba74; }
+.severity-medium .architecture-finding-severity { color:#fcd34d; }
+.severity-low .architecture-finding-severity { color:#c4b5fd; }
+.architecture-finding-copy { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.architecture-finding-copy strong { font-size:11px; line-height:1.4; }
+.architecture-finding-copy>span { color:#afa5c0; font-size:11px; line-height:1.5; }
+.architecture-finding-copy em { color:#d4c4ff; font-style:normal; font-size:11px; line-height:1.5; }
+.architecture-evaluation-more { margin:0; padding:4px 2px; color:#958aa8; font-size:10px; }
+@media(max-width:720px) {
+  .architecture-evaluation-panel { left:8px; bottom:8px; width:calc(100% - 16px); max-height:42vh; }
+}
