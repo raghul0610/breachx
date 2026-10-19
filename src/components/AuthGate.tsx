@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
-import { Workflow } from "lucide-react";
+import { AnchonLogo } from "./AnchonLogo";
 import { listProjects, mergeProjectsFromCloud, replaceProjectsFromCloud } from "../lib/storage";
 import { listOwnedProjects, saveOwnedProjects } from "../lib/projectsRepository";
 import "./AuthGate.css";
@@ -185,9 +185,9 @@ function AuthScreen({ error, onError }: { error: string; onError: (message: stri
   return (
     <main className="auth-screen">
       <section className="auth-card">
-        <div className="auth-brand-mark"><Workflow size={19} /></div>
+        <div className="auth-brand-mark"><AnchonLogo size={42} /></div>
         <div className="auth-kicker">PRIVATE ARCHITECTURE WORKSPACE</div>
-        <h1>ANCHON<span>.</span></h1>
+        <h1>ANCHON</h1>
         <p className="auth-intro">Sign in to access your projects across devices.</p>
         <div className="auth-tabs">
           <button className={mode === "sign-in" ? "active" : ""} onClick={() => { setMode("sign-in"); setMessage(""); }}>SIGN IN</button>
