@@ -621,14 +621,15 @@ const SwarmCursor = ({
       if (!s.targets || !pointer.inside) return null;
       const rect = container.getBoundingClientRect();
       const element = document.elementFromPoint(rect.left + pointer.x, rect.top + pointer.y);
-      if (!element || !container.contains(element)) return null;
+      if (!element) return null;
       let match = null;
       try {
         match = element.closest(s.targets);
       } catch {
         match = null;
       }
-      return match && container.contains(match) ? match : null;
+      // A fixed, full-viewport particle layer can highlight cards rendered outside its DOM subtree.
+      return match;
     };
 
     const updateAnchor = (s, dt) => {

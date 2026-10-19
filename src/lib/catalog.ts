@@ -129,6 +129,98 @@ export const CATALOG = [
   { typeKey: "certificate_authority", label: "Certificate Authority", category: "Security" },
   { typeKey: "log_collector", label: "Log Collector / Forwarder", category: "Observability" },
   { typeKey: "secrets_sidecar", label: "Secrets Sidecar / Agent", category: "Platform" },
+
+  // Messaging & social products (WhatsApp-style systems)
+  { typeKey: "conversation_service", label: "Conversation / Room Service", category: "Messaging & Social", keywords: ["whatsapp", "chat", "dm", "direct message", "group chat", "messenger", "slack", "discord"] },
+  { typeKey: "message_fanout", label: "Message Fan-out / Delivery", category: "Messaging & Social", keywords: ["whatsapp", "chat", "delivery receipts", "one-to-many", "pubsub"] },
+  { typeKey: "presence_service", label: "Online Presence Service", category: "Messaging & Social", keywords: ["whatsapp", "online", "last seen", "typing indicator", "presence"] },
+  { typeKey: "contact_graph", label: "Contacts & Social Graph", category: "Messaging & Social", keywords: ["whatsapp", "friends", "followers", "contacts", "social network"] },
+  { typeKey: "group_membership", label: "Group Membership Service", category: "Messaging & Social", keywords: ["whatsapp", "groups", "channels", "roles", "membership"] },
+  { typeKey: "media_upload", label: "Media Upload Service", category: "Messaging & Social", keywords: ["whatsapp", "images", "video", "voice notes", "attachments"] },
+  { typeKey: "push_delivery", label: "Push Delivery / Device Tokens", category: "Messaging & Social", keywords: ["whatsapp", "fcm", "apns", "mobile notifications"] },
+  { typeKey: "end_to_end_encryption", label: "End-to-End Encryption", category: "Messaging & Social", keywords: ["whatsapp", "e2ee", "signal protocol", "secure messaging", "encryption"] },
+  { typeKey: "read_receipts", label: "Read Receipts & Delivery State", category: "Messaging & Social", keywords: ["whatsapp", "seen", "double tick", "message status"] },
+  { typeKey: "call_signaling", label: "Voice / Video Call Signaling", category: "Messaging & Social", keywords: ["whatsapp", "calling", "webrtc", "call setup"] },
+
+  // Video, streaming and media products (Netflix-style systems)
+  { typeKey: "content_catalog", label: "Content Catalog Service", category: "Media & Streaming", keywords: ["netflix", "streaming", "movies", "series", "titles", "browse"] },
+  { typeKey: "recommendation_engine", label: "Personalization & Recommendations", category: "Media & Streaming", keywords: ["netflix", "youtube", "for you", "ranking", "recommendations"] },
+  { typeKey: "playback_session", label: "Playback Session Manager", category: "Media & Streaming", keywords: ["netflix", "streaming", "video player", "playback", "resume watching"] },
+  { typeKey: "manifest_service", label: "Adaptive Streaming Manifest", category: "Media & Streaming", keywords: ["netflix", "hls", "mpeg dash", "adaptive bitrate"] },
+  { typeKey: "entitlement_service", label: "Subscription & Entitlement", category: "Media & Streaming", keywords: ["netflix", "subscription", "plan", "premium", "access rights"] },
+  { typeKey: "watch_history", label: "Watch History & Continue Watching", category: "Media & Streaming", keywords: ["netflix", "youtube", "progress", "resume", "history"] },
+  { typeKey: "encoding_pipeline", label: "Video Encoding Pipeline", category: "Media & Streaming", keywords: ["netflix", "transcoding", "renditions", "codec", "media processing"] },
+  { typeKey: "drm_license", label: "DRM & License Service", category: "Media & Streaming", keywords: ["netflix", "widevine", "fairplay", "content protection"] },
+  { typeKey: "subtitle_service", label: "Subtitle & Audio Track Service", category: "Media & Streaming", keywords: ["netflix", "captions", "localization", "dubbing"] },
+  { typeKey: "live_stream_ingest", label: "Live Stream Ingest", category: "Media & Streaming", keywords: ["twitch", "youtube live", "broadcast", "rtmp", "live video"] },
+
+  // E-commerce & marketplaces (Amazon-style systems)
+  { typeKey: "product_catalog", label: "Product Catalog & Attributes", category: "Commerce & Marketplace", keywords: ["amazon", "ecommerce", "shop", "sku", "product listing"] },
+  { typeKey: "inventory_service", label: "Inventory & Availability", category: "Commerce & Marketplace", keywords: ["amazon", "stock", "warehouse", "availability", "quantity"] },
+  { typeKey: "shopping_cart", label: "Shopping Cart Service", category: "Commerce & Marketplace", keywords: ["amazon", "cart", "basket", "checkout"] },
+  { typeKey: "checkout_orchestrator", label: "Checkout Orchestrator", category: "Commerce & Marketplace", keywords: ["amazon", "checkout", "order placement", "purchase flow"] },
+  { typeKey: "order_management", label: "Order Management Service", category: "Commerce & Marketplace", keywords: ["amazon", "orders", "order lifecycle", "order status"] },
+  { typeKey: "pricing_service", label: "Pricing & Promotions Engine", category: "Commerce & Marketplace", keywords: ["amazon", "discount", "coupons", "dynamic pricing", "offers"] },
+  { typeKey: "product_search", label: "Product Search & Facets", category: "Commerce & Marketplace", keywords: ["amazon", "search", "filters", "facets", "autocomplete"] },
+  { typeKey: "seller_service", label: "Seller / Merchant Service", category: "Commerce & Marketplace", keywords: ["amazon marketplace", "vendors", "merchant", "seller portal"] },
+  { typeKey: "fulfillment_router", label: "Fulfillment & Warehouse Router", category: "Commerce & Marketplace", keywords: ["amazon", "delivery", "warehouse", "shipping", "fulfillment"] },
+  { typeKey: "returns_service", label: "Returns & Refunds Service", category: "Commerce & Marketplace", keywords: ["amazon", "return", "refund", "reverse logistics"] },
+  { typeKey: "review_moderation", label: "Reviews & Moderation", category: "Commerce & Marketplace", keywords: ["amazon", "ratings", "reviews", "ugc", "moderation"] },
+  { typeKey: "fraud_risk", label: "Checkout Fraud & Risk Scoring", category: "Commerce & Marketplace", keywords: ["amazon", "fraud", "risk", "chargeback", "abuse"] },
+
+  // Developer tools (VS Code / GitHub-style systems)
+  { typeKey: "workspace_service", label: "Workspace & Project Service", category: "Developer Tools", keywords: ["vscode", "vs code", "ide", "project", "workspace", "settings sync"] },
+  { typeKey: "extension_registry", label: "Extension / Plugin Registry", category: "Developer Tools", keywords: ["vscode", "vs code", "marketplace", "extensions", "plugins"] },
+  { typeKey: "language_server", label: "Language Server / LSP", category: "Developer Tools", keywords: ["vscode", "vs code", "autocomplete", "intellisense", "lsp"] },
+  { typeKey: "code_indexer", label: "Code Indexing & Symbol Search", category: "Developer Tools", keywords: ["vscode", "github", "code search", "symbols", "repository index"] },
+  { typeKey: "terminal_session", label: "Remote Terminal Session", category: "Developer Tools", keywords: ["vscode", "vs code", "web ide", "shell", "terminal"] },
+  { typeKey: "git_repository", label: "Git Repository Service", category: "Developer Tools", keywords: ["github", "gitlab", "git", "clone", "commit", "branch"] },
+  { typeKey: "build_runner", label: "Build & Task Runner", category: "Developer Tools", keywords: ["vscode", "ci", "compile", "build pipeline", "tasks"] },
+  { typeKey: "artifact_registry", label: "Build Artifact Registry", category: "Developer Tools", keywords: ["docker registry", "packages", "npm", "artifacts", "container images"] },
+  { typeKey: "collaboration_presence", label: "Collaborative Editing & Presence", category: "Developer Tools", keywords: ["vscode live share", "collaboration", "multiplayer editing", "presence"] },
+  { typeKey: "diagnostics_service", label: "Diagnostics & Error Reporting", category: "Developer Tools", keywords: ["vscode", "crash reports", "telemetry", "errors", "logs"] },
+
+  // AI assistants (ChatGPT / Claude-style systems)
+  { typeKey: "assistant_orchestrator", label: "Assistant Orchestrator", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "ai assistant", "agent", "conversation routing"] },
+  { typeKey: "model_router", label: "Multi-model Router", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "llm", "model selection", "fallback model"] },
+  { typeKey: "context_builder", label: "Context Assembly & Window Manager", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "context window", "conversation context", "token budget"] },
+  { typeKey: "conversation_memory", label: "Conversation Memory Service", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "memory", "chat history", "personalization"] },
+  { typeKey: "rag_pipeline", label: "Retrieval-Augmented Generation Pipeline", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "rag", "knowledge base", "retrieval"] },
+  { typeKey: "file_understanding", label: "File Upload & Understanding", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "pdf", "documents", "attachments", "vision"] },
+  { typeKey: "tool_permission_broker", label: "Tool Permission Broker", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "tools", "function calling", "approval", "sandbox"] },
+  { typeKey: "prompt_versioning", label: "Prompt Templates & Versioning", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "system prompt", "prompt registry", "experiments"] },
+  { typeKey: "safety_classifier", label: "Safety & Policy Classifier", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "moderation", "policy", "guardrails"] },
+  { typeKey: "streaming_response", label: "Token Streaming Gateway", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "streaming", "sse", "incremental response"] },
+  { typeKey: "feedback_service", label: "User Feedback & Evaluation", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "thumbs up", "model evaluation", "quality"] },
+  { typeKey: "usage_metering", label: "Usage Metering & Quotas", category: "AI Assistant Apps", keywords: ["chatgpt", "claude", "rate limits", "tokens", "billing", "quotas"] },
+
+  // Search, collaboration and productivity
+  { typeKey: "search_autocomplete", label: "Search Suggestions & Autocomplete", category: "Search & Discovery", keywords: ["google", "amazon", "search as you type", "suggestions"] },
+  { typeKey: "ranking_service", label: "Search Ranking Service", category: "Search & Discovery", keywords: ["google", "search engine", "relevance", "ranking", "personalization"] },
+  { typeKey: "document_collaboration", label: "Collaborative Document Service", category: "Collaboration & Productivity", keywords: ["google docs", "notion", "office", "realtime editing", "documents"] },
+  { typeKey: "permissions_service", label: "Sharing & Permissions Service", category: "Collaboration & Productivity", keywords: ["google drive", "notion", "sharing", "access control", "collaboration"] },
+  { typeKey: "sync_engine", label: "Cross-device Sync Engine", category: "Collaboration & Productivity", keywords: ["notion", "google drive", "offline", "sync", "conflict resolution"] },
+  { typeKey: "activity_feed", label: "Activity Feed & Notifications", category: "Collaboration & Productivity", keywords: ["slack", "notion", "activity", "mentions", "notifications"] },
+  { typeKey: "calendar_scheduler", label: "Calendar & Scheduling Service", category: "Collaboration & Productivity", keywords: ["google calendar", "calendly", "availability", "booking", "scheduling"] },
+
+  // Maps, mobility and delivery
+  { typeKey: "geospatial_service", label: "Geospatial & Geocoding Service", category: "Maps & Delivery", keywords: ["google maps", "uber", "latitude", "longitude", "geocoding"] },
+  { typeKey: "route_optimizer", label: "Route Optimization Engine", category: "Maps & Delivery", keywords: ["uber", "delivery", "shortest path", "routing", "dispatch"] },
+  { typeKey: "location_ingestion", label: "Live Location Ingestion", category: "Maps & Delivery", keywords: ["uber", "live tracking", "gps", "location updates"] },
+  { typeKey: "dispatch_service", label: "Driver / Courier Dispatch", category: "Maps & Delivery", keywords: ["uber", "swiggy", "zomato", "delivery partner", "matching"] },
+  { typeKey: "eta_service", label: "ETA Prediction Service", category: "Maps & Delivery", keywords: ["uber", "delivery", "arrival time", "traffic prediction"] },
+
+  // Identity, billing and platform foundations
+  { typeKey: "user_profile", label: "User Profile & Preferences", category: "Identity & Accounts", keywords: ["accounts", "profile", "settings", "preferences", "personalization"] },
+  { typeKey: "device_registry", label: "Device Registry & Sessions", category: "Identity & Accounts", keywords: ["devices", "sessions", "login", "trusted devices"] },
+  { typeKey: "tenant_manager", label: "Organization / Tenant Manager", category: "Identity & Accounts", keywords: ["saas", "multi-tenant", "organizations", "teams"] },
+  { typeKey: "subscription_billing", label: "Subscription Billing & Invoices", category: "Commerce & Billing", keywords: ["stripe", "subscription", "billing", "invoices", "plans"] },
+  { typeKey: "usage_ledger", label: "Usage Ledger & Metering", category: "Commerce & Billing", keywords: ["stripe", "billing", "usage based pricing", "credits"] },
+  { typeKey: "webhook_delivery", label: "Reliable Webhook Delivery", category: "Integration & Automation", keywords: ["webhooks", "retries", "integrations", "event delivery"] },
+  { typeKey: "workflow_automation", label: "Workflow Automation Engine", category: "Integration & Automation", keywords: ["zapier", "n8n", "ifttt", "automation", "triggers"] },
+  { typeKey: "secrets_rotation", label: "Secrets Rotation Worker", category: "Cloud & Infrastructure", keywords: ["cloud", "vault", "rotation", "credentials", "kubernetes"] },
+  { typeKey: "edge_compute", label: "Edge Compute Runtime", category: "Cloud & Infrastructure", keywords: ["cloudflare workers", "edge function", "low latency", "cdn"] },
+  { typeKey: "tenant_rate_limit", label: "Per-tenant Rate Limits", category: "Cloud & Infrastructure", keywords: ["saas", "quotas", "api throttling", "multi-tenant"] },
 ] as const;
 
 export type CatalogItem = typeof CATALOG[number];

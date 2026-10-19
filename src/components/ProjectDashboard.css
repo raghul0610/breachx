@@ -143,3 +143,54 @@
   position: relative;
   z-index: 1;
 }
+
+
+/* ANCHON dashboard refresh — same near-black surfaces, lavender accents, and quiet borders as the designer. */
+.project-dashboard { background:#07060b!important;color:#f1edf9!important; }
+.project-dashboard .topbar { background:rgba(10,8,16,.96)!important;border-bottom-color:rgba(196,181,253,.15)!important; }
+.project-dashboard .topbar strong { font-family:var(--anchon-font-ui,Inter,ui-sans-serif,system-ui,sans-serif)!important;font-weight:750!important;letter-spacing:.09em!important; }
+.project-dashboard .topbar .nav-btn { border-color:rgba(196,181,253,.2)!important;background:rgba(196,181,253,.045)!important;color:#c8bfdc!important; }
+.project-dashboard .status-pill { border-color:rgba(196,181,253,.22)!important;background:rgba(196,181,253,.07)!important;color:#c4b5fd!important; }
+.project-dashboard-content { width:min(1160px,100%)!important;padding:clamp(20px,3vw,36px) clamp(14px,2.8vw,30px) 44px!important; }
+.project-dashboard-hero { align-items:center!important;padding:12px 0 24px!important;border-bottom-color:rgba(196,181,253,.16)!important; }
+.project-dashboard-hero .section-kicker { color:#bca9ff!important;font:700 10px/1.4 var(--anchon-font-data,ui-monospace,monospace)!important;letter-spacing:.12em!important; }
+.project-dashboard-hero h1 { margin:11px 0 9px!important;color:#f4efff!important;font:720 clamp(23px,3vw,31px)/1.14 var(--anchon-font-ui,Inter,ui-sans-serif,system-ui,sans-serif)!important;letter-spacing:-.045em!important; }
+.project-dashboard-hero p { max-width:610px;color:#a49bb6!important;font-size:12px!important;line-height:1.65!important; }
+.project-dashboard .primary-btn { border-color:rgba(196,181,253,.65)!important;background:linear-gradient(135deg,#d4c7ff,#a995f5)!important;color:#191326!important;border-radius:9px!important;box-shadow:0 7px 22px rgba(167,139,250,.12)!important; }
+.project-dashboard .primary-btn:hover { background:#e1d8ff!important;box-shadow:0 9px 26px rgba(167,139,250,.22)!important; }
+.project-dashboard .github-connection-development,
+.project-dashboard .project-card,
+.project-dashboard .project-empty {
+  border:1px solid rgba(196,181,253,.17)!important;border-radius:14px!important;
+  background:linear-gradient(145deg,rgba(24,19,35,.92),rgba(12,10,18,.96))!important;
+  box-shadow:0 16px 42px rgba(0,0,0,.16)!important;
+}
+.project-dashboard .github-connection-development { margin-top:20px!important;padding:17px!important; }
+.project-dashboard .github-connection-icon { border-color:rgba(196,181,253,.24)!important;background:rgba(196,181,253,.08)!important;color:#c4b5fd!important;border-radius:10px!important; }
+.project-dashboard .github-connection-title .section-kicker { color:#bca9ff!important; }
+.project-dashboard .github-connection-title h2 { color:#eee7ff!important;font-weight:650!important; }
+.project-dashboard .github-connection-title p { color:#a49bb6!important; }
+.project-dashboard .github-building-pill { border-color:rgba(196,181,253,.24)!important;background:rgba(196,181,253,.07)!important;color:#c4b5fd!important;border-radius:7px!important; }
+.project-dashboard .project-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;margin-top:18px!important; }
+.project-dashboard .project-card { padding:18px!important;min-width:0;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease; }
+.project-dashboard .project-card:hover { transform:translateY(-2px);border-color:rgba(196,181,253,.36)!important;box-shadow:0 20px 46px rgba(0,0,0,.25)!important; }
+.project-dashboard .project-status { border-color:rgba(196,181,253,.23)!important;background:rgba(196,181,253,.07)!important;color:#c4b5fd!important;border-radius:7px!important; }
+.project-dashboard .project-status.is-submitted { border-color:rgba(110,231,183,.25)!important;background:rgba(110,231,183,.07)!important;color:#86efc0!important; }
+.project-dashboard .project-count,.project-dashboard .project-updated { color:#958ba8!important;font-family:var(--anchon-font-data,ui-monospace,monospace)!important; }
+.project-dashboard .project-card h2 { margin:15px 0 7px!important;color:#f0eaff!important;font-size:16px!important;font-weight:650!important;letter-spacing:-.025em!important; }
+.project-dashboard .project-description { color:#aaa1bc!important;font-size:12px!important;line-height:1.6!important; }
+.project-dashboard .project-updated { border-top-color:rgba(196,181,253,.13)!important; }
+.project-dashboard .project-actions .icon-btn { border-color:rgba(196,181,253,.19)!important;background:rgba(196,181,253,.04)!important;color:#c9bfdc!important;border-radius:8px!important; }
+.project-dashboard .project-actions .project-delete { color:#fda4af!important;border-color:rgba(251,113,133,.28)!important; }
+.project-dashboard .project-empty { padding:46px 20px!important;color:#c4b5fd!important; }
+.project-dashboard .project-empty h2 { color:#f0eaff!important; }
+.project-dashboard .project-empty p { color:#a49bb6!important; }
+.project-dashboard .project-storage-note { color:#857b98!important; }
+.project-dashboard .project-error { border-color:rgba(251,113,133,.3)!important;background:rgba(80,20,35,.25)!important;border-radius:10px!important; }
+@media(max-width:760px) {
+ .project-dashboard .project-dashboard-hero { align-items:flex-start!important; }
+ .project-dashboard .project-grid { grid-template-columns:minmax(0,1fr)!important; }
+ .project-dashboard .project-card-top { flex-direction:row!important;align-items:center!important; }
+ .project-dashboard .project-actions .primary-btn { width:auto!important; }
+}
+@media(prefers-reduced-motion:reduce) { .project-dashboard .project-card { transition:none!important; } }

@@ -195,6 +195,7 @@ function ParticipantEditor({
   const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [requestTraceStep, setRequestTraceStep] = useState(-1);
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
@@ -232,6 +233,39 @@ function ParticipantEditor({
       document.body.classList.remove("workspace-resizing", "workspace-resizing-horizontal", "workspace-resizing-vertical");
     };
   }, [resizeDrag]);
+
+  const requestTraceEdges = useMemo(() => {
+    const ids = new Set(nodes.map((node) => node.id));
+    const validEdges = edges.filter((edge) => ids.has(edge.source) && ids.has(edge.target) && edge.source !== edge.target);
+    const outgoing = new Map<string, Edge[]>();
+    validEdges.forEach((edge) => outgoing.set(edge.source, [...(outgoing.get(edge.source) ?? []), edge]));
+    const incomingIds = new Set(validEdges.map((edge) => edge.target));
+    const queue = nodes.filter((node) => !incomingIds.has(node.id)).map((node) => node.id);
+    const visitedEdges = new Set<string>();
+    const ordered: Edge[] = [];
+    while (queue.length) {
+      const source = queue.shift()!;
+      for (const edge of outgoing.get(source) ?? []) {
+        if (visitedEdges.has(edge.id)) continue;
+        visitedEdges.add(edge.id); ordered.push(edge); queue.push(edge.target);
+      }
+    }
+    validEdges.forEach((edge) => { if (!visitedEdges.has(edge.id)) ordered.push(edge); });
+    return ordered;
+  }, [nodes, edges]);
+
+  useEffect(() => {
+    if (requestTraceStep < 0 || requestTraceStep >= requestTraceEdges.length) return;
+    const timeout = window.setTimeout(() => setRequestTraceStep((step) => step + 1), 900);
+    return () => window.clearTimeout(timeout);
+  }, [requestTraceStep, requestTraceEdges.length]);
+
+  const runRequestTrace = useCallback(() => {
+    if (!requestTraceEdges.length) { setRequestTraceStep(-1); return; }
+    setChatOpen(false); setComponentLibraryOpen(false); setRequestTraceStep(0);
+    setSelectedId(requestTraceEdges[0].source); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null);
+    void fitView({ padding: 0.22, duration: 500 });
+  }, [requestTraceEdges, fitView]);
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { edgesRef.current = edges; }, [edges]);
@@ -314,7 +348,27 @@ function ParticipantEditor({
 
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const edgeTypes = useMemo(() => ({ curvedArchitectureEdge: CurvedArchitectureEdge }), []);
-  const renderedEdges = useMemo(() => edges.map((edge) => { const source = nodes.find((item) => item.id === edge.source); const accent = getCategoryAccent(String(source?.data?.category ?? "")); return { ...edge, type: "curvedArchitectureEdge", animated: true, style: { ...edge.style, stroke: accent }, markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 22, height: 22 }, label: typeof edge.label === "string" ? edge.label : "", labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20 }; }), [edges, nodes]);
+  const renderedEdges = useMemo(() => edges.map((edge) => {
+    const source = nodes.find((item) => item.id === edge.source);
+    const accent = getCategoryAccent(String(source?.data?.category ?? ""));
+    const traceIndex = requestTraceEdges.findIndex((traceEdge) => traceEdge.id === edge.id);
+    const isTraceActive = traceIndex === requestTraceStep;
+    const isTraceComplete = requestTraceStep > traceIndex && traceIndex >= 0;
+    return {
+      ...edge, type: "curvedArchitectureEdge", animated: true,
+      className: isTraceActive ? "request-trace-edge is-active" : isTraceComplete ? "request-trace-edge is-complete" : "request-trace-edge",
+      style: { ...edge.style, stroke: accent, strokeWidth: isTraceActive ? 4 : isTraceComplete ? 3 : 2.1, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.28 : 1 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 22, height: 22 },
+      label: typeof edge.label === "string" ? edge.label : "",
+      labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20,
+    };
+  }), [edges, nodes, requestTraceEdges, requestTraceStep]);
+  const tracedNodes = useMemo(() => nodes.map((node) => {
+    const activeEdge = requestTraceEdges[requestTraceStep];
+    const active = requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length && (activeEdge?.source === node.id || activeEdge?.target === node.id);
+    const complete = requestTraceStep > 0 && requestTraceEdges.slice(0, Math.min(requestTraceStep, requestTraceEdges.length)).some((edge) => edge.source === node.id || edge.target === node.id);
+    return { ...node, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : ""].filter(Boolean).join(" ") };
+  }), [nodes, requestTraceEdges, requestTraceStep]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -641,7 +695,7 @@ function ParticipantEditor({
               <button
                 className="primary-btn compact"
                 data-tutorial="run-request"
-                onClick={() => { setChatOpen(true); setComponentLibraryOpen(false); }}
+                onClick={runRequestTrace}
                 title="Describe what you want ANCHON to design or change"
               >
                 <Sparkles size={13} /> RUN REQUEST
@@ -719,9 +773,9 @@ function ParticipantEditor({
         <div className="canvas-column">
           {componentLibraryOpen && <><button type="button" className="component-library-scrim" aria-label="Close component library" onClick={() => setComponentLibraryOpen(false)} />
           <section id="component-library-popup" className="component-dock component-dock-open" role="dialog" aria-modal="false" aria-label="Architecture component library" data-tutorial="component-library">
-            <div className="component-dock-heading"><div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY <span className="niche-library-tag">NICHE INFRASTRUCTURE INCLUDED</span></div><p>Search, filter, and sort production components. Select one to learn what it does before adding it.</p></div><button type="button" className="component-library-close" onClick={() => setComponentLibraryOpen(false)} aria-label="Close component library"><X size={16} /></button></div>
+            <div className="component-dock-heading"><div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY <span className="niche-library-tag">NICHE INFRASTRUCTURE INCLUDED</span></div><p>Search by component, category, or product pattern (WhatsApp, Netflix, Amazon, VS Code, ChatGPT). Select a component to inspect it before adding it.</p></div><button type="button" className="component-library-close" onClick={() => setComponentLibraryOpen(false)} aria-label="Close component library"><X size={16} /></button></div>
             <div className="component-library-controls">
-              <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="DNS, transcoding, queues, security…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
+              <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="Try WhatsApp, Netflix, Amazon, VS Code, ChatGPT…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
               <select aria-label="Filter by category" value={componentCategoryFilter} onChange={(event) => setComponentCategoryFilter(event.target.value)}><option value="all">All categories</option>{[...new Set(CATALOG.map((item) => item.category))].sort().map((category) => <option key={category} value={category}>{category}</option>)}</select>
               <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="layer">Group by system layer</option><option value="category">Group by category</option></select>
               <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Default order</option><option value="name">Name A–Z</option><option value="category">Category A–Z</option></select>
@@ -730,14 +784,14 @@ function ParticipantEditor({
               ? [...new Set(CATALOG.map((item) => item.category))].sort().map((category) => ({ title: category.toUpperCase(), description: `Components in the ${category} category`, categories: [category] }))
               : [
                 { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
-                { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage, media and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration", "Media"] },
-                { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML"] },
+                { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage, media and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration", "Media", "Messaging & Social", "Media & Streaming", "Commerce & Marketplace", "Developer Tools", "AI Assistant Apps", "Search & Discovery", "Collaboration & Productivity", "Maps & Delivery"] },
+                { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML", "Identity & Accounts", "Commerce & Billing", "Integration & Automation", "Cloud & Infrastructure"] },
               ]
             ).map((group) => {
               const query = componentSearch.trim().toLowerCase();
               const items = CATALOG.filter((item) => group.categories.includes(item.category))
                 .filter((item) => componentCategoryFilter === "all" || item.category === componentCategoryFilter)
-                .filter((item) => !query || `${item.label} ${item.category} ${item.typeKey}`.toLowerCase().includes(query))
+                .filter((item) => !query || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(query))
                 .sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : componentSort === "category" ? a.category.localeCompare(b.category) || a.label.localeCompare(b.label) : 0);
               if (items.length === 0) return null;
               return (
@@ -771,13 +825,20 @@ function ParticipantEditor({
               <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
-            <button type="button" className="run-request-canvas" onClick={() => { setChatOpen(true); setComponentLibraryOpen(false); }} data-tutorial="canvas-run-request" title="Tell ANCHON what to build or change">
-              <Sparkles size={14} /> RUN REQUEST <span aria-hidden="true">↗</span>
+            <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!requestTraceEdges.length}>
+              {requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? <span className="request-trace-spinner" aria-hidden="true" /> : <Sparkles size={14} />}
+              {requestTraceStep >= requestTraceEdges.length && requestTraceEdges.length > 0 ? "REPLAY FLOW" : requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? "TRACING FLOW…" : "RUN REQUEST"}
+              <span aria-hidden="true">↗</span>
             </button>
           </div>
 
+          {requestTraceStep >= 0 && <div className="request-trace-status" role="status" aria-live="polite">
+            <span className={requestTraceStep < requestTraceEdges.length ? "request-trace-status-dot is-running" : "request-trace-status-dot"} />
+            <div><strong>{requestTraceStep >= requestTraceEdges.length ? "FLOW COMPLETE" : "DATA FLOW · STEP " + (requestTraceStep + 1) + " OF " + requestTraceEdges.length}</strong><span>{requestTraceStep >= requestTraceEdges.length ? "Followed every connection in your architecture." : (() => { const edge = requestTraceEdges[requestTraceStep]; const from = nodes.find((node) => node.id === edge?.source)?.data.label ?? edge?.source; const to = nodes.find((node) => node.id === edge?.target)?.data.label ?? edge?.target; return from + " → " + to; })()}</span></div>
+            {requestTraceStep >= requestTraceEdges.length && <button type="button" onClick={() => setRequestTraceStep(-1)} aria-label="Dismiss flow result"><X size={14} /></button>}
+          </div>}
           <ReactFlow
-            nodes={nodes}
+            nodes={tracedNodes}
             edges={renderedEdges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
@@ -937,7 +998,6 @@ function ParticipantEditor({
         {chatOpen ? <X size={19} /> : <MessageSquare size={19} />}
         <span>{chatOpen ? "CLOSE AI" : "ASK ANCHON"}</span>
       </button>
-      {chatOpen && <button type="button" className="ai-chat-scrim" aria-label="Close Ask ANCHON panel" onClick={() => setChatOpen(false)} />}
       <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
         <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" onClick={() => setChatOpen(false)} aria-label="Close AI chat"><X size={16} /></button></div>
                   <ArchitectureAIChat

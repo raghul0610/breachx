@@ -180,3 +180,173 @@
  .app-shell .canvas-toolbar { align-items:flex-start; }
  .app-shell .run-request-canvas { min-height:34px!important;padding-inline:10px!important;font-size:10px!important; }
 }
+
+
+/* Semantic architecture glyph silhouettes: shape reinforces the component's role, not just its label. */
+.app-shell .bp-node { position:relative;isolation:isolate;overflow:visible; }
+.app-shell .bp-node > :not(.handle) { position:relative;z-index:1; }
+.app-shell .bp-node .handle { z-index:3!important; }
+.app-shell .bp-node--kind-database,
+.app-shell .bp-node--kind-nosql_database,
+.app-shell .bp-node--kind-graph_database,
+.app-shell .bp-node--kind-time_series_db,
+.app-shell .bp-node--kind-database_replica,
+.app-shell .bp-node--kind-database_shard,
+.app-shell .bp-node--kind-vector_database,
+.app-shell .bp-node--kind-transaction_ledger,
+.app-shell .bp-node--kind-conversation_store,
+.app-shell .bp-node--kind-idempotency_store {
+  border-radius:50% / 13%!important;
+  padding-top:22px!important;padding-bottom:18px!important;
+  border-top-width:2px!important;
+  background:linear-gradient(180deg,rgba(47,35,16,.98),rgba(17,13,18,.99))!important;
+  box-shadow:inset 0 8px 0 rgba(251,191,36,.055),0 12px 26px rgba(0,0,0,.3)!important;
+}
+.app-shell .bp-node--kind-database::before,
+.app-shell .bp-node--kind-nosql_database::before,
+.app-shell .bp-node--kind-graph_database::before,
+.app-shell .bp-node--kind-time_series_db::before,
+.app-shell .bp-node--kind-database_replica::before,
+.app-shell .bp-node--kind-database_shard::before,
+.app-shell .bp-node--kind-vector_database::before,
+.app-shell .bp-node--kind-transaction_ledger::before,
+.app-shell .bp-node--kind-conversation_store::before,
+.app-shell .bp-node--kind-idempotency_store::before {
+  content:"";position:absolute;z-index:0;left:0;right:0;top:0;height:18px;
+  border:1px solid var(--category-accent,#fbbf24);border-radius:50%;
+  background:linear-gradient(180deg,rgba(251,191,36,.12),rgba(251,191,36,.015));
+  opacity:.82;pointer-events:none;
+}
+.app-shell .bp-node--kind-database::after,
+.app-shell .bp-node--kind-nosql_database::after,
+.app-shell .bp-node--kind-graph_database::after,
+.app-shell .bp-node--kind-time_series_db::after,
+.app-shell .bp-node--kind-database_replica::after,
+.app-shell .bp-node--kind-database_shard::after,
+.app-shell .bp-node--kind-vector_database::after,
+.app-shell .bp-node--kind-transaction_ledger::after,
+.app-shell .bp-node--kind-conversation_store::after,
+.app-shell .bp-node--kind-idempotency_store::after {
+  content:"";position:absolute;z-index:0;left:0;right:0;bottom:0;height:18px;
+  border:1px solid var(--category-accent,#fbbf24);border-radius:50%;
+  opacity:.42;pointer-events:none;
+}
+.app-shell .bp-node--kind-app_server,
+.app-shell .bp-node--kind-microservice,
+.app-shell .bp-node--kind-web_server,
+.app-shell .bp-node--kind-container,
+.app-shell .bp-node--kind-worker,
+.app-shell .bp-node--kind-batch_job,
+.app-shell .bp-node--kind-serverless,
+.app-shell .bp-node--kind-gpu_inference_pool,
+.app-shell .bp-node--kind-transcoding_server {
+  border-radius:7px!important;
+  background:linear-gradient(145deg,rgba(33,28,49,.99),rgba(12,11,20,.99))!important;
+  box-shadow:inset 4px 0 0 rgba(196,181,253,.22),0 12px 26px rgba(0,0,0,.3)!important;
+}
+.app-shell .bp-node--kind-app_server::before,
+.app-shell .bp-node--kind-microservice::before,
+.app-shell .bp-node--kind-web_server::before,
+.app-shell .bp-node--kind-container::before,
+.app-shell .bp-node--kind-worker::before,
+.app-shell .bp-node--kind-batch_job::before,
+.app-shell .bp-node--kind-serverless::before,
+.app-shell .bp-node--kind-gpu_inference_pool::before,
+.app-shell .bp-node--kind-transcoding_server::before {
+  content:"";position:absolute;top:10px;bottom:10px;left:7px;width:3px;border-radius:3px;
+  background:var(--category-accent,#c4b5fd);opacity:.75;pointer-events:none;
+}
+.app-shell .bp-node--kind-queue,
+.app-shell .bp-node--kind-kafka,
+.app-shell .bp-node--kind-event_bus,
+.app-shell .bp-node--kind-dead_letter_queue,
+.app-shell .bp-node--kind-smtp_relay,
+.app-shell .bp-node--kind-push_gateway {
+  border-radius:999px!important;padding-inline:22px!important;
+  background:linear-gradient(145deg,rgba(38,24,48,.98),rgba(15,10,22,.99))!important;
+}
+.app-shell .bp-node--kind-queue::before,
+.app-shell .bp-node--kind-kafka::before,
+.app-shell .bp-node--kind-event_bus::before,
+.app-shell .bp-node--kind-dead_letter_queue::before,
+.app-shell .bp-node--kind-smtp_relay::before,
+.app-shell .bp-node--kind-push_gateway::before {
+  content:"";position:absolute;top:12px;bottom:12px;left:9px;width:3px;border-radius:3px;
+  background:var(--category-accent,#c084fc);opacity:.7;pointer-events:none;
+}
+.app-shell .bp-node--kind-cache,
+.app-shell .bp-node--kind-cdn,
+.app-shell .bp-node--kind-redis,
+.app-shell .bp-node--kind-object_storage,
+.app-shell .bp-node--kind-blob_storage,
+.app-shell .bp-node--kind-data_lake,
+.app-shell .bp-node--kind-data_warehouse {
+  border-radius:12px 12px 5px 5px!important;
+  background:linear-gradient(145deg,rgba(13,43,41,.98),rgba(9,17,22,.99))!important;
+  box-shadow:inset 0 4px 0 rgba(45,212,191,.15),0 12px 26px rgba(0,0,0,.3)!important;
+}
+.app-shell .bp-node--kind-cache::before,
+.app-shell .bp-node--kind-cdn::before,
+.app-shell .bp-node--kind-redis::before,
+.app-shell .bp-node--kind-object_storage::before,
+.app-shell .bp-node--kind-blob_storage::before,
+.app-shell .bp-node--kind-data_lake::before,
+.app-shell .bp-node--kind-data_warehouse::before {
+  content:"";position:absolute;top:0;left:0;right:0;height:8px;
+  border-bottom:1px solid var(--category-accent,#2dd4bf);border-radius:12px 12px 0 0;
+  background:rgba(45,212,191,.09);pointer-events:none;
+}
+.app-shell .bp-node--kind-api_gateway,
+.app-shell .bp-node--kind-load_balancer,
+.app-shell .bp-node--kind-reverse_proxy,
+.app-shell .bp-node--kind-nat_gateway,
+.app-shell .bp-node--kind-egress_gateway,
+.app-shell .bp-node--kind-llm_gateway {
+  border-radius:16px 5px 16px 5px!important;
+  background:linear-gradient(145deg,rgba(27,25,51,.98),rgba(12,11,23,.99))!important;
+}
+.app-shell .bp-node--kind-client,
+.app-shell .bp-node--kind-internet,
+.app-shell .bp-node--kind-mobile_app,
+.app-shell .bp-node--kind-web_client,
+.app-shell .bp-node--kind-external_api,
+.app-shell .bp-node--kind-payment_service {
+  border-radius:19px!important;
+  background:linear-gradient(145deg,rgba(19,34,49,.98),rgba(10,13,23,.99))!important;
+}
+.app-shell .bp-node--kind-firewall,
+.app-shell .bp-node--kind-ddos_protection,
+.app-shell .bp-node--kind-identity_provider,
+.app-shell .bp-node--kind-auth_service,
+.app-shell .bp-node--kind-iam,
+.app-shell .bp-node--kind-secrets_manager,
+.app-shell .bp-node--kind-kms,
+.app-shell .bp-node--kind-hsm,
+.app-shell .bp-node--kind-prompt_guardrails {
+  border-radius:5px!important;border-style:double!important;border-width:3px!important;
+  background:linear-gradient(145deg,rgba(48,20,35,.98),rgba(18,10,18,.99))!important;
+}
+.app-shell .bp-node--kind-monitoring,
+.app-shell .bp-node--kind-logger,
+.app-shell .bp-node--kind-metrics,
+.app-shell .bp-node--kind-tracing,
+.app-shell .bp-node--kind-alerting,
+.app-shell .bp-node--kind-health_checker {
+  border-radius:12px 12px 4px 4px!important;
+  background:linear-gradient(145deg,rgba(12,39,41,.98),rgba(9,17,22,.99))!important;
+}
+.app-shell .bp-node--kind-scheduler,
+.app-shell .bp-node--kind-workflow_engine,
+.app-shell .bp-node--kind-container_orchestrator,
+.app-shell .bp-node--kind-autoscaler {
+  border-radius:12px!important;border-style:dashed!important;
+  background:linear-gradient(145deg,rgba(41,25,49,.98),rgba(14,10,21,.99))!important;
+}
+.app-shell .bp-node--kind-database .node-category-icon,
+.app-shell .bp-node--kind-nosql_database .node-category-icon,
+.app-shell .bp-node--kind-graph_database .node-category-icon,
+.app-shell .bp-node--kind-time_series_db .node-category-icon,
+.app-shell .bp-node--kind-database_replica .node-category-icon,
+.app-shell .bp-node--kind-database_shard .node-category-icon,
+.app-shell .bp-node--kind-vector_database .node-category-icon { color:#fbbf24;border-color:#fbbf2445;background:#fbbf2410; }
+@media(prefers-reduced-motion:reduce){.app-shell .bp-node{transition:none!important}}
