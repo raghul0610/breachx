@@ -2176,3 +2176,68 @@ body, .app-shell, .home, .lp-root {
   backdrop-filter: none!important;
   pointer-events: none!important;
 }
+
+
+/* ANCHON UI polish: remove cyan focus halo and use the violet brand on actions. */
+.app-shell:not(.lp-root) .component-library-search,
+.app-shell:not(.lp-root) .component-library-search:focus-within {
+  border-color: rgba(196,181,253,.24) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.app-shell:not(.lp-root) .component-library-search input,
+.app-shell:not(.lp-root) .component-library-search input:focus,
+.app-shell:not(.lp-root) .component-library-search input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+.app-shell:not(.lp-root) .topbar-add-component-button {
+  border: 1px solid rgba(196,181,253,.56) !important;
+  color: #f4efff !important;
+  background: linear-gradient(135deg,#8b5cf6,#6d28d9) !important;
+  box-shadow: 0 4px 16px rgba(109,40,217,.2) !important;
+}
+.app-shell:not(.lp-root) .topbar-add-component-button:hover {
+  border-color: rgba(221,214,254,.82) !important;
+  background: linear-gradient(135deg,#a78bfa,#7c3aed) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger {
+  left: 50% !important;
+  right: auto !important;
+  bottom: 22px !important;
+  transform: translateX(-50%) !important;
+  border: 1px solid rgba(196,181,253,.62) !important;
+  color: #f7f2ff !important;
+  background: linear-gradient(135deg,#8b5cf6,#6d28d9) !important;
+  box-shadow: 0 10px 34px rgba(0,0,0,.42),0 0 24px rgba(139,92,246,.16) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger:hover {
+  background: linear-gradient(135deg,#a78bfa,#7c3aed) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel {
+  left: 50% !important;
+  right: auto !important;
+  bottom: 82px !important;
+  transform: translate(-50%,10px) scale(.985) !important;
+  transform-origin: bottom center !important;
+  border-color: rgba(196,181,253,.24) !important;
+  background: rgba(12,9,20,.97) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel.is-open {
+  transform: translate(-50%,0) scale(1) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading {
+  justify-content: flex-start !important;
+  color: #d9ccff !important;
+}
+@media(max-width:760px) {
+  .app-shell:not(.lp-root) .floating-ai-chat-trigger { bottom: 14px !important; }
+  .app-shell:not(.lp-root) .floating-ai-chat-panel {
+    bottom: 72px !important;
+    width: min(390px,calc(100vw - 24px)) !important;
+  }
+}
+
+.app-shell:not(.lp-root) .catalog-add-btn { border:1px solid rgba(196,181,253,.56)!important;color:#f4efff!important;background:linear-gradient(135deg,#8b5cf6,#6d28d9)!important;box-shadow:0 4px 16px rgba(109,40,217,.2)!important; }
+.app-shell:not(.lp-root) .catalog-add-btn:hover { background:linear-gradient(135deg,#a78bfa,#7c3aed)!important; }
