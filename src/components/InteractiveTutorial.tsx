@@ -6,6 +6,7 @@ type TutorialStep = {
   title: string;
   description: string;
   action?: string;
+  activate?: "brief" | "component-library" | "inspector" | "canvas" | "ai-chat";
 };
 
 const TUTORIALS: Record<string, { title: string; steps: TutorialStep[] }> = {
@@ -21,12 +22,12 @@ const TUTORIALS: Record<string, { title: string; steps: TutorialStep[] }> = {
     title: "Architecture workspace tour",
     steps: [
       { selector: ".topbar", title: "1. Workspace controls", description: "The top bar keeps the project identity, cloud-save status, Undo, Redo, Export PDF, Save Draft, and Save Blueprint & Continue together. Watch the save status before leaving." },
-      { selector: "[data-tutorial='requirements']", title: "2. Project brief", description: "The brief sidebar starts collapsed to give the canvas more room. Open BRIEF from the left edge to edit the project name and review component and connection counts." },
-      { selector: "[data-tutorial='component-library']", title: "3. Component library popup", description: "Open COMPONENT LIBRARY to browse the centered popup. The Inspector opens alongside it; choosing a catalog item shows its details without adding it to the canvas." },
-      { selector: "[data-tutorial='create-component']", title: "4. Add components", description: "Expand the library, select a component, and choose Add Component. You can also drag a component card onto the canvas." },
-      { selector: "[data-tutorial='canvas']", title: "5. Canvas", description: "Arrange nodes on the canvas, connect handles to show flow, and use zoom controls to navigate. Select any node or connection to open its details in the Inspector." },
-      { selector: "[data-tutorial='inspector']", title: "6. Inspector", description: "The Inspector opens when you open the library or select a node or connection. Review catalog details, edit a component, or delete the selected component or connection." },
-      { selector: "[data-tutorial='architecture-ai-chat']", title: "7. Ask ANCHON", description: "Drag ASK ANCHON to reposition it; it starts above Help. Planning proposes a changeset for your review before applying it. Agent applies a generated graph directly to the canvas. Review AI changes before saving." },
+      { selector: "[data-tutorial='requirements']", title: "2. Project brief", description: "The brief sidebar starts collapsed to give the canvas more room. Open BRIEF from the left edge to edit the project name and review component and connection counts.", activate: "brief" },
+      { selector: "[data-tutorial='component-library']", title: "3. Component library popup", description: "Browse the component library. The Inspector opens alongside it; choosing a catalog item shows its details without adding it to the canvas.", activate: "component-library" },
+      { selector: "[data-tutorial='create-component']", title: "4. Add components", description: "Select a component and choose Add Component. You can also drag a component card onto the canvas.", activate: "component-library" },
+      { selector: "[data-tutorial='canvas']", title: "5. Canvas", description: "Arrange nodes on the canvas, connect handles to show flow, and use zoom controls to navigate.", activate: "canvas" },
+      { selector: "[data-tutorial='inspector']", title: "6. Inspector", description: "Review catalog details, edit a component, or delete the selected component or connection.", activate: "inspector" },
+      { selector: "[data-tutorial='architecture-ai-chat']", title: "7. Ask ANCHON", description: "Open Ask ANCHON to plan or apply architecture changes, then review generated changes before saving.", activate: "ai-chat" },
       { selector: "[data-tutorial-connections='true']", title: "8. Connect components", description: "Drag from one component handle to another to create a directed connection. Select an edge to open its details in the Inspector or delete it." },
       { selector: "[data-tutorial='save-draft']", title: "9. Save your work", description: "Changes autosave and the top-right status shows progress. Save Draft explicitly persists your current design; use it if you want confirmation before leaving." },
       { selector: "[data-tutorial='export-pdf']", title: "10. Export PDF", description: "Export PDF creates a shareable document from the current architecture. Review its layout and content before using it as project documentation." },
@@ -44,7 +45,7 @@ const TUTORIALS: Record<string, { title: string; steps: TutorialStep[] }> = {
   },
 };
 
-export function InteractiveTutorial({ page }: { page: "dashboard" | "workspace" | "generator" }) {
+export function InteractiveTutorial({ page, onStepChange }: { page: "dashboard" | "workspace" | "generator"; onStepChange?: (step: { selector: string; title: string; description: string; action?: string; activate?: "brief" | "component-library" | "inspector" | "canvas" | "ai-chat" }) => void }) {
   const tutorial = TUTORIALS[page];
   const storageKey = `anchon:tutorial-complete:${page}:v1`;
   const [open, setOpen] = useState(false);
@@ -75,13 +76,14 @@ export function InteractiveTutorial({ page }: { page: "dashboard" | "workspace" 
   useEffect(() => {
     if (!open || !current) return;
     clearHighlight();
+    onStepChange?.(current);
     const target = document.querySelector<HTMLElement>(current.selector);
     if (target) {
       target.classList.add("tutorial-target-active");
       target.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
     }
     return clearHighlight;
-  }, [open, current, clearHighlight]);
+  }, [open, current, clearHighlight, onStepChange]);
 
   useEffect(() => {
     if (!open) return;
