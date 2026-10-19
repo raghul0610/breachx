@@ -1,3 +1,4 @@
+import { AnchonLogo } from "./AnchonLogo";
 import { useEffect, useState } from "react";
 import {
   ArrowDownRight, ArrowRight, Check, CircleDot, Database, GitBranch,
@@ -78,10 +79,10 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
       </div>
 
       <section className="iad-hero">
-        <div className="iad-brandline"><span className="iad-brand-mark"><Workflow size={16} /></span> SYSTEM DESIGN, MADE VISIBLE</div>
+        <div className="iad-brandline"><span className="iad-brand-mark"><AnchonLogo size={28} /></span> SYSTEM DESIGN, MADE VISIBLE</div>
         <div className="iad-headline-wrap">
           <p className="iad-overline"><span className="iad-live-dot" /> AI-POWERED SYSTEM ARCHITECTURE DESIGNER</p>
-          <h1 className="iad-brand-title">ANCHON<span className="iad-brand-title-period">.</span></h1>
+          <h1 className="iad-brand-title">ANCHON</h1>
           <p className="iad-hero-tagline">Think in systems. Design with clarity.</p>
           <p className="iad-intro">Turn an application idea into a living system blueprint. Explore the flow, understand every boundary, and build architecture that makes sense.</p>
           <button className="iad-hero-cta" onClick={onOpenDesigner}>Start designing <ArrowRight size={15} /></button>
