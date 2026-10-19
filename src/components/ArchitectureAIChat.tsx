@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Bot, Check, LoaderCircle, MessageSquare, Send, Sparkles, WandSparkles } from "lucide-react";
 import { MarkerType, Position, type Edge, type Node } from "@xyflow/react";
+import { supabase } from "../lib/supabase";
 import { layoutArchitectureGraph } from "../lib/architectureLayout";
 import type { BlueprintNodeData } from "./BlueprintNode";
 
