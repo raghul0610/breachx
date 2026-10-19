@@ -20,7 +20,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
@@ -30,6 +30,7 @@ import { readSubmission, writeSubmission, logActivity, type DesignSubmission } f
 import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
+import { evaluateSystemDesign, type EvaluationResult } from "../lib/evaluationEngine";
 
 
 
@@ -196,6 +197,8 @@ function ParticipantEditor({
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [requestTraceStep, setRequestTraceStep] = useState(-1);
+  const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null);
+  const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null);
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
@@ -291,11 +294,30 @@ function ParticipantEditor({
   }, [requestTraceStep, requestTraceEdges.length]);
 
   const runRequestTrace = useCallback(() => {
-    if (!requestTraceEdges.length) { setRequestTraceStep(-1); return; }
-    setChatOpen(false); setComponentLibraryOpen(false); setRequestTraceStep(0);
-    setSelectedId(requestTraceEdges[0].source); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null);
-    void fitView({ padding: 0.22, duration: 500 });
-  }, [requestTraceEdges, fitView]);
+    const result = evaluateSystemDesign({
+      application: { name: applicationName, description: applicationDescription },
+      nodes: nodes.map((node) => ({ id: node.id, type: node.type, data: node.data })),
+      edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target })),
+      notes: [notes, inferredRequirements?.summary, ...(inferredRequirements?.functionalRequirements ?? []), ...(inferredRequirements?.nonFunctionalRequirements ?? [])].filter(Boolean).join("\n"),
+    });
+    setEvaluationResult(result);
+    setSelectedFindingId(result.findings[0]?.id ?? null);
+    setChatOpen(false);
+    setComponentLibraryOpen(false);
+    if (requestTraceEdges.length) {
+      setRequestTraceStep(0);
+      setSelectedId(requestTraceEdges[0].source);
+      setSelectedEdgeId(null);
+      setSelectedCatalogTypeKey(null);
+      void fitView({ padding: 0.22, duration: 500 });
+    } else {
+      setRequestTraceStep(-1);
+      const firstProblemNodeId = result.findings[0]?.nodeIds?.[0];
+      setSelectedId(firstProblemNodeId ?? null);
+      setSelectedEdgeId(null);
+      if (firstProblemNodeId) void fitView({ nodes: [{ id: firstProblemNodeId }], padding: 0.4, duration: 500 });
+    }
+  }, [applicationName, applicationDescription, notes, inferredRequirements, nodes, edges, requestTraceEdges, fitView]);
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { edgesRef.current = edges; }, [edges]);
