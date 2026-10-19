@@ -1,3 +1,4 @@
+import { supabase } from "./supabase";
 import {
   evaluateSystemDesign,
   mergeAIReview,
@@ -12,9 +13,14 @@ export async function evaluateSystemDesignWithAI(
   const deterministic = evaluateSystemDesign(input);
 
   try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return deterministic;
     const response = await fetch("/api/evaluate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
       body: JSON.stringify({
         application: input.application,
         nodes: input.nodes.map((node) => ({
