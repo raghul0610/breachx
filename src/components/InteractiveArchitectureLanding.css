@@ -9,7 +9,7 @@
 .iad-orbit-two{width:1120px;height:420px;margin-left:-560px;top:190px;transform:rotate(20deg);animation-direction:reverse;opacity:.55}
 .iad-hero,.iad-lab,.iad-bottom,.iad-footnote{position:relative;z-index:1;max-width:1320px;margin-left:auto;margin-right:auto}
 .iad-brandline{display:flex;align-items:center;gap:10px;color:#e8e1ff;font:500 11px "DM Mono",monospace;letter-spacing:.16em}
-.iad-brand-mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid rgba(196,181,253,.4);border-radius:9px;background:rgba(196,181,253,.1);color:#d6c9ff}.iad-brand-divider{height:14px;width:1px;background:rgba(196,181,253,.25);margin:0 4px}
+.iad-brand-mark{display:grid;place-items:center;width:36px;height:36px;overflow:visible;border:0;border-radius:0;background:transparent;color:#d6c9ff}.iad-brand-divider{height:14px;width:1px;background:rgba(196,181,253,.25);margin:0 4px}
 .iad-headline-wrap{max-width:760px;margin:46px auto 30px;text-align:center}.iad-overline{display:flex;align-items:center;justify-content:center;gap:8px;margin:0;color:#b8a8f7;font:500 10px "DM Mono",monospace;letter-spacing:.16em}
 .iad-live-dot{display:inline-block;width:6px;height:6px;flex:none;border-radius:50%;background:#8ce6c3;box-shadow:0 0 12px #8ce6c366}.iad-live-dot.is-running{animation:iad-blink .8s ease infinite}
 .iad-headline-wrap h1{margin:18px 0 14px;font-size:clamp(42px,6vw,76px);line-height:.99;font-weight:700;letter-spacing:-.075em}.iad-headline-wrap h1 span{color:#b9a6ff;background:linear-gradient(100deg,#ded4ff 4%,#a998f7 47%,#8ed8ed 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -52,8 +52,8 @@
 .iad-brandline { color:#a9a2bb; }
 .iad-headline-wrap { max-width:880px;margin:42px auto 36px; }
 .iad-headline-wrap .iad-overline { margin-bottom:18px; }
-.iad-headline-wrap h1.iad-brand-title { margin:0;font-size:clamp(76px,15vw,174px);line-height:.82;font-weight:800;letter-spacing:-.095em;color:#f7f3ff;text-shadow:0 0 70px rgba(196,181,253,.12); }
-.iad-brand-title-period { color:#b9a6ff;background:linear-gradient(145deg,#e0d7ff,#a998f7 58%,#8ed8ed);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.iad-headline-wrap h1.iad-brand-title { margin:0;font-size:clamp(76px,15vw,174px);line-height:.82;font-weight:800;letter-spacing:.015em;color:#f7f3ff;text-shadow:0 0 70px rgba(196,181,253,.12); }
+
 .iad-hero-tagline { margin:20px 0 9px;font-size:clamp(17px,2.3vw,25px);color:#e7e1f7;font-weight:600;letter-spacing:-.04em; }
 .iad-headline-wrap .iad-intro { max-width:520px; }
 .iad-hero-cta { display:inline-flex;align-items:center;justify-content:center;gap:9px;align-self:center;margin-top:22px;min-height:43px;padding:0 18px;border:1px solid #c5b5ff;border-radius:8px;background:#c5b5ff;color:#141020;font-size:11px;font-weight:800;cursor:pointer;transition:transform .2s,background .2s,box-shadow .2s; }
