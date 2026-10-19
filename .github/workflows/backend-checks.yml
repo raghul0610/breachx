@@ -18,6 +18,10 @@ on:
       - ".github/workflows/backend-checks.yml"
   pull_request:
     paths:
+      - "api/**"
+      - "tests/**"
+      - "types/**"
+      - ".env.example"
       - "src/**"
       - "supabase/**"
       - "package.json"
