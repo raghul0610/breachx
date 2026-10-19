@@ -2014,3 +2014,44 @@ body, .app-shell, .home, .lp-root {
  .app-shell:not(.lp-root) .requirements-panel .requirements-metric strong { font-size:17px!important; }
  .app-shell:not(.lp-root) .requirements-panel .requirements-metric span { padding:5px 4px!important;font-size:9px!important; }
 }
+
+
+/* Final alignment correction: reserve a real label column inside each brief metric card. */
+.app-shell:not(.lp-root) .requirements-panel .requirements-status {
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .requirements-metric {
+  display:grid!important;
+  grid-template-columns:22px minmax(0,1fr)!important;
+  justify-content:stretch!important;
+  align-items:center!important;
+  gap:6px!important;
+  min-width:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  padding:9px 8px!important;
+  overflow:hidden!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .requirements-metric strong {
+  display:block!important;
+  width:22px!important;
+  text-align:center!important;
+  font-size:18px!important;
+  line-height:1!important;
+}
+.app-shell:not(.lp-root) .requirements-panel .requirements-metric span {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  min-height:30px!important;
+  padding:5px 4px!important;
+  box-sizing:border-box!important;
+  text-align:center!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  line-height:1.2!important;
+}
