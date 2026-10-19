@@ -315,6 +315,23 @@ export function validateGeneratorPayload(body: Record<string, unknown>): string 
     || body.requirements.trim().length < 20 || body.requirements.length > 8_000) {
     return "Requirements must be between 20 and 8,000 characters.";
   }
+  if (body.instruction !== undefined
+    && (typeof body.instruction !== "string" || body.instruction.length > 4_000)) {
+    return "Architecture instructions must be 4,000 characters or fewer.";
+  }
+  if (body.currentArchitecture !== undefined && body.currentArchitecture !== null
+    && !isRecord(body.currentArchitecture)) {
+    return "Current architecture must be an object.";
+  }
+  if (isRecord(body.currentArchitecture)) {
+    const graph = body.currentArchitecture;
+    if (Array.isArray(graph.components) && graph.components.length > 100) {
+      return "Current architecture has too many components.";
+    }
+    if (Array.isArray(graph.connections) && graph.connections.length > 200) {
+      return "Current architecture has too many connections.";
+    }
+  }
   return null;
 }
 
