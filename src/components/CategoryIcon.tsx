@@ -42,6 +42,18 @@ const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
   External: { icon: Cloud, tone: "external" },
   Banking: { icon: BriefcaseBusiness, tone: "banking" },
   "AI / ML": { icon: BrainCircuit, tone: "ai" },
+  "Messaging & Social": { icon: RadioTower, tone: "messaging" },
+  "Media & Streaming": { icon: Activity, tone: "analytics" },
+  "Commerce & Marketplace": { icon: BriefcaseBusiness, tone: "banking" },
+  "Developer Tools": { icon: Code2, tone: "api" },
+  "AI Assistant Apps": { icon: BrainCircuit, tone: "ai" },
+  "Search & Discovery": { icon: Gauge, tone: "routing" },
+  "Collaboration & Productivity": { icon: Workflow, tone: "platform" },
+  "Maps & Delivery": { icon: Route, tone: "edge" },
+  "Identity & Accounts": { icon: ShieldCheck, tone: "security" },
+  "Commerce & Billing": { icon: BriefcaseBusiness, tone: "banking" },
+  "Integration & Automation": { icon: Workflow, tone: "integration" },
+  "Cloud & Infrastructure": { icon: Cloud, tone: "network" },
 };
 
 const CATEGORY_ACCENTS: Record<string, string> = {
