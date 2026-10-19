@@ -19,7 +19,7 @@ export type EvaluationInput = { application: { name: string; description: string
 export type FindingSeverity = "critical" | "high" | "medium" | "low";
 export type EvidenceStatus = "strong" | "adequate" | "weak" | "critical" | "insufficient_evidence";
 export type FindingSource = "rule" | "ai";
-export type EvaluationFinding = { id: string; category: string; severity: FindingSeverity; title: string; description: string; evidence: string[]; recommendation: string; principleId?: string; principleIds?: string[]; requirement?: string; alternatives?: string[]; costImpact?: string; complexityImpact?: string; penalty: number; source?: FindingSource };
+export type EvaluationFinding = { id: string; category: string; severity: FindingSeverity; title: string; description: string; evidence: string[]; recommendation: string; nodeIds?: string[]; edgeIds?: string[]; principleId?: string; principleIds?: string[]; requirement?: string; alternatives?: string[]; costImpact?: string; complexityImpact?: string; penalty: number; source?: FindingSource };
 export type EvaluationScore = { category: string; score: number; maxScore: number; summary: string; evidenceStatus: EvidenceStatus };
 export type RequirementProfile = { persistenceRequired: boolean; highScale: boolean; highAvailability: boolean; lowLatency: boolean; asyncWork: boolean; externalDependencies: boolean; sensitiveData: boolean; readHeavy: boolean; complexWorkflow: boolean; rationaleRequired: boolean; staticLike: boolean };
 export type EvaluationResult = { score: number; maxScore: 100; scores: EvaluationScore[]; findings: EvaluationFinding[]; strengths: string[]; summary: string; generatedAt: string; evaluationMode?: "deterministic" | "hybrid"; aiModel?: string; topicReviews?: TopicReview[]; reviewBasis: { requirements: RequirementProfile; workload?: WorkloadProfile; principles: string[]; methodology: string }; overview?: string; howItWorks?: string; assumptions?: string[]; graphAnalysis?: GraphAnalysis; };
@@ -112,7 +112,24 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   const incoming = new Map<string, string[]>();
   for (const node of nodes) { outgoing.set(node.id, []); incoming.set(node.id, []); }
   for (const edge of edges) { outgoing.get(edge.source)?.push(edge.target); incoming.get(edge.target)?.push(edge.source); }
-  const add = (id: string, category: string, severity: FindingSeverity, title: string, description: string, evidence: string[], recommendation: string, penalty: number, principleId?: string) => { if (!findings.some((finding) => finding.id === id)) findings.push({ id, category, severity, title, description, evidence, recommendation, penalty, principleId }); };
+  const add = (id: string, category: string, severity: FindingSeverity, title: string, description: string, evidence: string[], recommendation: string, penalty: number, principleId?: string) => {
+    if (findings.some((finding) => finding.id === id)) return;
+    const evidenceText = evidence.join(" ").toLowerCase();
+    const nodeIds = nodes.filter((node) =>
+      evidence.some((item) => item === node.id || item === label(node)) ||
+      evidenceText.includes("node: " + node.id.toLowerCase()) ||
+      (label(node).length > 2 && evidenceText.includes(label(node).toLowerCase())),
+    ).map((node) => node.id);
+    const edgeIds = edges.filter((edge) => {
+      const source = nodes.find((node) => node.id === edge.source);
+      const target = nodes.find((node) => node.id === edge.target);
+      const idMatch = Boolean(edge.id && evidenceText.includes(edge.id.toLowerCase()));
+      const pathMatch = evidenceText.includes(edge.source.toLowerCase() + " → " + edge.target.toLowerCase()) ||
+        evidenceText.includes(label(source ?? { id: edge.source }).toLowerCase() + " → " + label(target ?? { id: edge.target }).toLowerCase());
+      return idMatch || pathMatch;
+    }).map((edge) => edge.id).filter((id): id is string => Boolean(id));
+    findings.push({ id, category, severity, title, description, evidence, recommendation, penalty, principleId, nodeIds, edgeIds });
+  };
   const reachFrom = (startIds: string[]) => { const seen = new Set<string>(); const queue = [...startIds]; while (queue.length) { const current = queue.shift()!; if (seen.has(current)) continue; seen.add(current); for (const next of outgoing.get(current) ?? []) queue.push(next); } return seen; };
   const ingress = nodes.filter(isIngressNode);
   const compute = nodes.filter(isComputeNode);
@@ -163,7 +180,14 @@ export function evaluateSystemDesign(input: EvaluationInput): EvaluationResult {
   if (requirements.persistenceRequired && stores.length === 0) add("DATA_MISSING_SOURCE_OF_TRUTH","Data Design","high","No durable source of truth","The stated workload requires durable state, but the submitted architecture has no database or durable storage component.",["Requirements imply persistent state","No database/storage node detected"],"Add a durable source of truth and show which application component owns reads and writes.",8,"REQ-001");
   if (requirements.persistenceRequired && stores.length > 0 && compute.length > 0 && !stores.some((store) => reachableFromCompute.has(store.id))) add("DATA_UNREACHABLE_STORE","Data Design","high","Persistence is outside the application path","A durable store exists, but no application-processing path reaches it.",stores.map(label),"Connect the owning application service to the durable store and make the data ownership explicit.",7,"REQ-001");
   const directlyPublicData = stores.filter((store) => ingress.some((entry) => outgoing.get(entry.id)?.includes(store.id)));
-  if (directlyPublicData.length) add("SEC_PUBLIC_DATA_STORE","Security","critical","Public component directly reaches a data store","An ingress-facing component is directly connected to persistent data, bypassing an application authorization boundary.",directlyPublicData.map(label),"Route data access through an application/service boundary with explicit authentication and authorization. Keep the primary data store private.",12,"SEC-003");
+  if (directlyPublicData.length) {
+    const directEdges = edges.filter((edge) => directlyPublicData.some((store) => store.id === edge.target) && ingress.some((entry) => entry.id === edge.source));
+    add("SEC_PUBLIC_DATA_STORE","Security","critical","Public component directly reaches a data store","An ingress-facing component is directly connected to persistent data, bypassing an application authorization boundary.",[
+      ...ingress.filter((entry) => directEdges.some((edge) => edge.source === entry.id)).map(label),
+      ...directlyPublicData.map(label),
+      ...directEdges.map((edge) => "Direct edge: " + edge.source + " → " + edge.target),
+    ],"Route data access through a trusted application/service boundary with server-side authentication and authorization. Keep the primary data store private. Never put privileged database credentials in a client application.",12,"SEC-003");
+  }
   const notesAndLabels = textOf(input);
   if (requirements.sensitiveData && securityBoundary.length === 0) add("SEC_NO_BOUNDARY","Security","high","Sensitive workload lacks a visible security boundary","The requirements describe sensitive data, but the graph has no visible firewall or API gateway boundary.",["Sensitive data inferred from requirements","No firewall/API gateway"],"Add an explicit edge security or API boundary and document authentication, authorization, and data-protection responsibilities.",8,"SEC-001");
   if (requirements.sensitiveData && !hasAny(notesAndLabels, ["authentication","authorization","oauth","iam","rbac","least privilege","access control"])) add("SEC_MISSING_ACCESS_MODEL","Security","medium","Access-control model is not explained","The workload contains sensitive data, but the submission does not explain how callers are authenticated or authorized.",["Sensitive data requirement","No authentication/authorization rationale found"],"Document the identity boundary, authorization model, and least-privilege access to sensitive resources.",4,"SEC-002");
