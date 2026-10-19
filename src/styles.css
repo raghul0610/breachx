@@ -2055,3 +2055,37 @@ body, .app-shell, .home, .lp-root {
   word-break:normal!important;
   line-height:1.2!important;
 }
+
+
+/* Component library: clearer, category-first browsing. */
+.app-shell:not(.lp-root) .component-library-controls select {
+  border-color: rgba(196,181,253,.22);
+  background: #100c19;
+  color: #e3d8ff;
+}
+.app-shell:not(.lp-root) .component-library-controls select:focus,
+.app-shell:not(.lp-root) .component-library-search:focus-within {
+  outline: 2px solid rgba(167,139,250,.34);
+  outline-offset: 1px;
+  border-color: #a78bfa;
+}
+.app-shell:not(.lp-root) .component-lane {
+  border-bottom: 1px solid rgba(196,181,253,.12);
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.app-shell:not(.lp-root) .component-lane-label > span:first-child {
+  color: #d9ccff;
+  letter-spacing: .055em;
+}
+.app-shell:not(.lp-root) .component-lane-label small {
+  color: #9d91b6;
+}
+.app-shell:not(.lp-root) .component-lane-count {
+  border: 1px solid rgba(196,181,253,.2);
+  background: rgba(167,139,250,.1);
+  color: #d5c6ff;
+}
+.app-shell:not(.lp-root) .component-lane .component-dock-items {
+  scrollbar-color: rgba(167,139,250,.35) transparent;
+}
