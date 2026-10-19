@@ -17,7 +17,7 @@ type ApiResponse = {
 type RateLimitResult = { allowed: boolean; retryAfterSeconds: number };
 
 const MAX_EVALUATION_BODY_BYTES = 64 * 1024;
-const MAX_GENERATOR_BODY_BYTES = 16 * 1024;
+const MAX_GENERATOR_BODY_BYTES = 64 * 1024;
 const RATE_WINDOW_SECONDS = 60;
 const USER_REQUESTS_PER_WINDOW = 8;
 const IP_REQUESTS_PER_WINDOW = 20;
@@ -325,11 +325,11 @@ export function validateGeneratorPayload(body: Record<string, unknown>): string 
   }
   if (isRecord(body.currentArchitecture)) {
     const graph = body.currentArchitecture;
-    if (Array.isArray(graph.components) && graph.components.length > 100) {
-      return "Current architecture has too many components.";
+    if (Array.isArray(graph.components) && graph.components.length > 24) {
+      return "Current architecture must have no more than 24 components.";
     }
-    if (Array.isArray(graph.connections) && graph.connections.length > 200) {
-      return "Current architecture has too many connections.";
+    if (Array.isArray(graph.connections) && graph.connections.length > 48) {
+      return "Current architecture must have no more than 48 connections.";
     }
   }
   return null;
