@@ -198,7 +198,17 @@ function ParticipantEditor({
   const [chatOpen, setChatOpen] = useState(false);
   const [requestTraceStep, setRequestTraceStep] = useState(-1);
   const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null);
+  const [evaluationFingerprint, setEvaluationFingerprint] = useState<string | null>(null);
   const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null);
+  const currentEvaluationFingerprint = useMemo(() => JSON.stringify({
+    name: applicationName,
+    description: applicationDescription,
+    notes,
+    inferred: inferredRequirements ? { summary: inferredRequirements.summary, functional: inferredRequirements.functionalRequirements, nonFunctional: inferredRequirements.nonFunctionalRequirements } : null,
+    nodes: nodes.map((node) => ({ id: node.id, label: node.data.label, typeKey: node.data.typeKey, notes: node.data.notes ?? "" })),
+    edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target })),
+  }), [applicationName, applicationDescription, notes, inferredRequirements, nodes, edges]);
+  const activeEvaluationResult = evaluationFingerprint === currentEvaluationFingerprint ? evaluationResult : null;
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
@@ -301,6 +311,7 @@ function ParticipantEditor({
       notes: [notes, inferredRequirements?.summary, ...(inferredRequirements?.functionalRequirements ?? []), ...(inferredRequirements?.nonFunctionalRequirements ?? [])].filter(Boolean).join("\n"),
     });
     setEvaluationResult(result);
+    setEvaluationFingerprint(currentEvaluationFingerprint);
     setSelectedFindingId(result.findings[0]?.id ?? null);
     setChatOpen(false);
     setComponentLibraryOpen(false);
@@ -317,7 +328,7 @@ function ParticipantEditor({
       setSelectedEdgeId(null);
       if (firstProblemNodeId) void fitView({ nodes: [{ id: firstProblemNodeId }], padding: 0.4, duration: 500 });
     }
-  }, [applicationName, applicationDescription, notes, inferredRequirements, nodes, edges, requestTraceEdges, fitView]);
+  }, [applicationName, applicationDescription, notes, inferredRequirements, nodes, edges, requestTraceEdges, fitView, currentEvaluationFingerprint]);
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { edgesRef.current = edges; }, [edges]);
@@ -406,7 +417,7 @@ function ParticipantEditor({
     const traceIndex = requestTraceEdges.findIndex((traceEdge) => traceEdge.id === edge.id);
     const isTraceActive = traceIndex === requestTraceStep;
     const isTraceComplete = requestTraceStep > 0 && traceIndex >= 0 && traceIndex < requestTraceStep;
-    const hasFinding = Boolean(evaluationResult?.findings.some((finding) => finding.edgeIds?.includes(edge.id ?? "")));
+    const hasFinding = Boolean(activeEvaluationResult?.findings.some((finding) => finding.edgeIds?.includes(edge.id ?? "")));
     return {
       ...edge, type: "curvedArchitectureEdge", animated: true,
       className: ["request-trace-edge", isTraceActive ? "is-active" : "", isTraceComplete ? "is-complete" : "", hasFinding ? "architecture-edge-issue" : ""].filter(Boolean).join(" "),
@@ -415,15 +426,15 @@ function ParticipantEditor({
       label: typeof edge.label === "string" ? edge.label : "",
       labelStyle: { ...edge.labelStyle, fill: hasFinding ? "#fda4af" : accent }, interactionWidth: 20,
     };
-  }), [edges, nodes, requestTraceEdges, requestTraceStep, evaluationResult]);
+  }), [edges, nodes, requestTraceEdges, requestTraceStep, activeEvaluationResult]);
   const tracedNodes = useMemo(() => nodes.map((node) => {
     const activeEdge = requestTraceEdges[requestTraceStep];
     const active = requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length && (activeEdge?.source === node.id || activeEdge?.target === node.id);
     const complete = requestTraceStep > 0 && requestTraceEdges.slice(0, Math.min(requestTraceStep, requestTraceEdges.length)).some((edge) => edge.source === node.id || edge.target === node.id);
-    const nodeFindings = evaluationResult?.findings.filter((finding) => finding.nodeIds?.includes(node.id)) ?? [];
+    const nodeFindings = activeEvaluationResult?.findings.filter((finding) => finding.nodeIds?.includes(node.id)) ?? [];
     const highestSeverity = (["critical", "high", "medium", "low"] as const).find((severity) => nodeFindings.some((finding) => finding.severity === severity));
     return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
-  }), [nodes, requestTraceEdges, requestTraceStep, evaluationResult]);
+  }), [nodes, requestTraceEdges, requestTraceStep, activeEvaluationResult]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -892,16 +903,16 @@ function ParticipantEditor({
             <div><strong>{requestTraceStep >= requestTraceEdges.length ? "FLOW COMPLETE" : "DATA FLOW · STEP " + (requestTraceStep + 1) + " OF " + requestTraceEdges.length}</strong><span>{requestTraceStep >= requestTraceEdges.length ? "Followed every connection in your architecture." : (() => { const edge = requestTraceEdges[requestTraceStep]; const from = nodes.find((node) => node.id === edge?.source)?.data.label ?? edge?.source; const to = nodes.find((node) => node.id === edge?.target)?.data.label ?? edge?.target; return from + " → " + to; })()}</span></div>
             {requestTraceStep >= requestTraceEdges.length && <button type="button" onClick={() => setRequestTraceStep(-1)} aria-label="Dismiss flow result"><X size={14} /></button>}
           </div>}
-          {evaluationResult && <section className="architecture-evaluation-panel" aria-label="Architecture judge results" aria-live="polite">
+          {activeEvaluationResult && <section className="architecture-evaluation-panel" aria-label="Architecture judge results" aria-live="polite">
             <div className="architecture-evaluation-header">
-              <div className="architecture-evaluation-status-icon">{evaluationResult.findings.some((finding) => finding.severity === "critical") ? <ShieldAlert size={17} /> : evaluationResult.findings.some((finding) => finding.severity === "high") ? <AlertTriangle size={17} /> : <CheckCircle2 size={17} />}</div>
-              <div className="architecture-evaluation-heading"><strong>ARCHITECTURE JUDGE</strong><span>{evaluationResult.findings.length ? evaluationResult.findings.length + " finding(s) · score " + evaluationResult.score + "/100" : "No material rule-based findings · " + evaluationResult.score + "/100"}</span></div>
-              <button type="button" onClick={() => { setEvaluationResult(null); setSelectedFindingId(null); }} aria-label="Dismiss evaluation results"><X size={14} /></button>
+              <div className="architecture-evaluation-status-icon">{activeEvaluationResult.findings.some((finding) => finding.severity === "critical") ? <ShieldAlert size={17} /> : evaluationResult.findings.some((finding) => finding.severity === "high") ? <AlertTriangle size={17} /> : <CheckCircle2 size={17} />}</div>
+              <div className="architecture-evaluation-heading"><strong>ARCHITECTURE JUDGE</strong><span>{activeEvaluationResult.findings.length ? evaluationResult.findings.length + " finding(s) · score " + activeEvaluationResult.score + "/100" : "No material rule-based findings · " + evaluationResult.score + "/100"}</span></div>
+              <button type="button" onClick={() => { setEvaluationResult(null); setEvaluationFingerprint(null); setSelectedFindingId(null); }} aria-label="Dismiss evaluation results"><X size={14} /></button>
             </div>
             {evaluationResult.findings.length === 0
               ? <p className="architecture-evaluation-clean">No material issues were detected by the local rule checks. This is not a guarantee of production safety; verify deployment settings and implementation details.</p>
               : <div className="architecture-evaluation-findings">
-                {evaluationResult.findings.slice(0, 5).map((finding) => <button type="button" key={finding.id} className={"architecture-evaluation-finding severity-" + finding.severity + (selectedFindingId === finding.id ? " is-selected" : "")} onClick={() => {
+                {activeEvaluationResult.findings.slice(0, 5).map((finding) => <button type="button" key={finding.id} className={"architecture-evaluation-finding severity-" + finding.severity + (selectedFindingId === finding.id ? " is-selected" : "")} onClick={() => {
                   setSelectedFindingId(finding.id);
                   const firstNodeId = finding.nodeIds?.[0];
                   if (firstNodeId) { setSelectedId(firstNodeId); setSelectedEdgeId(null); void fitView({ nodes: [{ id: firstNodeId }], padding: 0.38, duration: 450 }); }
