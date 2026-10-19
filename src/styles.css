@@ -1853,14 +1853,14 @@ body, .app-shell, .home, .lp-root {
 }
 .app-shell:not(.lp-root) .requirements-panel-header .requirements-mark {
   position:static!important;
-  grid-column:2!important;
+  grid-column:1!important;
   grid-row:1!important;
   width:30px!important;
   height:30px!important;
   margin:0!important;
 }
 .app-shell:not(.lp-root) .requirements-panel-header > div:last-child {
-  grid-column:3!important;
+  grid-column:2!important;
   grid-row:1!important;
   min-width:0!important;
   width:100%!important;
