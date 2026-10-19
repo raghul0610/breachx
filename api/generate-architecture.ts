@@ -1,9 +1,12 @@
 import { CATALOG } from "../src/lib/catalog.js";
 import { validateArchitectureGraph, type ArchitectureComponent, type ArchitectureConnection, type RequirementCoverage } from "../src/lib/architectureValidation.js";
+import { AI_REQUEST_LIMITS, authorizeAndRateLimit, describeProviderFailure, validateGeneratorPayload } from "./_shared/security.js";
 
 declare const process: { env: Record<string, string | undefined> };
 const send = (res: any, status: number, body: unknown) =>
   res.status(status).setHeader("Content-Type", "application/json").json(body);
+
+export const config = { maxDuration: 30 };
 
 const MAX_CORRECTION_ATTEMPTS = 1;
 
@@ -112,14 +115,17 @@ function normalizeArchitecture(parsed: any, name: string) {
 }
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== "POST") return send(res, 405, { error: "Method not allowed" });
+  const authorized = await authorizeAndRateLimit(req, res, AI_REQUEST_LIMITS.generatorBodyBytes);
+  if (!authorized) return;
+  const body = req.body as Record<string, unknown>;
+  const validationError = validateGeneratorPayload(body);
+  if (validationError) return send(res, 400, { error: validationError });
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) return send(res, 503, { error: "Architecture generation is not configured on the server." });
 
-  const { name, requirements, instruction, currentArchitecture } = req.body ?? {};
-  if (typeof name !== "string" || name.trim().length < 2 || typeof requirements !== "string" || requirements.trim().length < 20) {
-    return send(res, 400, { error: "Enter an application name and at least 20 characters of requirements." });
-  }
+  const { name, requirements, instruction, currentArchitecture } = body as {
+    name: string; requirements: string; instruction?: string; currentArchitecture?: unknown;
+  };
 
   const catalog = CATALOG.map((item) => ({ typeKey: item.typeKey, label: item.label, category: item.category }));
   const editing = typeof instruction === "string" && instruction.trim().length > 0;
@@ -169,8 +175,9 @@ export default async function handler(req: any, res: any) {
           provider: { require_parameters: true },
           response_format: { type: "json_schema", json_schema: { name: "architecture", strict: true, schema } },
         }),
+        signal: AbortSignal.timeout(AI_REQUEST_LIMITS.providerTimeoutMs),
       });
-      if (!response.ok) return send(res, 502, { error: "The architecture provider failed. Check server configuration and try again." });
+      if (!response.ok) return send(res, 502, { error: "The architecture provider failed. Try again shortly." });
       const payload = await response.json();
       const raw = payload?.choices?.[0]?.message?.content;
       if (typeof raw !== "string") return send(res, 502, { error: "No architecture was returned." });
@@ -191,7 +198,8 @@ export default async function handler(req: any, res: any) {
       });
     }
     return send(res, 502, { error: "Could not generate a valid architecture. Please try again." });
-  } catch {
-    return send(res, 502, { error: "Could not generate or validate an architecture. Please try again." });
+  } catch (error) {
+    const failure = describeProviderFailure(error);
+    return send(res, failure.status, { error: failure.message });
   }
 }
