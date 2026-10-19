@@ -354,8 +354,9 @@ describe("AI endpoint security", () => {
       expect(providerCalls()).toHaveLength(0);
     });
 
-    it("applies the tighter generator limit independently of the evaluation limit", () => {
-      expect(AI_REQUEST_LIMITS.generatorBodyBytes).toBeLessThan(AI_REQUEST_LIMITS.evaluationBodyBytes);
+    it("allows a bounded architecture graph in generator/edit requests", () => {
+      expect(AI_REQUEST_LIMITS.generatorBodyBytes).toBe(64 * 1024);
+      expect(AI_REQUEST_LIMITS.generatorBodyBytes).toBe(AI_REQUEST_LIMITS.evaluationBodyBytes);
     });
   });
 
