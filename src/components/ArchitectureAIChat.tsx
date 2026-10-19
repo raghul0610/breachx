@@ -12,6 +12,7 @@ type GeneratedArchitecture = {
   assumptions?: string[];
   requirementCoverage?: { requirement: string; componentIds: string[]; rationale: string }[];
   validation?: { passed: boolean; errors: string[]; warnings: string[] };
+  evaluation?: { passed: boolean; score: number; summary: string; findings: { severity: string; title: string; recommendation: string }[] };
   components: { id: string; typeKey: string; label: string; category: string; notes: string }[];
   connections: { source: string; target: string; label: string; communicationType?: string; purpose?: string }[];
 };
@@ -78,8 +79,15 @@ export function ArchitectureAIChat({
         }),
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error([payload.error, ...(payload.validation?.errors ?? []), ...(payload.validation?.warnings ?? [])].filter(Boolean).join(" | ") || "The architecture assistant could not complete that request.");
+      const judgeBlockers = (payload.evaluation?.findings ?? []).filter((finding: { severity: string }) => finding.severity === "critical" || finding.severity === "high");
+      if (!response.ok || payload.validation?.passed === false || payload.evaluation?.passed === false) {
+        const blockerMessages = judgeBlockers.map((finding: { severity: string; title: string; recommendation: string }) => finding.severity.toUpperCase() + ": " + finding.title + ". Fix: " + finding.recommendation);
+        throw new Error([payload.error, ...(payload.validation?.errors ?? []), ...blockerMessages, ...(payload.validation?.warnings ?? [])].filter(Boolean).join(" | ") || "The architecture assistant could not produce a graph that passed the architecture judge. No changes were applied.");
+      }
       const result = payload as GeneratedArchitecture;
+      if (result.validation?.passed !== true || result.evaluation?.passed !== true) {
+        throw new Error("The proposed architecture has not passed structural validation and the architecture judge. No changes were applied.");
+      }
       const oldById = new Map(nodes.map((node) => [node.id, node]));
       const oldByLabel = new Map(nodes.map((node) => [node.data.label.toLowerCase(), node]));
       const nextNodes: Node<BlueprintNodeData>[] = result.components.map((component) => {
@@ -109,8 +117,9 @@ export function ArchitectureAIChat({
       if (spaciousNodes.length < 3 || nextEdges.length < 2) throw new Error("The proposed architecture is incomplete. No changes were applied.");
       const plan = { result, nodes: spaciousNodes, edges: nextEdges, request: instruction };
       setPending(plan);
-      const validationSummary = result.validation?.warnings?.length ? ` Validation warnings: ${result.validation.warnings.slice(0, 3).join(" ")}` : "";
-      const summary = `Proposed ${spaciousNodes.length} components and ${nextEdges.length} connections in a compact horizontal layout. ${result.overview}${validationSummary}`;
+      const validationSummary = result.validation?.warnings?.length ? " Structural warnings: " + result.validation.warnings.slice(0, 2).join(" ") : "";
+      const evaluationSummary = " Judge score " + (result.evaluation?.score ?? "—") + "/100; no critical/high findings."; 
+      const summary = "Proposed " + spaciousNodes.length + " components and " + nextEdges.length + " connections in a compact horizontal layout. " + result.overview + evaluationSummary + validationSummary;
       setMessages((current) => [...current, { role: "assistant", content: mode === "agent" ? `Applied your request: ${summary}` : `Plan ready. ${summary} Review it, then apply the proposal to the canvas.` }]);
       if (mode === "agent") {
         onBeforeApply();
