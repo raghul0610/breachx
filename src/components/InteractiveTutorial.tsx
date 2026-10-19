@@ -77,12 +77,18 @@ export function InteractiveTutorial({ page, onStepChange }: { page: "dashboard" 
     if (!open || !current) return;
     clearHighlight();
     onStepChange?.(current);
-    const target = document.querySelector<HTMLElement>(current.selector);
-    if (target) {
-      target.classList.add("tutorial-target-active");
-      target.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-    }
-    return clearHighlight;
+    // Let the matching panel open before resolving its target selector.
+    const timer = window.setTimeout(() => {
+      const target = document.querySelector<HTMLElement>(current.selector);
+      if (target) {
+        target.classList.add("tutorial-target-active");
+        target.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+    }, 90);
+    return () => {
+      window.clearTimeout(timer);
+      clearHighlight();
+    };
   }, [open, current, clearHighlight, onStepChange]);
 
   useEffect(() => {
