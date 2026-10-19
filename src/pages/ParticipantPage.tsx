@@ -199,13 +199,43 @@ function ParticipantEditor({
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
-  const [componentGroupBy, setComponentGroupBy] = useState<"layer" | "category">("layer");
+  const [componentGroupBy, setComponentGroupBy] = useState<"layer" | "category">("category");
   const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
   const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
   const chatDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(260);
   const [rightPanelWidth, setRightPanelWidth] = useState(300);
   const [componentDockHeight, setComponentDockHeight] = useState(285);
+  const handleTutorialStepChange = useCallback((step: { activate?: "brief" | "component-library" | "inspector" | "canvas" | "ai-chat" }) => {
+    switch (step.activate) {
+      case "brief":
+        setLeftPanelOpen(true);
+        break;
+      case "component-library":
+        setChatOpen(false);
+        setComponentLibraryOpen(true);
+        setRightPanelOpen(true);
+        break;
+      case "inspector":
+        setChatOpen(false);
+        setComponentLibraryOpen(false);
+        setRightPanelOpen(true);
+        break;
+      case "canvas":
+        setChatOpen(false);
+        setComponentLibraryOpen(false);
+        setRightPanelOpen(false);
+        break;
+      case "ai-chat":
+        setComponentLibraryOpen(false);
+        setRightPanelOpen(false);
+        setChatOpen(true);
+        break;
+      default:
+        break;
+    }
+  }, []);
+
   const [resizeDrag, setResizeDrag] = useState<{ type: "left" | "right" | "dock"; start: number; initial: number } | null>(null);
   const [submitted, setSubmitted] = useState(saved?.status === "submitted");
   const [historyVersion, setHistoryVersion] = useState(0);
@@ -706,7 +736,7 @@ function ParticipantEditor({
       </header>
 
       <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen || componentLibraryOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen || componentLibraryOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen || componentLibraryOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
-        {leftPanelOpen && <button type="button" className="workspace-popup-scrim" aria-label="Close requirements sidebar" onClick={() => setLeftPanelOpen(false)} />}
+        
         {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
           <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
             <div className="requirements-mark"><FileText size={16} /></div>
@@ -777,11 +807,11 @@ function ParticipantEditor({
             <div className="component-library-controls">
               <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="Try WhatsApp, Netflix, Amazon, VS Code, ChatGPT…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
               <select aria-label="Filter by category" value={componentCategoryFilter} onChange={(event) => setComponentCategoryFilter(event.target.value)}><option value="all">All categories</option>{[...new Set(CATALOG.map((item) => item.category))].sort().map((category) => <option key={category} value={category}>{category}</option>)}</select>
-              <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="layer">Group by system layer</option><option value="category">Group by category</option></select>
+              <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="category">Group by category</option><option value="layer">Group by system layer</option></select>
               <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Default order</option><option value="name">Name A–Z</option><option value="category">Category A–Z</option></select>
             </div>
             {(componentGroupBy === "category"
-              ? [...new Set(CATALOG.map((item) => item.category))].sort().map((category) => ({ title: category.toUpperCase(), description: `Components in the ${category} category`, categories: [category] }))
+              ? [...new Set(CATALOG.map((item) => item.category))].sort((a, b) => a.localeCompare(b)).map((category) => ({ title: category.toUpperCase(), description: ({ "AI / ML": "Models, embeddings, retrieval, and AI runtime", "API": "Public and internal API interfaces", "Cache": "Fast, temporary in-memory data", "Database": "Structured, document, graph, time-series, and vector databases", "Compute": "Application runtimes, workers, and containers", "Edge": "Client entry points and edge delivery", "Messaging": "Queues, events, streams, and message delivery", "Media": "Media processing, encoding, and delivery", "Network": "Private networking and traffic distribution", "Observability": "Logs, metrics, traces, and alerts", "Routing": "Request routing and API entry points", "Security": "Identity, access control, and protection", "Storage": "Files, objects, and durable blobs", "Reliability": "Resilience, recovery, and health", "Platform": "Shared configuration and platform services", "External": "Third-party services and integrations" } as Record<string, string>)[category] ?? `Components for ${category.toLowerCase()}`, categories: [category] }))
               : [
                 { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
                 { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage, media and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration", "Media", "Messaging & Social", "Media & Streaming", "Commerce & Marketplace", "Developer Tools", "AI Assistant Apps", "Search & Discovery", "Collaboration & Productivity", "Maps & Delivery"] },
@@ -1024,7 +1054,7 @@ function ParticipantEditor({
             }}
           />
       </div>
-      <InteractiveTutorial page="workspace" />
+      <InteractiveTutorial page="workspace" onStepChange={handleTutorialStepChange} />
     </div>
   );
 }

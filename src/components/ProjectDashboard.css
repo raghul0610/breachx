@@ -194,3 +194,44 @@
  .project-dashboard .project-actions .primary-btn { width:auto!important; }
 }
 @media(prefers-reduced-motion:reduce) { .project-dashboard .project-card { transition:none!important; } }
+
+
+/* Scroll fix: keep the dashboard header in place and make its content the scroll container.
+   The global .app-shell intentionally clips the viewport for the architecture editor; do not
+   let that rule clip the dashboard's project list. */
+.app-shell.project-dashboard {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-shell.project-dashboard > .project-dashboard-content {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 181, 253, 0.28) transparent;
+}
+
+.app-shell.project-dashboard > .project-dashboard-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-shell.project-dashboard > .project-dashboard-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-shell.project-dashboard > .project-dashboard-content::-webkit-scrollbar-thumb {
+  background: rgba(196, 181, 253, 0.24);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.app-shell.project-dashboard > .project-dashboard-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 181, 253, 0.42);
+  background-clip: padding-box;
+}
