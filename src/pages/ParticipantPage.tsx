@@ -206,6 +206,36 @@ function ParticipantEditor({
   const [leftPanelWidth, setLeftPanelWidth] = useState(260);
   const [rightPanelWidth, setRightPanelWidth] = useState(300);
   const [componentDockHeight, setComponentDockHeight] = useState(285);
+  const handleTutorialStepChange = useCallback((step: { activate?: "brief" | "component-library" | "inspector" | "canvas" | "ai-chat" }) => {
+    switch (step.activate) {
+      case "brief":
+        setLeftPanelOpen(true);
+        break;
+      case "component-library":
+        setChatOpen(false);
+        setComponentLibraryOpen(true);
+        setRightPanelOpen(true);
+        break;
+      case "inspector":
+        setChatOpen(false);
+        setComponentLibraryOpen(false);
+        setRightPanelOpen(true);
+        break;
+      case "canvas":
+        setChatOpen(false);
+        setComponentLibraryOpen(false);
+        setRightPanelOpen(false);
+        break;
+      case "ai-chat":
+        setComponentLibraryOpen(false);
+        setRightPanelOpen(false);
+        setChatOpen(true);
+        break;
+      default:
+        break;
+    }
+  }, []);
+
   const [resizeDrag, setResizeDrag] = useState<{ type: "left" | "right" | "dock"; start: number; initial: number } | null>(null);
   const [submitted, setSubmitted] = useState(saved?.status === "submitted");
   const [historyVersion, setHistoryVersion] = useState(0);
@@ -1024,7 +1054,7 @@ function ParticipantEditor({
             }}
           />
       </div>
-      <InteractiveTutorial page="workspace" />
+      <InteractiveTutorial page="workspace" onStepChange={handleTutorialStepChange} />
     </div>
   );
 }
