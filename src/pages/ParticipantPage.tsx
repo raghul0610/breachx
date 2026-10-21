@@ -20,7 +20,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Save, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
@@ -30,6 +30,7 @@ import { readSubmission, writeSubmission, logActivity, type DesignSubmission } f
 import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
+import { evaluateSystemDesign, type EvaluationResult } from "../lib/evaluationEngine";
 
 
 
@@ -196,6 +197,18 @@ function ParticipantEditor({
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [requestTraceStep, setRequestTraceStep] = useState(-1);
+  const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null);
+  const [evaluationFingerprint, setEvaluationFingerprint] = useState<string | null>(null);
+  const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null);
+  const currentEvaluationFingerprint = useMemo(() => JSON.stringify({
+    name: applicationName,
+    description: applicationDescription,
+    notes,
+    inferred: inferredRequirements ? { summary: inferredRequirements.summary, functional: inferredRequirements.functionalRequirements, nonFunctional: inferredRequirements.nonFunctionalRequirements } : null,
+    nodes: nodes.map((node) => ({ id: node.id, label: node.data.label, typeKey: node.data.typeKey, notes: node.data.notes ?? "" })),
+    edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target })),
+  }), [applicationName, applicationDescription, notes, inferredRequirements, nodes, edges]);
+  const activeEvaluationResult = evaluationFingerprint === currentEvaluationFingerprint ? evaluationResult : null;
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
@@ -291,11 +304,31 @@ function ParticipantEditor({
   }, [requestTraceStep, requestTraceEdges.length]);
 
   const runRequestTrace = useCallback(() => {
-    if (!requestTraceEdges.length) { setRequestTraceStep(-1); return; }
-    setChatOpen(false); setComponentLibraryOpen(false); setRequestTraceStep(0);
-    setSelectedId(requestTraceEdges[0].source); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null);
-    void fitView({ padding: 0.22, duration: 500 });
-  }, [requestTraceEdges, fitView]);
+    const result = evaluateSystemDesign({
+      application: { name: applicationName, description: applicationDescription },
+      nodes: nodes.map((node) => ({ id: node.id, type: node.type, data: node.data })),
+      edges: edges.map((edge) => ({ id: edge.id, source: edge.source, target: edge.target })),
+      notes: [notes, inferredRequirements?.summary, ...(inferredRequirements?.functionalRequirements ?? []), ...(inferredRequirements?.nonFunctionalRequirements ?? [])].filter(Boolean).join("\n"),
+    });
+    setEvaluationResult(result);
+    setEvaluationFingerprint(currentEvaluationFingerprint);
+    setSelectedFindingId(result.findings[0]?.id ?? null);
+    setChatOpen(false);
+    setComponentLibraryOpen(false);
+    if (requestTraceEdges.length) {
+      setRequestTraceStep(0);
+      setSelectedId(requestTraceEdges[0].source);
+      setSelectedEdgeId(null);
+      setSelectedCatalogTypeKey(null);
+      void fitView({ padding: 0.22, duration: 500 });
+    } else {
+      setRequestTraceStep(-1);
+      const firstProblemNodeId = result.findings[0]?.nodeIds?.[0];
+      setSelectedId(firstProblemNodeId ?? null);
+      setSelectedEdgeId(null);
+      if (firstProblemNodeId) void fitView({ nodes: [{ id: firstProblemNodeId }], padding: 0.4, duration: 500 });
+    }
+  }, [applicationName, applicationDescription, notes, inferredRequirements, nodes, edges, requestTraceEdges, fitView, currentEvaluationFingerprint]);
 
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { edgesRef.current = edges; }, [edges]);
@@ -383,22 +416,25 @@ function ParticipantEditor({
     const accent = getCategoryAccent(String(source?.data?.category ?? ""));
     const traceIndex = requestTraceEdges.findIndex((traceEdge) => traceEdge.id === edge.id);
     const isTraceActive = traceIndex === requestTraceStep;
-    const isTraceComplete = requestTraceStep > traceIndex && traceIndex >= 0;
+    const isTraceComplete = requestTraceStep > 0 && traceIndex >= 0 && traceIndex < requestTraceStep;
+    const hasFinding = Boolean(activeEvaluationResult?.findings.some((finding) => finding.edgeIds?.includes(edge.id ?? "")));
     return {
       ...edge, type: "curvedArchitectureEdge", animated: true,
-      className: isTraceActive ? "request-trace-edge is-active" : isTraceComplete ? "request-trace-edge is-complete" : "request-trace-edge",
-      style: { ...edge.style, stroke: accent, strokeWidth: isTraceActive ? 4 : isTraceComplete ? 3 : 2.1, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.28 : 1 },
-      markerEnd: { type: MarkerType.ArrowClosed, color: accent, width: 22, height: 22 },
+      className: ["request-trace-edge", isTraceActive ? "is-active" : "", isTraceComplete ? "is-complete" : "", hasFinding ? "architecture-edge-issue" : ""].filter(Boolean).join(" "),
+      style: { ...edge.style, stroke: hasFinding ? "#fb7185" : accent, strokeWidth: hasFinding ? 3.4 : isTraceActive ? 4 : isTraceComplete ? 3 : 2.1, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.28 : 1 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: hasFinding ? "#fb7185" : accent, width: 22, height: 22 },
       label: typeof edge.label === "string" ? edge.label : "",
-      labelStyle: { ...edge.labelStyle, fill: accent }, interactionWidth: 20,
+      labelStyle: { ...edge.labelStyle, fill: hasFinding ? "#fda4af" : accent }, interactionWidth: 20,
     };
-  }), [edges, nodes, requestTraceEdges, requestTraceStep]);
+  }), [edges, nodes, requestTraceEdges, requestTraceStep, activeEvaluationResult]);
   const tracedNodes = useMemo(() => nodes.map((node) => {
     const activeEdge = requestTraceEdges[requestTraceStep];
     const active = requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length && (activeEdge?.source === node.id || activeEdge?.target === node.id);
     const complete = requestTraceStep > 0 && requestTraceEdges.slice(0, Math.min(requestTraceStep, requestTraceEdges.length)).some((edge) => edge.source === node.id || edge.target === node.id);
-    return { ...node, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : ""].filter(Boolean).join(" ") };
-  }), [nodes, requestTraceEdges, requestTraceStep]);
+    const nodeFindings = activeEvaluationResult?.findings.filter((finding) => finding.nodeIds?.includes(node.id)) ?? [];
+    const highestSeverity = (["critical", "high", "medium", "low"] as const).find((severity) => nodeFindings.some((finding) => finding.severity === severity));
+    return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
+  }), [nodes, requestTraceEdges, requestTraceStep, activeEvaluationResult]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -855,7 +891,7 @@ function ParticipantEditor({
               <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
-            <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!requestTraceEdges.length}>
+            <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!nodes.length}>
               {requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? <span className="request-trace-spinner" aria-hidden="true" /> : <Sparkles size={14} />}
               {requestTraceStep >= requestTraceEdges.length && requestTraceEdges.length > 0 ? "REPLAY FLOW" : requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? "TRACING FLOW…" : "RUN REQUEST"}
               <span aria-hidden="true">↗</span>
@@ -867,6 +903,28 @@ function ParticipantEditor({
             <div><strong>{requestTraceStep >= requestTraceEdges.length ? "FLOW COMPLETE" : "DATA FLOW · STEP " + (requestTraceStep + 1) + " OF " + requestTraceEdges.length}</strong><span>{requestTraceStep >= requestTraceEdges.length ? "Followed every connection in your architecture." : (() => { const edge = requestTraceEdges[requestTraceStep]; const from = nodes.find((node) => node.id === edge?.source)?.data.label ?? edge?.source; const to = nodes.find((node) => node.id === edge?.target)?.data.label ?? edge?.target; return from + " → " + to; })()}</span></div>
             {requestTraceStep >= requestTraceEdges.length && <button type="button" onClick={() => setRequestTraceStep(-1)} aria-label="Dismiss flow result"><X size={14} /></button>}
           </div>}
+          {activeEvaluationResult && <section className="architecture-evaluation-panel" aria-label="Architecture judge results" aria-live="polite">
+            <div className="architecture-evaluation-header">
+              <div className="architecture-evaluation-status-icon">{activeEvaluationResult.findings.some((finding) => finding.severity === "critical") ? <ShieldAlert size={17} /> : activeEvaluationResult.findings.some((finding) => finding.severity === "high") ? <AlertTriangle size={17} /> : <CheckCircle2 size={17} />}</div>
+              <div className="architecture-evaluation-heading"><strong>ARCHITECTURE JUDGE</strong><span>{activeEvaluationResult.findings.length ? activeEvaluationResult.findings.length + " finding(s) · score " + activeEvaluationResult.score + "/100" : "No material rule-based findings · " + activeEvaluationResult.score + "/100"}</span></div>
+              <button type="button" onClick={() => { setEvaluationResult(null); setEvaluationFingerprint(null); setSelectedFindingId(null); }} aria-label="Dismiss evaluation results"><X size={14} /></button>
+            </div>
+            {activeEvaluationResult.findings.length === 0
+              ? <p className="architecture-evaluation-clean">No material issues were detected by the local rule checks. This is not a guarantee of production safety; verify deployment settings and implementation details.</p>
+              : <div className="architecture-evaluation-findings">
+                {activeEvaluationResult.findings.slice(0, 5).map((finding) => <button type="button" key={finding.id} className={"architecture-evaluation-finding severity-" + finding.severity + (selectedFindingId === finding.id ? " is-selected" : "")} onClick={() => {
+                  setSelectedFindingId(finding.id);
+                  const firstNodeId = finding.nodeIds?.[0];
+                  if (firstNodeId) { setSelectedId(firstNodeId); setSelectedEdgeId(null); void fitView({ nodes: [{ id: firstNodeId }], padding: 0.38, duration: 450 }); }
+                  const firstEdgeId = finding.edgeIds?.[0];
+                  if (firstEdgeId) { setSelectedEdgeId(firstEdgeId); setSelectedId(null); }
+                }}>
+                  <span className="architecture-finding-severity"><AlertTriangle size={13} />{finding.severity.toUpperCase()}</span>
+                  <span className="architecture-finding-copy"><strong>{finding.title}</strong><span>{finding.description}</span><em>FIX: {finding.recommendation}</em></span>
+                </button>)}
+                {activeEvaluationResult.findings.length > 5 && <p className="architecture-evaluation-more">Showing 5 of {activeEvaluationResult.findings.length} findings. Start with critical and high severity issues.</p>}
+              </div>}
+          </section>}
           <ReactFlow
             nodes={tracedNodes}
             edges={renderedEdges}

@@ -1,5 +1,6 @@
 import { CATALOG } from "../src/lib/catalog.js";
 import { validateArchitectureGraph, type ArchitectureComponent, type ArchitectureConnection, type RequirementCoverage } from "../src/lib/architectureValidation.js";
+import { evaluateSystemDesign, type EvaluationResult } from "../src/lib/evaluationEngine.js";
 
 declare const process: { env: Record<string, string | undefined> };
 const send = (res: any, status: number, body: unknown) =>
@@ -124,13 +125,14 @@ export default async function handler(req: any, res: any) {
   const catalog = CATALOG.map((item) => ({ typeKey: item.typeKey, label: item.label, category: item.category }));
   const editing = typeof instruction === "string" && instruction.trim().length > 0;
   const system = editing
-    ? `You are ANCHON's architecture editing agent. Return the complete resulting architecture graph, not a patch. Apply the user instruction to the supplied current architecture. Preserve every component and connection not explicitly changed; create, update, or delete only what the instruction requests. Keep IDs stable for unchanged components. Requirements are context, not permission to replace unrelated parts. If ambiguous, make the smallest conservative change and state assumptions.\n\n`
-    : `You are ANCHON's senior system architect. Design the smallest practical architecture that satisfies the stated requirements. Do not generate a component inventory: design a coherent directed workflow first, then add only justified supporting infrastructure.\n\n`;
+    ? `You are ANCHON's architecture editing agent and incident-resolution architect. Treat the user instruction as a potential report of a real architecture problem: identify its likely cause, preserve unrelated design choices, and make the smallest change that removes the cause. Return the complete resulting architecture graph, not a patch. Apply the user instruction to the supplied current architecture. Preserve every component and connection not explicitly changed; create, update, or delete only what the instruction requests. Keep IDs stable for unchanged components. Requirements are context, not permission to replace unrelated parts. If ambiguous, make the smallest conservative change and state assumptions.\n\n`
+    : `You are ANCHON's senior system architect and incident-resolution architect. Design the smallest practical architecture that satisfies the stated requirements and directly addresses any failure/problem described by the user. Do not generate a component inventory: design a coherent directed workflow first, then add only justified supporting infrastructure.\n\n`;
   const rules = `ARCHITECTURE RULES:
 - Use only catalog typeKey values from this catalog: ${JSON.stringify(catalog)}
 - Every component's notes must state its specific responsibility and why it is needed. Avoid overlapping services unless the distinct responsibilities and trade-off are explicit.
 - Every connection must have source, target, a concise label, communicationType (for example synchronous HTTPS/API, tool invocation, async event, database read/write), and purpose. Connect only components that actually interact.
 - Build the primary business request path end-to-end before adding secondary infrastructure.
+- Never connect an untrusted client directly to a private database or privileged data store. Route data access through a trusted backend/API boundary with server-side authentication and authorization; browser-to-database access is acceptable only when explicitly designed around a safe public client, strict row-level security, and least-privilege policies.
 - Model authorization and approval gates for sensitive actions explicitly when requirements need them. Do not rely on the LLM alone to enforce security or transaction safety.
 - State assumptions rather than inventing traffic volumes, availability targets, vendors, or operational requirements.
 - requirementCoverage must map each key requirement to real component IDs and explain how they satisfy it. Do not reference nonexistent IDs.
@@ -140,6 +142,7 @@ export default async function handler(req: any, res: any) {
 
   let correctionFeedback = "";
   let last: ReturnType<typeof normalizeArchitecture> | null = null;
+  let lastEvaluation: EvaluationResult | null = null;
   try {
     for (let attempt = 0; attempt <= MAX_CORRECTION_ATTEMPTS; attempt += 1) {
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -176,18 +179,29 @@ export default async function handler(req: any, res: any) {
       if (typeof raw !== "string") return send(res, 502, { error: "No architecture was returned." });
       const normalized = normalizeArchitecture(JSON.parse(raw), name);
       last = normalized;
-      if (normalized.validation.passed) return send(res, 200, normalized);
+      lastEvaluation = evaluateSystemDesign({
+        application: { name: normalized.architectureName, description: requirements.trim() + "\n\nUser-reported issue or requested change: " + (editing ? instruction.trim() : "No separate issue supplied.") },
+        nodes: normalized.components.map((component) => ({ id: component.id, type: "blueprintNode", data: { label: component.label, typeKey: component.typeKey, category: component.category, notes: component.notes } })),
+        edges: normalized.connections.map((edge, index) => ({ id: "generated-edge-" + index, source: edge.source, target: edge.target })),
+        notes: requirements.trim() + "\n" + (editing ? instruction.trim() : ""),
+      });
+      const blockingFindings = lastEvaluation.findings.filter((finding) => finding.severity === "critical" || finding.severity === "high");
+      if (normalized.validation.passed && blockingFindings.length === 0) {
+        return send(res, 200, { ...normalized, evaluation: { passed: true, score: lastEvaluation.score, findings: lastEvaluation.findings, summary: lastEvaluation.summary } });
+      }
       correctionFeedback = [
-        "The previous graph failed deterministic validation. Correct these errors without adding unnecessary components.",
-        ...normalized.validation.errors.map((message) => `ERROR: ${message}`),
-        ...normalized.validation.warnings.map((message) => `WARNING: ${message}`),
-        "Return a complete corrected graph. Keep requirement coverage IDs synchronized with component IDs.",
+        "The previous architecture did not pass the architecture judge. Correct the graph before returning it. Do not dismiss a finding by changing its wording; fix the underlying graph while preserving the user intended behavior.",
+        ...normalized.validation.errors.map((message) => `STRUCTURAL ERROR: ${message}`),
+        ...normalized.validation.warnings.map((message) => `STRUCTURAL WARNING: ${message}`),
+        ...blockingFindings.map((finding) => `JUDGE ${finding.severity.toUpperCase()}: ${finding.title}. ${finding.description} Recommended fix: ${finding.recommendation}`),
+        "Return a complete corrected graph. Keep requirement coverage IDs synchronized with component IDs. Do not introduce a direct client-to-private-database path.",
       ].join("\n");
     }
     if (last) {
       return send(res, 502, {
         error: "The generated architecture did not pass validation after a correction attempt. No graph was returned as validated.",
         validation: last.validation,
+        evaluation: lastEvaluation ? { passed: false, score: lastEvaluation.score, findings: lastEvaluation.findings, summary: lastEvaluation.summary } : null,
       });
     }
     return send(res, 502, { error: "Could not generate a valid architecture. Please try again." });

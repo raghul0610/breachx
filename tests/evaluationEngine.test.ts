@@ -81,6 +81,36 @@ describe('Evaluation Engine Graph Analysis and Deterministc Rules', () => {
     expect(result.findings.some(f => f.id === 'SEC_PUBLIC_DATA_STORE')).toBe(false);
   });
 
+  it('flags a client connected directly to a database as a critical security issue', () => {
+    const input: EvaluationInput = {
+      application: { name: 'Messaging app', description: 'A user-facing app that stores private messages and account data.' },
+      nodes: [
+        { id: 'client', data: { label: 'Client App', typeKey: 'client' } },
+        { id: 'db', data: { label: 'Private Database', typeKey: 'database' } },
+        { id: 'cdn', data: { label: 'CDN', typeKey: 'cdn' } },
+      ],
+      edges: [{ id: 'client-db', source: 'client', target: 'db' }, { id: 'client-cdn', source: 'client', target: 'cdn' }],
+    };
+    const result = evaluateSystemDesign(input);
+    const finding = result.findings.find((item) => item.id === 'SEC_PUBLIC_DATA_STORE');
+    expect(finding?.severity).toBe('critical');
+    expect(finding?.nodeIds).toEqual(expect.arrayContaining(['client', 'db']));
+    expect(finding?.edgeIds).toContain('client-db');
+  });
+
+  it('does not flag a client routed through an application boundary to the database', () => {
+    const input: EvaluationInput = {
+      application: { name: 'CRUD app', description: 'A basic CRUD application with private persistent data.' },
+      nodes: [
+        { id: 'client', data: { label: 'Client App', typeKey: 'client' } },
+        { id: 'api', data: { label: 'Application API', typeKey: 'api_server' } },
+        { id: 'db', data: { label: 'Private Database', typeKey: 'database' } },
+      ],
+      edges: [{ id: 'client-api', source: 'client', target: 'api' }, { id: 'api-db', source: 'api', target: 'db' }],
+    };
+    const result = evaluateSystemDesign(input);
+    expect(result.findings.some((item) => item.id === 'SEC_PUBLIC_DATA_STORE')).toBe(false);
+  });
   it('handles ChatGPT-like application', () => {
     const input: EvaluationInput = {
       application: { name: 'ChatBot', description: 'ChatGPT clone' },
