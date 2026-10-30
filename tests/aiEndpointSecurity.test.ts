@@ -703,7 +703,7 @@ describe("AI endpoint security", () => {
       await generateHandler(request(validGenerator) as never, res);
       expect(state.statusCode).toBe(200);
       const [, init] = providerCalls()[0] as [unknown, RequestInit];
-      expect(JSON.parse(String(init.body)).model).toBe("openai/gpt-5-mini");
+      expect(JSON.parse(String(init.body)).model).toBe("openrouter/free");
     });
 
     it("evaluates an architecture for an authenticated user", async () => {
