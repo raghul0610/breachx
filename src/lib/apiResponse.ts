@@ -7,7 +7,13 @@
  */
 export type ApiResponsePayload = {
   error?: unknown;
-  validation?: { errors?: unknown[]; warnings?: unknown[] };
+  validation?: { passed?: boolean; errors?: unknown[]; warnings?: unknown[] };
+  evaluation?: {
+    passed?: boolean;
+    score?: number;
+    summary?: string;
+    findings?: Array<{ severity: string; title: string; recommendation: string }>;
+  };
   [key: string]: unknown;
 };
 
