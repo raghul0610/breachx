@@ -5,7 +5,13 @@
  * handler runs. Treat those as transport failures instead of leaking a JSON
  * SyntaxError such as "Unexpected token 'A'".
  */
-export async function readApiResponse(response: Response): Promise<Record<string, unknown>> {
+export type ApiResponsePayload = {
+  error?: unknown;
+  validation?: { errors?: unknown[]; warnings?: unknown[] };
+  [key: string]: unknown;
+};
+
+export async function readApiResponse(response: Response): Promise<ApiResponsePayload> {
   let raw: string;
 
   try {
@@ -31,5 +37,5 @@ export async function readApiResponse(response: Response): Promise<Record<string
     throw new Error("The architecture service returned an invalid response. Please try again.");
   }
 
-  return payload as Record<string, unknown>;
+  return payload as ApiResponsePayload;
 }
