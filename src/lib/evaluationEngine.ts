@@ -1,5 +1,5 @@
-import { ARCHITECTURE_PRINCIPLES, SYSTEM_DESIGN_FUNDAMENTALS } from "./architecturePrinciples";
-import { COMPONENT_CAPABILITIES } from "./catalog";
+import { ARCHITECTURE_PRINCIPLES, SYSTEM_DESIGN_FUNDAMENTALS } from "./architecturePrinciples.js";
+import { COMPONENT_CAPABILITIES } from "./catalog.js";
 
 export type EvaluationNode = { id: string; type?: string; data?: { label?: string; typeKey?: string; category?: string; notes?: string } };
 export type EvaluationEdge = { id?: string; source: string; target: string };
