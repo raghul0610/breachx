@@ -688,10 +688,22 @@ describe("AI endpoint security", () => {
 
       expect(state.statusCode).toBe(200);
       expect(state.body).toMatchObject({ architectureName: "URL shortener" });
+      const [, init] = providerCalls()[0] as [unknown, RequestInit];
+      expect(JSON.parse(String(init.body)).model).toBe("openai/gpt-5-mini");
       const payload = state.body as { components: unknown[]; connections: unknown[] };
       expect(payload.components).toHaveLength(3);
       expect(payload.connections).toHaveLength(2);
       expect(providerCalls()).toHaveLength(1);
+    });
+
+    it("replaces the free-model pool with the stable generator default", async () => {
+      process.env.OPENROUTER_MODEL = "openrouter/free";
+      mocks.providerResponse = () => providerContent(goodArchitecture);
+      const { res, state } = response();
+      await generateHandler(request(validGenerator) as never, res);
+      expect(state.statusCode).toBe(200);
+      const [, init] = providerCalls()[0] as [unknown, RequestInit];
+      expect(JSON.parse(String(init.body)).model).toBe("openai/gpt-5-mini");
     });
 
     it("evaluates an architecture for an authenticated user", async () => {
