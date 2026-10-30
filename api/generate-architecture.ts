@@ -8,6 +8,17 @@ const send = (res: any, status: number, body: unknown) =>
   res.status(status).setHeader("Content-Type", "application/json").json(body);
 
 const MAX_CORRECTION_ATTEMPTS = 1;
+const DEFAULT_OPENROUTER_MODEL = "openai/gpt-5-mini";
+const PROVIDER_TOTAL_BUDGET_MS = AI_REQUEST_LIMITS.providerTimeoutMs;
+const FIRST_ATTEMPT_BUDGET_MS = 12_000;
+const CORRECTION_ATTEMPT_BUDGET_MS = 6_000;
+function resolveProviderModel(): string {
+  const configured = process.env.OPENROUTER_MODEL?.trim();
+  return !configured || configured === "openrouter/free" ? DEFAULT_OPENROUTER_MODEL : configured;
+}
+function logProviderEvent(event: Record<string, string | number | boolean | null>) {
+  console.info(JSON.stringify({ service: "anchon-ai-generator", ...event }));
+}
 
 const schema = {
   type: "object",
@@ -147,9 +158,20 @@ export default async function handler(req: any, res: any) {
   let correctionFeedback = "";
   let last: ReturnType<typeof normalizeArchitecture> | null = null;
   let lastEvaluation: EvaluationResult | null = null;
+  const model = resolveProviderModel();
+  const providerDeadline = Date.now() + PROVIDER_TOTAL_BUDGET_MS;
   try {
     for (let attempt = 0; attempt <= MAX_CORRECTION_ATTEMPTS; attempt += 1) {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      const remainingBudgetMs = providerDeadline - Date.now();
+      if (remainingBudgetMs <= 0) {
+        logProviderEvent({ event: "deadline_exhausted", model, attempt, elapsedMs: PROVIDER_TOTAL_BUDGET_MS, timedOut: true });
+        break;
+      }
+      const attemptBudgetMs = Math.min(attempt === 0 ? FIRST_ATTEMPT_BUDGET_MS : CORRECTION_ATTEMPT_BUDGET_MS, remainingBudgetMs);
+      const attemptStartedAt = Date.now();
+      let response: Response;
+      try {
+        response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${key}`,
@@ -158,7 +180,7 @@ export default async function handler(req: any, res: any) {
           "X-Title": "ANCHON Architecture Generator",
         },
         body: JSON.stringify({
-          model: process.env.OPENROUTER_MODEL ?? "openrouter/free",
+          model,
           temperature: attempt === 0 ? 0.15 : 0.05,
           messages: [
             { role: "system", content: system + rules },
@@ -176,8 +198,17 @@ export default async function handler(req: any, res: any) {
           provider: { require_parameters: true },
           response_format: { type: "json_schema", json_schema: { name: "architecture", strict: true, schema } },
         }),
-        signal: AbortSignal.timeout(AI_REQUEST_LIMITS.providerTimeoutMs),
-      });
+        signal: AbortSignal.timeout(attemptBudgetMs),
+        });
+      } catch (error) {
+        const elapsedMs = Date.now() - attemptStartedAt;
+        const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
+        logProviderEvent({ event: "request_error", model, attempt, elapsedMs, timedOut, errorType: error instanceof Error ? error.name : "UnknownError", remainingBudgetMs: Math.max(0, providerDeadline - Date.now()) });
+        throw error;
+      }
+      const latencyMs = Date.now() - attemptStartedAt;
+      const requestId = response.headers.get("x-request-id") ?? response.headers.get("x-openrouter-request-id");
+      logProviderEvent({ event: "response", model, attempt, status: response.status, latencyMs, timedOut: false, requestId });
       if (!response.ok) return send(res, 502, { error: "The architecture provider failed. Try again shortly." });
       const payload = await response.json();
       const raw = payload?.choices?.[0]?.message?.content;
@@ -212,6 +243,7 @@ export default async function handler(req: any, res: any) {
     return send(res, 502, { error: "Could not generate a valid architecture. Please try again." });
   } catch (error) {
     const failure = describeProviderFailure(error);
+    logProviderEvent({ event: "generation_failed", model, status: failure.status, timedOut: failure.status === 504, errorType: error instanceof Error ? error.name : "UnknownError" });
     return send(res, failure.status, { error: failure.message });
   }
 }
