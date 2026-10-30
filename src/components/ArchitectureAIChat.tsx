@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Bot, Check, LoaderCircle, MessageSquare, Send, Sparkles, WandSparkles } from "lucide-react";
 import { MarkerType, Position, type Edge, type Node } from "@xyflow/react";
 import { supabase } from "../lib/supabase";
+import { readApiResponse } from "../lib/apiResponse";
 import { layoutArchitectureGraph } from "../lib/architectureLayout";
 import type { BlueprintNodeData } from "./BlueprintNode";
 
@@ -83,7 +84,7 @@ export function ArchitectureAIChat({
           },
         }),
       });
-      const payload = await response.json();
+      const payload = await readApiResponse(response);
       if (!response.ok) throw new Error([payload.error, ...(payload.validation?.errors ?? []), ...(payload.validation?.warnings ?? [])].filter(Boolean).join(" | ") || "The architecture assistant could not complete that request.");
       const result = payload as GeneratedArchitecture;
       const oldById = new Map(nodes.map((node) => [node.id, node]));
