@@ -1,4 +1,7 @@
+import { AI_REQUEST_LIMITS, authorizeAndRateLimit, describeProviderFailure, validateEvaluationPayload } from "./_shared/security.js";
 declare const process: { env: Record<string, string | undefined> };
+
+export const config = { maxDuration: 30 };
 
 const schema = {
   type: "object",
@@ -13,15 +16,18 @@ const schema = {
 } as const;
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  const authorized = await authorizeAndRateLimit(req, res, AI_REQUEST_LIMITS.evaluationBodyBytes);
+  if (!authorized) return;
+  const body = req.body as Record<string, unknown>;
+  const validationError = validateEvaluationPayload(body);
+  if (validationError) return res.status(400).json({ error: validationError });
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return res.status(503).json({ error: "OPENROUTER_API_KEY is not configured on the server." });
 
-  const body = req.body ?? {};
-  const nodes = Array.isArray(body.nodes) ? body.nodes.slice(0, 100) : [];
-  const edges = Array.isArray(body.edges) ? body.edges.slice(0, 200) : [];
-  const application = body.application && typeof body.application === "object" ? body.application : {};
-  const notes = typeof body.notes === "string" ? body.notes.slice(0, 8000) : "";
+  const nodes = body.nodes as Array<Record<string, unknown>>;
+  const edges = body.edges as Array<Record<string, unknown>>;
+  const application = body.application as { name: string; description: string };
+  const notes = typeof body.notes === "string" ? body.notes : "";
   if (!nodes.length || typeof application.name !== "string") {
     return res.status(400).json({ error: "Provide the current architecture and application name." });
   }
@@ -49,10 +55,10 @@ Base every inference on the supplied application context, component nodes, direc
         provider: { require_parameters: true },
         response_format: { type: "json_schema", json_schema: { name: "architecture_requirements", strict: true, schema } },
       }),
+      signal: AbortSignal.timeout(AI_REQUEST_LIMITS.providerTimeoutMs),
     });
     if (!response.ok) {
-      const detail = await response.text();
-      return res.status(502).json({ error: "Requirements analysis provider failed.", details: detail.slice(0, 500) });
+      return res.status(502).json({ error: "Requirements analysis provider failed. Try again shortly." });
     }
     const payload = await response.json();
     const content = payload?.choices?.[0]?.message?.content;
@@ -67,7 +73,8 @@ Base every inference on the supplied application context, component nodes, direc
       nonFunctionalRequirements: cleanList(parsed.nonFunctionalRequirements, 8),
       assumptions: cleanList(parsed.assumptions, 5),
     });
-  } catch {
-    return res.status(502).json({ error: "Could not analyze requirements for this architecture." });
+  } catch (error) {
+    const failure = describeProviderFailure(error);
+    return res.status(failure.status).json({ error: failure.message });
   }
 }

@@ -22,6 +22,7 @@ import {
 } from "@xyflow/react";
 import { ArrowLeft, FileText, Layers, Save, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
+import { supabase } from "../lib/supabase";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
 import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
@@ -563,9 +564,14 @@ function ParticipantEditor({
     setInferringRequirements(true);
     setRequirementsError("");
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Sign in again to infer architecture requirements.");
       const response = await fetch("/api/infer-requirements", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           application: { name: applicationName, description: applicationDescription },
           nodes: nodes.map((node) => ({
