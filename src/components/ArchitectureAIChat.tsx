@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Bot, Check, LoaderCircle, MessageSquare, Send, Sparkles, WandSparkles } from "lucide-react";
 import { MarkerType, Position, type Edge, type Node } from "@xyflow/react";
+import { supabase } from "../lib/supabase";
 import { layoutArchitectureGraph } from "../lib/architectureLayout";
 import type { BlueprintNodeData } from "./BlueprintNode";
 
@@ -53,9 +54,14 @@ export function ArchitectureAIChat({
     setMessages((current) => [...current, { role: "user", content: instruction }]);
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Sign in again to use Ask ANCHON.");
       const response = await fetch("/api/generate-architecture", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           name,
           requirements: requirements.trim().length >= 20 ? requirements : `Architecture project: ${name}. User requirements: ${requirements || "Not provided yet."}. Preserve the current design unless the user explicitly requests a change.`,

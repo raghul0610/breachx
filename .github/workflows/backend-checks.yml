@@ -5,6 +5,10 @@ on:
     branches:
       - backend
     paths:
+      - "api/**"
+      - "tests/**"
+      - "types/**"
+      - ".env.example"
       - "src/**"
       - "supabase/**"
       - "package.json"
@@ -14,6 +18,10 @@ on:
       - ".github/workflows/backend-checks.yml"
   pull_request:
     paths:
+      - "api/**"
+      - "tests/**"
+      - "types/**"
+      - ".env.example"
       - "src/**"
       - "supabase/**"
       - "package.json"
@@ -74,9 +82,17 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261010070000_create_projects.sql
       - name: Apply admin audit log access hardening migration
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261010080000_harden_admin_audit_log_access.sql
+      - name: Create GitHub connection table
+        run: |
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261016090000_github_connections.sql
+          psql -v ON_ERROR_STOP=1 -c "grant all on table public.github_connections to anon, authenticated"
+      - name: Harden GitHub connection access
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019090000_harden_github_connections.sql
       - name: Assert projects schema
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/projects_migration_assertions.sql
       - name: Assert admin audit logs are server-only
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/admin_audit_log_access.sql
+      - name: Assert GitHub connection metadata is owner-readable and server-writable
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/github_connections_access.sql
       - name: Test owner isolation and submitted-project editing
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/projects_rls_behavior.sql
