@@ -8,13 +8,13 @@ const send = (res: any, status: number, body: unknown) =>
   res.status(status).setHeader("Content-Type", "application/json").json(body);
 
 const MAX_CORRECTION_ATTEMPTS = 1;
-const DEFAULT_OPENROUTER_MODEL = "openai/gpt-5-mini";
+const DEFAULT_OPENROUTER_MODEL = "openrouter/free";
 const PROVIDER_TOTAL_BUDGET_MS = AI_REQUEST_LIMITS.providerTimeoutMs;
 const FIRST_ATTEMPT_BUDGET_MS = 10_000;
 const CORRECTION_ATTEMPT_BUDGET_MS = 6_000;
 function resolveProviderModel(): string {
   const configured = process.env.OPENROUTER_MODEL?.trim();
-  return !configured || configured === "openrouter/free" ? DEFAULT_OPENROUTER_MODEL : configured;
+  return configured || DEFAULT_OPENROUTER_MODEL;
 }
 function logProviderEvent(event: Record<string, string | number | boolean | null>) {
   console.info(JSON.stringify({ service: "anchon-ai-generator", ...event }));
