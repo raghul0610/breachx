@@ -24,7 +24,7 @@ The verifier accepts existing public Supabase `VITE_*` aliases for migration com
 - Evaluation payloads have bounded node/edge counts, unique node IDs, valid edge endpoints, and field-size limits.
 - Generator/edit requests validate application name, requirements, instruction size, and graph collection bounds.
 - Upstash uses an atomic Redis Lua script (`INCR` + `EXPIRE`) so limits are shared across serverless instances. HTTP 429 includes `Retry-After`.
-- Supabase Auth and Redis calls have bounded timeouts. Architecture generation has an 18-second total OpenRouter budget within a 30-second Vercel function limit: the initial attempt is capped at 12 seconds and one correction attempt at 6 seconds, sharing the same deadline.
+- Supabase Auth and Redis calls have bounded timeouts. Architecture generation has an 16-second total OpenRouter budget within a 30-second Vercel function limit: the initial attempt is capped at 10 seconds and one correction attempt at 6 seconds, sharing the same deadline.
 - Generator logs are structured JSON and record model, attempt, provider HTTP status, latency, timeout classification, and safe request ID metadata. They never include API keys, bearer tokens, prompts, requirements, user IDs, or provider response bodies.
 - API routes, tests, and ambient server types are included in TypeScript build checking and CI.
 
