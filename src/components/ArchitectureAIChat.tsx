@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Bot, Check, LoaderCircle, MessageSquare, Send, Sparkles, WandSparkles } from "lucide-react";
 import { MarkerType, Position, type Edge, type Node } from "@xyflow/react";
 import { supabase } from "../lib/supabase";
+import { readApiResponse } from "../lib/apiResponse";
 import { layoutArchitectureGraph } from "../lib/architectureLayout";
 import type { BlueprintNodeData } from "./BlueprintNode";
 
@@ -84,7 +85,7 @@ export function ArchitectureAIChat({
           },
         }),
       });
-      const payload = await response.json();
+      const payload = await readApiResponse(response);
       const judgeBlockers = (payload.evaluation?.findings ?? []).filter((finding: { severity: string }) => finding.severity === "critical" || finding.severity === "high");
       if (!response.ok || payload.validation?.passed === false || payload.evaluation?.passed === false) {
         const blockerMessages = judgeBlockers.map((finding: { severity: string; title: string; recommendation: string }) => finding.severity.toUpperCase() + ": " + finding.title + ". Fix: " + finding.recommendation);
