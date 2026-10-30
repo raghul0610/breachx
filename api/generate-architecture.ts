@@ -207,7 +207,7 @@ export default async function handler(req: any, res: any) {
         throw error;
       }
       const latencyMs = Date.now() - attemptStartedAt;
-      const requestId = response.headers.get("x-request-id") ?? response.headers.get("x-openrouter-request-id");
+      const requestId = response.headers?.get?.("x-request-id") ?? response.headers?.get?.("x-openrouter-request-id") ?? null;
       logProviderEvent({ event: "response", model, attempt, status: response.status, latencyMs, timedOut: false, requestId });
       if (!response.ok) return send(res, 502, { error: "The architecture provider failed. Try again shortly." });
       const payload = await response.json();
