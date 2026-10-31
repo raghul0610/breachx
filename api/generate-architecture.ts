@@ -10,9 +10,10 @@ const send = (res: any, status: number, body: unknown) =>
 // One validation correction plus one bounded retry for a timeout while reading a provider response body.
 const MAX_CORRECTION_ATTEMPTS = 2;
 const DEFAULT_OPENROUTER_MODEL = "openrouter/free";
-const PROVIDER_TOTAL_BUDGET_MS = AI_REQUEST_LIMITS.providerTimeoutMs;
+export const GENERATOR_PROVIDER_TIMEOUT_MS = 120_000; // 2 minutes for the free-model generation path.
+const PROVIDER_TOTAL_BUDGET_MS = GENERATOR_PROVIDER_TIMEOUT_MS;
 // Leave time for authentication and response serialization inside the Vercel window.
-const FIRST_ATTEMPT_BUDGET_MS = 30_000;
+const FIRST_ATTEMPT_BUDGET_MS = 90_000;
 const CORRECTION_ATTEMPT_BUDGET_MS = 15_000;
 function resolveProviderModel(): string {
   const configured = process.env.OPENROUTER_MODEL?.trim();
@@ -197,7 +198,7 @@ function normalizeArchitecture(parsed: any, name: string) {
   };
 }
 
-export const config = { maxDuration: 60 };
+export const config = { maxDuration: 150 };
 
 export default async function handler(req: any, res: any) {
   const authorized = await authorizeAndRateLimit(req, res, AI_REQUEST_LIMITS.generatorBodyBytes);
