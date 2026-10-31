@@ -7,7 +7,8 @@ declare const process: { env: Record<string, string | undefined> };
 const send = (res: any, status: number, body: unknown) =>
   res.status(status).setHeader("Content-Type", "application/json").json(body);
 
-const MAX_CORRECTION_ATTEMPTS = 1;
+// One validation correction plus one bounded retry for a timeout while reading a provider response body.
+const MAX_CORRECTION_ATTEMPTS = 2;
 const DEFAULT_OPENROUTER_MODEL = "openrouter/free";
 const PROVIDER_TOTAL_BUDGET_MS = AI_REQUEST_LIMITS.providerTimeoutMs;
 // Leave time for authentication and response serialization inside the Vercel window.
@@ -217,7 +218,42 @@ export default async function handler(req: any, res: any) {
       const requestId = response.headers?.get?.("x-request-id") ?? response.headers?.get?.("x-openrouter-request-id") ?? null;
       logProviderEvent({ event: "response", model, attempt, status: response.status, latencyMs, timedOut: false, requestId });
       if (!response.ok) return send(res, 502, { error: "The architecture provider failed. Try again shortly." });
-      const payload = await response.json();
+
+      // fetch() resolves when response headers arrive. The body can still stall;
+      // consume it inside the same bounded retry policy as the request itself.
+      let payload: any;
+      try {
+        payload = await response.json();
+        logProviderEvent({
+          event: "response_body_received",
+          model,
+          attempt,
+          elapsedMs: Date.now() - attemptStartedAt,
+          timedOut: false,
+        });
+      } catch (error) {
+        const elapsedMs = Date.now() - attemptStartedAt;
+        const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
+        const remainingBudgetMs = Math.max(0, providerDeadline - Date.now());
+        logProviderEvent({
+          event: "response_body_error",
+          model,
+          attempt,
+          elapsedMs,
+          timedOut,
+          errorType: error instanceof Error ? error.name : "UnknownError",
+          remainingBudgetMs,
+        });
+        if (timedOut && attempt < MAX_CORRECTION_ATTEMPTS && remainingBudgetMs > 1_000) {
+          correctionFeedback = [
+            correctionFeedback,
+            "The previous provider response body timed out before it could be read. Return the complete architecture JSON promptly.",
+          ].filter(Boolean).join("\n");
+          continue;
+        }
+        throw error;
+      }
+
       const raw = payload?.choices?.[0]?.message?.content;
       if (typeof raw !== "string") return send(res, 502, { error: "No architecture was returned." });
       const normalized = normalizeArchitecture(JSON.parse(raw), name);
