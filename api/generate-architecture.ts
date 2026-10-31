@@ -10,8 +10,9 @@ const send = (res: any, status: number, body: unknown) =>
 const MAX_CORRECTION_ATTEMPTS = 1;
 const DEFAULT_OPENROUTER_MODEL = "openrouter/free";
 const PROVIDER_TOTAL_BUDGET_MS = AI_REQUEST_LIMITS.providerTimeoutMs;
-const FIRST_ATTEMPT_BUDGET_MS = 10_000;
-const CORRECTION_ATTEMPT_BUDGET_MS = 6_000;
+// Leave time for authentication and response serialization inside the Vercel window.
+const FIRST_ATTEMPT_BUDGET_MS = 30_000;
+const CORRECTION_ATTEMPT_BUDGET_MS = 15_000;
 function resolveProviderModel(): string {
   const configured = process.env.OPENROUTER_MODEL?.trim();
   return configured || DEFAULT_OPENROUTER_MODEL;
@@ -124,7 +125,7 @@ function normalizeArchitecture(parsed: any, name: string) {
   };
 }
 
-export const config = { maxDuration: 30 };
+export const config = { maxDuration: 60 };
 
 export default async function handler(req: any, res: any) {
   const authorized = await authorizeAndRateLimit(req, res, AI_REQUEST_LIMITS.generatorBodyBytes);
@@ -203,7 +204,13 @@ export default async function handler(req: any, res: any) {
       } catch (error) {
         const elapsedMs = Date.now() - attemptStartedAt;
         const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
-        logProviderEvent({ event: "request_error", model, attempt, elapsedMs, timedOut, errorType: error instanceof Error ? error.name : "UnknownError", remainingBudgetMs: Math.max(0, providerDeadline - Date.now()) });
+        const remainingBudgetMs = Math.max(0, providerDeadline - Date.now());
+        logProviderEvent({ event: "request_error", model, attempt, elapsedMs, timedOut, errorType: error instanceof Error ? error.name : "UnknownError", remainingBudgetMs });
+        // Free-model routing can be transiently slow; retry one timeout within the hard deadline.
+        if (timedOut && attempt < MAX_CORRECTION_ATTEMPTS && remainingBudgetMs > 1_000) {
+          correctionFeedback = "The previous provider request timed out. Return the complete architecture JSON promptly; do not omit required graph fields.";
+          continue;
+        }
         throw error;
       }
       const latencyMs = Date.now() - attemptStartedAt;
