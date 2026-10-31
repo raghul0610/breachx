@@ -121,7 +121,7 @@ function providerContent(value: unknown) {
     "",
     "data: [DONE]",
     "",
-  ].join("\\n");
+  ].join("\n");
   const body = new ReadableStream<Uint8Array>({
     start(controller) {
       controller.enqueue(new TextEncoder().encode(event));
