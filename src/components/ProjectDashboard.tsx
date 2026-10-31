@@ -146,7 +146,16 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
                 </div>
                 <h2>{project.applicationName}</h2>
                 <p className="project-description">{project.applicationDescription || "No requirements added yet."}</p>
-                <div className="project-flow-preview" aria-label={`${project.nodes.length} architecture components and ${project.edges.length} connections`}>{getProjectNodePreviews(project.nodes).length ? getProjectNodePreviews(project.nodes).map((node, index, previewNodes) => <Fragment key={node.id}><span className="project-flow-node" title={node.data.label}>{node.data.label}</span>{index < previewNodes.length - 1 && <i aria-hidden="true" />}</Fragment>) : <span className="project-flow-empty">No components yet</span>}</div>
+                <div className="project-system-visual" aria-hidden="true">
+                  <div className="system-visual-orbit system-visual-orbit--outer" />
+                  <div className="system-visual-orbit system-visual-orbit--inner" />
+                  <div className="system-visual-core"><Workflow size={23} /></div>
+                  <span className="system-visual-node system-visual-node--edge">EDGE</span>
+                  <span className="system-visual-node system-visual-node--compute">COMPUTE</span>
+                  <span className="system-visual-node system-visual-node--data">DATA</span>
+                  <span className="system-visual-pulse" />
+                  <span className="system-visual-meta">{project.nodes.length} NODES <b>·</b> {project.edges.length} LINKS</span>
+                </div>
                 <div className="project-updated">UPDATED {new Date(project.updatedAt).toLocaleString()}</div>
                 <div className="project-actions" data-tutorial="project-actions">
                   <button className="primary-btn compact" onClick={() => open(project.id)}>{project.status === "submitted" ? "VIEW PROJECT" : "OPEN PROJECT"}</button>
