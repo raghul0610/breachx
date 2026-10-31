@@ -2303,7 +2303,7 @@ body, .app-shell, .home, .lp-root {
 /* Consistent destructive/close affordance: red surface, white X. */
 :where(.component-library-close,.anchon-chat-close,.panel-toggle-button[aria-label*="Close"],.modal-close,.popup-close,.dialog-close,.architecture-evaluation-header>button) { background:#dc2626!important;border:1px solid #ef4444!important;color:#fff!important; }
 :where(.component-library-close,.anchon-chat-close,.modal-close,.popup-close,.dialog-close) svg { color:#fff!important;stroke:#fff!important; }
-.floating-ai-chat-trigger { display:none!important; }
+/* The launcher is available while chat is closed; the React state hides it while chat is active. */
 .floating-ai-chat-panel.is-open { position:fixed!important;z-index:90!important; }
 .floating-ai-chat-panel-heading { display:flex!important;align-items:center!important;justify-content:space-between!important; }
 .anchon-chat-close { display:grid;place-items:center;width:30px;height:30px;border-radius:8px;cursor:pointer; }
