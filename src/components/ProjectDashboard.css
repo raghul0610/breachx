@@ -235,3 +235,28 @@
   background: rgba(196, 181, 253, 0.42);
   background-clip: padding-box;
 }
+
+
+/* Dashboard system-design visual: animated topology motif, not a literal node chain. */
+.project-system-visual{position:relative;isolation:isolate;display:grid;place-items:center;height:132px;margin:18px 0 14px;overflow:hidden;border:1px solid rgba(196,181,253,.15);border-radius:13px;background:radial-gradient(ellipse at 50% 50%,rgba(124,89,210,.16),rgba(20,16,31,.35) 52%,rgba(10,9,17,.55));}
+.project-system-visual:before,.project-system-visual:after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(196,181,253,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(196,181,253,.045) 1px,transparent 1px);background-size:22px 22px;mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);z-index:-1}
+.project-system-visual:after{background:radial-gradient(circle at 50% 50%,transparent 0 34px,rgba(196,181,253,.06) 35px 36px,transparent 37px);background-size:auto}
+.system-visual-core{z-index:2;display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(196,181,253,.55);border-radius:15px;background:rgba(30,22,48,.95);color:#d8c7ff;box-shadow:0 0 28px rgba(167,139,250,.24),inset 0 0 18px rgba(167,139,250,.1);animation:system-core-breathe 4s ease-in-out infinite}
+.system-visual-orbit{position:absolute;left:50%;top:50%;border:1px solid rgba(196,181,253,.2);border-radius:50%;transform:translate(-50%,-50%) rotate(-18deg)}
+.system-visual-orbit--outer{width:230px;height:78px;animation:system-orbit 16s linear infinite}
+.system-visual-orbit--inner{width:164px;height:54px;border-style:dashed;animation:system-orbit 12s linear infinite reverse}
+.system-visual-node{position:absolute;z-index:3;padding:5px 8px;border:1px solid rgba(196,181,253,.24);border-radius:6px;background:rgba(18,14,29,.94);color:#bfb0e8;font:700 8px ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 5px 16px rgba(0,0,0,.25)}
+.system-visual-node--edge{left:calc(50% - 116px);top:25px}.system-visual-node--compute{right:calc(50% - 116px);top:25px}.system-visual-node--data{left:50%;bottom:17px;transform:translateX(-50%)}
+.system-visual-pulse{position:absolute;width:6px;height:6px;border-radius:50%;background:#a78bfa;box-shadow:0 0 12px #a78bfa;animation:system-pulse 3.2s ease-in-out infinite}
+.system-visual-meta{position:absolute;right:12px;bottom:10px;color:#887da3;font:8px ui-monospace,monospace;letter-spacing:.08em}.system-visual-meta b{color:#c4b5fd}
+@keyframes system-orbit{from{transform:translate(-50%,-50%) rotate(-18deg)}to{transform:translate(-50%,-50%) rotate(342deg)}}
+@keyframes system-core-breathe{0%,100%{box-shadow:0 0 18px rgba(167,139,250,.15),inset 0 0 10px rgba(167,139,250,.08)}50%{box-shadow:0 0 34px rgba(167,139,250,.35),inset 0 0 18px rgba(167,139,250,.16)}}
+@keyframes system-pulse{0%{transform:translate(-66px,0);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translate(66px,0);opacity:0}}
+@media(prefers-reduced-motion:reduce){.system-visual-orbit,.system-visual-core,.system-visual-pulse{animation:none!important}}
+
+
+/* Draggable assistant launcher uses the ANCHON mark instead of a text pill. */
+.floating-ai-chat-trigger{width:58px!important;height:58px!important;min-width:58px!important;padding:0!important;border-radius:20px!important;display:grid!important;place-items:center!important;touch-action:none!important;cursor:grab!important;user-select:none!important;box-shadow:0 12px 36px rgba(0,0,0,.42),0 0 28px rgba(139,92,246,.22)!important}
+.floating-ai-chat-trigger:active{cursor:grabbing!important}
+.floating-ai-chat-trigger .anchon-bubble-mark{display:grid;place-items:center;width:40px;height:40px;border:1px solid rgba(221,214,254,.5);border-radius:13px;color:#eee7ff;background:linear-gradient(145deg,rgba(167,139,250,.28),rgba(76,29,149,.22));box-shadow:inset 0 0 18px rgba(196,181,253,.12)}
+.floating-ai-chat-trigger span:not(.anchon-bubble-mark){display:none!important}
