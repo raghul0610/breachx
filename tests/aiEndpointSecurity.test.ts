@@ -640,7 +640,12 @@ describe("AI endpoint security", () => {
           return {
             ok: true,
             status: 200,
-            json: async () => { throw timeoutError(); },
+            body: {
+              getReader: () => ({
+                read: async () => { throw timeoutError(); },
+                releaseLock: () => undefined,
+              }),
+            },
             text: async () => "",
           };
         }
