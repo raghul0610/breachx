@@ -853,6 +853,7 @@ function ParticipantEditor({
               <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="category">Group by category</option><option value="layer">Group by system layer</option></select>
               <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Default order</option><option value="name">Name A–Z</option><option value="category">Category A–Z</option></select>
             </div>
+            <div className="component-dock-scroll-area">
             {(componentGroupBy === "category"
               ? [...new Set(CATALOG.map((item) => item.category))].sort((a, b) => a.localeCompare(b)).map((category) => ({ title: category.toUpperCase(), description: ({ "AI / ML": "Models, embeddings, retrieval, and AI runtime", "API": "Public and internal API interfaces", "Cache": "Fast, temporary in-memory data", "Database": "Structured, document, graph, time-series, and vector databases", "Compute": "Application runtimes, workers, and containers", "Edge": "Client entry points and edge delivery", "Messaging": "Queues, events, streams, and message delivery", "Media": "Media processing, encoding, and delivery", "Network": "Private networking and traffic distribution", "Observability": "Logs, metrics, traces, and alerts", "Routing": "Request routing and API entry points", "Security": "Identity, access control, and protection", "Storage": "Files, objects, and durable blobs", "Reliability": "Resilience, recovery, and health", "Platform": "Shared configuration and platform services", "External": "Third-party services and integrations" } as Record<string, string>)[category] ?? `Components for ${category.toLowerCase()}`, categories: [category] }))
               : [
@@ -885,6 +886,7 @@ function ParticipantEditor({
                 </div>
               );
             })}
+            </div>
           </section></>}
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
           <div className="canvas-toolbar">
@@ -1089,7 +1091,7 @@ function ParticipantEditor({
           </div>
         </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
       </div>
-      {!chatOpen && <button type="button" className="floating-ai-chat-trigger" style={{ transform: `translate(${chatOffset.x}px, ${chatOffset.y}px)` }} onPointerDown={(event) => { chatDragRef.current = { pointerX: event.clientX, pointerY: event.clientY, originX: chatOffset.x, originY: chatOffset.y, moved: false }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { const drag = chatDragRef.current; if (!drag) return; const dx = event.clientX - drag.pointerX, dy = event.clientY - drag.pointerY; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) setChatOffset({ x: drag.originX + dx, y: drag.originY + dy }); }} onPointerUp={() => { const moved = chatDragRef.current?.moved ?? false; chatDragRef.current = null; if (!moved) setChatOpen(true); }} onPointerCancel={() => { chatDragRef.current = null; }} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Open ANCHON assistant" title="Drag to move · Click to open">
+      {!chatOpen && <button type="button" className="floating-ai-chat-trigger" style={{ left: `calc(50% + ${chatOffset.x}px)`, bottom: `calc(22px - ${chatOffset.y}px)` }} onPointerDown={(event) => { chatDragRef.current = { pointerX: event.clientX, pointerY: event.clientY, originX: chatOffset.x, originY: chatOffset.y, moved: false }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { const drag = chatDragRef.current; if (!drag) return; const dx = event.clientX - drag.pointerX, dy = event.clientY - drag.pointerY; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) setChatOffset({ x: drag.originX + dx, y: drag.originY + dy }); }} onPointerUp={() => { const moved = chatDragRef.current?.moved ?? false; chatDragRef.current = null; if (!moved) setChatOpen(true); }} onPointerCancel={() => { chatDragRef.current = null; }} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Open ANCHON assistant" title="Drag to move · Click to open">
         <span className="anchon-bubble-mark" aria-hidden="true"><Layers size={22} /></span>
       </button>}
       <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
