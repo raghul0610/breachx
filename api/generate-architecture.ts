@@ -22,6 +22,77 @@ function logProviderEvent(event: Record<string, string | number | boolean | null
   console.info(JSON.stringify({ service: "anchon-ai-generator", ...event }));
 }
 
+class ProviderStreamError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProviderStreamError";
+  }
+}
+
+async function readProviderStream(response: Response): Promise<string> {
+  if (!response.body) throw new ProviderStreamError("Provider returned an empty response stream.");
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let eventData: string[] = [];
+  let content = "";
+  let receivedDone = false;
+
+  const processLine = (line: string) => {
+    if (line === "") {
+      if (eventData.length === 0) return;
+      const data = eventData.join("\\n");
+      eventData = [];
+      if (data === "[DONE]") {
+        receivedDone = true;
+        return;
+      }
+      let chunk: any;
+      try {
+        chunk = JSON.parse(data);
+      } catch {
+        throw new ProviderStreamError("Provider returned a malformed streaming event.");
+      }
+      if (chunk?.error) {
+        throw new ProviderStreamError("Provider reported an error during generation.");
+      }
+      const choice = chunk?.choices?.[0];
+      if (choice?.finish_reason === "error") {
+        throw new ProviderStreamError("Provider terminated generation with an error.");
+      }
+      const delta = choice?.delta?.content;
+      if (typeof delta === "string") content += delta;
+      else if (Array.isArray(delta)) {
+        content += delta.filter((part: any) => part?.type === "text" && typeof part.text === "string").map((part: any) => part.text).join("");
+      }
+      return;
+    }
+    if (line.startsWith(":")) return; // OpenRouter keep-alive comment.
+    if (line.startsWith("data:")) eventData.push(line.slice(5).replace(/^ /, ""));
+  };
+
+  try {
+    while (!receivedDone) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split(/\\r?\\n/);
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        processLine(line);
+        if (receivedDone) break;
+      }
+    }
+    buffer += decoder.decode();
+    if (buffer) processLine(buffer);
+    if (eventData.length) processLine("");
+  } finally {
+    reader.releaseLock();
+  }
+  if (!content.trim()) throw new ProviderStreamError("Provider completed without architecture content.");
+  return content;
+}
+
 const schema = {
   type: "object",
   additionalProperties: false,
@@ -198,6 +269,7 @@ export default async function handler(req: any, res: any) {
             },
           ],
           provider: { require_parameters: true },
+          stream: true,
           response_format: { type: "json_schema", json_schema: { name: "architecture", strict: true, schema } },
         }),
         signal: AbortSignal.timeout(attemptBudgetMs),
@@ -219,24 +291,18 @@ export default async function handler(req: any, res: any) {
       logProviderEvent({ event: "response", model, attempt, status: response.status, latencyMs, timedOut: false, requestId });
       if (!response.ok) return send(res, 502, { error: "The architecture provider failed. Try again shortly." });
 
-      // fetch() resolves when response headers arrive. The body can still stall;
-      // consume it inside the same bounded retry policy as the request itself.
-      let payload: any;
+      // HTTP 200 only confirms headers. Consume the SSE stream and inspect
+      // in-band provider errors before treating the generation as successful.
+      let raw: string;
       try {
-        payload = await response.json();
-        logProviderEvent({
-          event: "response_body_received",
-          model,
-          attempt,
-          elapsedMs: Date.now() - attemptStartedAt,
-          timedOut: false,
-        });
+        raw = await readProviderStream(response);
+        logProviderEvent({ event: "response_stream_completed", model, attempt, elapsedMs: Date.now() - attemptStartedAt, timedOut: false });
       } catch (error) {
         const elapsedMs = Date.now() - attemptStartedAt;
         const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
         const remainingBudgetMs = Math.max(0, providerDeadline - Date.now());
         logProviderEvent({
-          event: "response_body_error",
+          event: "response_stream_error",
           model,
           attempt,
           elapsedMs,
@@ -244,18 +310,15 @@ export default async function handler(req: any, res: any) {
           errorType: error instanceof Error ? error.name : "UnknownError",
           remainingBudgetMs,
         });
-        if (timedOut && attempt < MAX_CORRECTION_ATTEMPTS && remainingBudgetMs > 1_000) {
+        if ((timedOut || error instanceof ProviderStreamError) && attempt < MAX_CORRECTION_ATTEMPTS && remainingBudgetMs > 1_000) {
           correctionFeedback = [
             correctionFeedback,
-            "The previous provider response body timed out before it could be read. Return the complete architecture JSON promptly.",
+            "The previous provider stream failed before returning a complete architecture. Retry with a complete, concise JSON architecture response.",
           ].filter(Boolean).join("\n");
           continue;
         }
         throw error;
       }
-
-      const raw = payload?.choices?.[0]?.message?.content;
-      if (typeof raw !== "string") return send(res, 502, { error: "No architecture was returned." });
       const normalized = normalizeArchitecture(JSON.parse(raw), name);
       last = normalized;
       lastEvaluation = evaluateSystemDesign({
