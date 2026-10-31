@@ -41,7 +41,7 @@ async function readProviderStream(response: Response): Promise<string> {
   const processLine = (line: string) => {
     if (line === "") {
       if (eventData.length === 0) return;
-      const data = eventData.join("\\n");
+      const data = eventData.join("\n");
       eventData = [];
       if (data === "[DONE]") {
         receivedDone = true;
@@ -76,7 +76,7 @@ async function readProviderStream(response: Response): Promise<string> {
       const { value, done } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split(/\\r?\\n/);
+      const lines = buffer.split(/\r?\n/);
       buffer = lines.pop() ?? "";
       for (const line of lines) {
         processLine(line);
