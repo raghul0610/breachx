@@ -2205,7 +2205,7 @@ body, .app-shell, .home, .lp-root {
 .app-shell:not(.lp-root) .floating-ai-chat-trigger {
   left: 50% !important;
   right: auto !important;
-  bottom: 22px !important;
+  bottom: auto !important;
   transform: translateX(-50%) !important;
   border: 1px solid rgba(196,181,253,.62) !important;
   color: #f7f2ff !important;
@@ -2431,3 +2431,31 @@ body, .app-shell, .home, .lp-root {
 .floating-ai-chat-panel-heading>strong{min-width:0;flex:1;text-align:left}
 .floating-ai-chat-panel-heading>.anchon-chat-close{position:relative!important;inset:auto!important;flex:0 0 32px!important;width:32px!important;height:32px!important;margin:0 0 0 auto!important;align-self:center!important;border-radius:9px!important;background:#dc2626!important;color:#fff!important}
 .floating-ai-chat-panel-heading>.anchon-chat-close svg{width:16px;height:16px;stroke:#fff!important}
+
+
+/* Reliable component-library scrolling: the results list owns the scroll area. */
+#component-library-popup.component-dock-open {
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  height:min(820px,calc(100dvh - 48px))!important;max-height:calc(100dvh - 48px)!important;
+  overflow:hidden!important;overscroll-behavior:contain!important;
+}
+#component-library-popup .component-dock-heading,
+#component-library-popup .component-library-controls { flex:0 0 auto!important; }
+#component-library-popup .component-dock-scroll-area {
+  display:block!important;flex:1 1 auto!important;min-height:0!important;width:100%!important;
+  overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;
+  scrollbar-width:thin!important;scrollbar-color:rgba(196,181,253,.42) transparent!important;
+}
+#component-library-popup .component-dock-scroll-area::-webkit-scrollbar{width:9px}
+#component-library-popup .component-dock-scroll-area::-webkit-scrollbar-thumb{background:rgba(196,181,253,.38);border:2px solid #111019;border-radius:20px}
+#component-library-popup .component-lane{flex:0 0 auto!important}
+@media(max-width:760px){#component-library-popup.component-dock-open{height:calc(100dvh - 24px)!important;max-height:calc(100dvh - 24px)!important}}
+
+/* Draggable launcher: do not override its inline position with a forced transform. */
+.app-shell:not(.lp-root) .floating-ai-chat-trigger {
+  left:50%!important;right:auto!important;bottom:auto!important;
+  transform:translateX(-50%)!important;translate:none!important;
+  touch-action:none!important;cursor:grab!important;z-index:120!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger:active{cursor:grabbing!important}
