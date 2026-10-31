@@ -21,7 +21,7 @@ vi.mock("@supabase/supabase-js", () => ({
 }));
 
 import evaluateHandler from "../api/evaluate";
-import generateHandler from "../api/generate-architecture";
+import generateHandler, { config as generateConfig, GENERATOR_PROVIDER_TIMEOUT_MS } from "../api/generate-architecture";
 import inferHandler from "../api/infer-requirements";
 import {
   AI_REQUEST_LIMITS,
@@ -142,6 +142,15 @@ function timeoutError() {
   error.name = "TimeoutError";
   return error;
 }
+
+describe("architecture generator execution budget", () => {
+  it("allows two minutes for the free provider within a 150-second Vercel function", () => {
+    expect(GENERATOR_PROVIDER_TIMEOUT_MS).toBe(120_000);
+    expect(generateConfig.maxDuration).toBe(150);
+    // Other AI endpoints retain their existing shared timeout budget.
+    expect(AI_REQUEST_LIMITS.providerTimeoutMs).toBe(45_000);
+  });
+});
 
 describe("AI endpoint security", () => {
   beforeEach(() => {
