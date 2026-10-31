@@ -2290,3 +2290,27 @@ body, .app-shell, .home, .lp-root {
 @media(max-width:720px) {
   .architecture-evaluation-panel { left:8px; bottom:8px; width:calc(100% - 16px); max-height:42vh; }
 }
+
+
+/* Interaction refinements requested for the workspace. */
+.component-library-scrim { position:fixed!important; inset:0!important; z-index:80!important; background:rgba(3,2,7,.72)!important; backdrop-filter:blur(7px)!important; }
+.component-dock-open { position:fixed!important; z-index:81!important; left:50%!important; top:50%!important; bottom:auto!important; width:min(720px,calc(100vw - 32px))!important; max-height:min(78dvh,760px)!important; height:auto!important; transform:translate(-50%,-50%)!important; overflow:auto!important; border:1px solid rgba(196,181,253,.22)!important; border-radius:16px!important; box-shadow:0 28px 100px rgba(0,0,0,.65)!important; }
+.component-dock-open .component-dock-items { max-height:none!important; }
+.component-dock-open .component-dock-heading { position:sticky;top:0;z-index:2;background:rgba(12,9,20,.98);backdrop-filter:blur(16px); }
+.component-dock-open .component-dock-item { transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease; }
+.component-dock-open .component-dock-item:hover,.component-dock-open .component-dock-item:focus-visible { transform:translateY(-2px);border-color:rgba(196,181,253,.55);box-shadow:0 8px 24px rgba(139,92,246,.14); }
+.component-dock-open .component-dock-item:active { transform:scale(.985); }
+/* Consistent destructive/close affordance: red surface, white X. */
+:where(.component-library-close,.anchon-chat-close,.panel-toggle-button[aria-label*="Close"],.modal-close,.popup-close,.dialog-close,.architecture-evaluation-header>button) { background:#dc2626!important;border:1px solid #ef4444!important;color:#fff!important; }
+:where(.component-library-close,.anchon-chat-close,.modal-close,.popup-close,.dialog-close) svg { color:#fff!important;stroke:#fff!important; }
+.floating-ai-chat-trigger { display:none!important; }
+.floating-ai-chat-panel.is-open { position:fixed!important;z-index:90!important; }
+.floating-ai-chat-panel-heading { display:flex!important;align-items:center!important;justify-content:space-between!important; }
+.anchon-chat-close { display:grid;place-items:center;width:30px;height:30px;border-radius:8px;cursor:pointer; }
+/* Dashboard cards communicate architecture as a connected system, not a generic file list. */
+.project-flow-preview { display:flex;align-items:center;gap:7px;min-width:0;margin:14px 0 2px;padding:12px;border:1px solid rgba(196,181,253,.12);border-radius:10px;background:linear-gradient(110deg,rgba(139,92,246,.08),rgba(196,181,253,.025)); }
+.project-flow-node { display:grid;place-items:center;min-width:0;flex:1;padding:8px 5px;border:1px solid rgba(196,181,253,.28);border-radius:7px;background:rgba(20,15,31,.9);color:#d9ccff;font:650 9px/1.2 var(--anchon-font-data,ui-monospace,monospace);letter-spacing:.06em; }
+.project-flow-preview i { position:relative;flex:0 0 14px;height:1px;background:rgba(196,181,253,.55); }
+.project-flow-preview i:after { content:"";position:absolute;right:0;top:-3px;width:6px;height:6px;border-top:1px solid #c4b5fd;border-right:1px solid #c4b5fd;transform:rotate(45deg); }
+@media(max-width:760px) { .component-dock-open { width:calc(100vw - 20px)!important;max-height:82dvh!important; } .component-dock-open .component-dock-heading { gap:10px; } .project-flow-preview { gap:5px;padding:9px; } }
+@media(prefers-reduced-motion:reduce) { .component-dock-open .component-dock-item { transition:none!important; } }
