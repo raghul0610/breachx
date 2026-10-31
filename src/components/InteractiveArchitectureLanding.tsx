@@ -81,7 +81,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
       <section className="iad-hero">
         <div className="iad-brandline"><span className="iad-brand-mark"><AnchonLogo size={28} /></span> SYSTEM DESIGN, MADE VISIBLE</div>
         <div className="iad-headline-wrap">
-          <p className="iad-overline"><span className="iad-live-dot" /> AI-POWERED SYSTEM ARCHITECTURE DESIGNER</p>
+          <p className="iad-overline"><span className="iad-live-dot" /> SYSTEM ARCHITECTURE DESIGNER</p>
           <h1 className="iad-brand-title">ANCHON</h1>
           <p className="iad-hero-tagline">Think in systems. Design with clarity.</p>
           <p className="iad-intro">Turn an application idea into a living system blueprint. Explore the flow, understand every boundary, and build architecture that makes sense.</p>
