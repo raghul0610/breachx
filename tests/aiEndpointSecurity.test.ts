@@ -608,6 +608,21 @@ describe("AI endpoint security", () => {
       }
     });
 
+    it("recovers when the first successful provider response contains invalid JSON", async () => {
+      let calls = 0;
+      mocks.providerResponse = () => {
+        calls += 1;
+        return calls === 1
+          ? { ok: true, status: 200, json: async () => ({ choices: [{ message: { content: "{not json" } }] }), text: async () => "" }
+          : providerContent(goodArchitecture);
+      };
+      const { res, state } = response();
+      await generateHandler(request(validGenerator) as never, res);
+      expect(state.statusCode).toBe(200);
+      expect(calls).toBe(2);
+      expect(state.body).toMatchObject({ architectureName: "URL shortener" });
+    });
+
     it("returns 502 when the provider response envelope is not JSON", async () => {
       mocks.providerResponse = () => ({
         ok: true, status: 200, json: async () => { throw new Error("invalid json"); }, text: async () => "",

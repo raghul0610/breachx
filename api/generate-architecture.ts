@@ -21,6 +21,37 @@ function logProviderEvent(event: Record<string, string | number | boolean | null
   console.info(JSON.stringify({ service: "anchon-ai-generator", ...event }));
 }
 
+function timeoutError(message: string) {
+  const error = new Error(message);
+  error.name = "TimeoutError";
+  return error;
+}
+
+async function readProviderPayload(response: Response, timeoutMs: number): Promise<any> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      response.json(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(timeoutError("The provider response body timed out.")), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function parseArchitectureContent(raw: unknown): any {
+  if (Array.isArray(raw)) {
+    raw = raw
+      .map((part) => typeof part === "string" ? part : part && typeof part === "object" && "text" in part ? part.text : "")
+      .join("");
+  }
+  if (typeof raw !== "string") throw new Error("Provider returned no architecture content.");
+  const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  return JSON.parse(cleaned);
+}
+
 const schema = {
   type: "object",
   additionalProperties: false,
@@ -217,10 +248,23 @@ export default async function handler(req: any, res: any) {
       const requestId = response.headers?.get?.("x-request-id") ?? response.headers?.get?.("x-openrouter-request-id") ?? null;
       logProviderEvent({ event: "response", model, attempt, status: response.status, latencyMs, timedOut: false, requestId });
       if (!response.ok) return send(res, 502, { error: "The architecture provider failed. Try again shortly." });
-      const payload = await response.json();
-      const raw = payload?.choices?.[0]?.message?.content;
-      if (typeof raw !== "string") return send(res, 502, { error: "No architecture was returned." });
-      const normalized = normalizeArchitecture(JSON.parse(raw), name);
+      let normalized: ReturnType<typeof normalizeArchitecture>;
+      try {
+        const bodyTimeoutMs = Math.max(1_000, providerDeadline - Date.now());
+        const payload = await readProviderPayload(response, bodyTimeoutMs);
+        normalized = normalizeArchitecture(parseArchitectureContent(payload?.choices?.[0]?.message?.content), name);
+      } catch (error) {
+        const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
+        const remainingBudgetMs = Math.max(0, providerDeadline - Date.now());
+        logProviderEvent({ event: "response_body_error", model, attempt, timedOut, errorType: error instanceof Error ? error.name : "UnknownError", remainingBudgetMs });
+        if (attempt < MAX_CORRECTION_ATTEMPTS && remainingBudgetMs > 1_000) {
+          correctionFeedback = timedOut
+            ? "The previous provider response body timed out. Return the complete architecture JSON promptly without streaming or omissions."
+            : "The previous provider response was incomplete or invalid. Return one complete architecture JSON object with every required field and no markdown.";
+          continue;
+        }
+        throw error;
+      }
       last = normalized;
       lastEvaluation = evaluateSystemDesign({
         application: { name: normalized.architectureName, description: requirements.trim() + "\n\nUser-reported issue or requested change: " + (editing ? instruction.trim() : "No separate issue supplied.") },
