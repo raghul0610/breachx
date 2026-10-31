@@ -436,6 +436,7 @@ function ParticipantEditor({
     const highestSeverity = (["critical", "high", "medium", "low"] as const).find((severity) => nodeFindings.some((finding) => finding.severity === severity));
     return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
   }), [nodes, requestTraceEdges, requestTraceStep, activeEvaluationResult]);
+  useEffect(() => { if (!selectedId) setRightPanelOpen(false); }, [selectedId]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -751,8 +752,8 @@ function ParticipantEditor({
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
         <div className="topbar-right"><div className="topbar-actions"><div className="toolbar-actions topbar-toolbar-actions">
-              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); setRightPanelOpen(nextOpen); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
-              <label className="component-search-inline"><BookOpen size={13} /><input aria-label="Search architecture components" placeholder="Search components…" value={componentSearch} onChange={(event) => { setComponentSearch(event.target.value); setComponentLibraryOpen(true); setRightPanelOpen(true); }} onFocus={() => { setComponentLibraryOpen(true); setRightPanelOpen(true); }} /></label>
+              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); setRightPanelOpen(false); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
+              <label className="component-search-inline"><BookOpen size={13} /><input aria-label="Search architecture components" placeholder="Search components…" value={componentSearch} onChange={(event) => { setComponentSearch(event.target.value); setComponentLibraryOpen(true); }} onFocus={() => { setComponentLibraryOpen(true); setRightPanelOpen(true); }} /></label>
               <button type="button" className="topbar-add-component-button" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={"Add " + (selectedCatalogItem?.label ?? CATALOG[0].label) + " to the canvas"}><PlusCircle size={13} /> ADD COMPONENT</button>
               <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
               <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
@@ -875,7 +876,7 @@ function ParticipantEditor({
                   </div>
                   <div className="component-dock-items" aria-label={group.title}>
                     {items.map((item) => (
-                      <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
+                      <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(false); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} onDoubleClick={() => { addCatalogNode(item); setComponentLibraryOpen(false); setRightPanelOpen(true); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
                         <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={14} /></span><span>{item.label}</span></span>
                         <small>{item.category}</small>
                       </button>
@@ -942,8 +943,8 @@ function ParticipantEditor({
             onConnect={onConnect}
             onReconnect={onReconnect}
             onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
-            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
-            onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); }}
+            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
+            onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); }}
             onDragOver={(event) => {
               event.preventDefault();
               event.dataTransfer.dropEffect = "move";
@@ -1088,12 +1089,12 @@ function ParticipantEditor({
           </div>
         </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
       </div>
-      <button type="button" className="floating-ai-chat-trigger" onClick={() => setChatOpen((open) => !open)} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Toggle Ask ANCHON chat" title="Toggle Ask ANCHON">
+      {!chatOpen && <button type="button" className="floating-ai-chat-trigger" onClick={() => setChatOpen((open) => !open)} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Toggle Ask ANCHON chat" title="Toggle Ask ANCHON">
         <MessageSquare size={19} />
         <span>ASK ANCHON</span>
-      </button>
+      </button>}
       <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
-        <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong></div>
+        <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" className="anchon-chat-close" onClick={() => setChatOpen(false)} aria-label="Close ANCHON assistant"><X size={16} /></button></div>
                   <ArchitectureAIChat
             name={applicationName}
             requirements={applicationDescription}
