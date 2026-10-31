@@ -10,6 +10,18 @@ import {
   type ArchitectureProject,
 } from "../lib/storage";
 import { deleteOwnedProject } from "../lib/projectsRepository";
+type ProjectNodePreview = { id: string; data: { label: string } };
+
+function getProjectNodePreviews(nodes: unknown[]): ProjectNodePreview[] {
+  return nodes.filter((node): node is ProjectNodePreview => {
+    if (!node || typeof node !== "object") return false;
+    const candidate = node as { id?: unknown; data?: { label?: unknown } };
+    return typeof candidate.id === "string"
+      && !!candidate.data && typeof candidate.data === "object"
+      && typeof candidate.data.label === "string";
+  }).slice(0, 3);
+}
+
 import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
 import { ShapeGridBackground } from "./ShapeGridBackground";
@@ -134,7 +146,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
                 </div>
                 <h2>{project.applicationName}</h2>
                 <p className="project-description">{project.applicationDescription || "No requirements added yet."}</p>
-                <div className="project-flow-preview" aria-label={`${project.nodes.length} architecture components and ${project.edges.length} connections`}>{project.nodes.length ? project.nodes.slice(0, 3).map((node, index) => <Fragment key={node.id}><span className="project-flow-node" title={node.data.label}>{node.data.label}</span>{index < Math.min(project.nodes.length, 3) - 1 && <i aria-hidden="true" />}</Fragment>) : <span className="project-flow-empty">No components yet</span>}</div>
+                <div className="project-flow-preview" aria-label={`${project.nodes.length} architecture components and ${project.edges.length} connections`}>{getProjectNodePreviews(project.nodes).length ? getProjectNodePreviews(project.nodes).map((node, index, previewNodes) => <Fragment key={node.id}><span className="project-flow-node" title={node.data.label}>{node.data.label}</span>{index < previewNodes.length - 1 && <i aria-hidden="true" />}</Fragment>) : <span className="project-flow-empty">No components yet</span>}</div>
                 <div className="project-updated">UPDATED {new Date(project.updatedAt).toLocaleString()}</div>
                 <div className="project-actions" data-tutorial="project-actions">
                   <button className="primary-btn compact" onClick={() => open(project.id)}>{project.status === "submitted" ? "VIEW PROJECT" : "OPEN PROJECT"}</button>
