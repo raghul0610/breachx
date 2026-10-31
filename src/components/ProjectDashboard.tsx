@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Copy, FolderPlus, Github, Pencil, Plus, Trash2, Workflow } from "lucide-react";
 import {
   createProject,
@@ -10,18 +10,6 @@ import {
   type ArchitectureProject,
 } from "../lib/storage";
 import { deleteOwnedProject } from "../lib/projectsRepository";
-type ProjectNodePreview = { id: string; data: { label: string } };
-
-function getProjectNodePreviews(nodes: unknown[]): ProjectNodePreview[] {
-  return nodes.filter((node): node is ProjectNodePreview => {
-    if (!node || typeof node !== "object") return false;
-    const candidate = node as { id?: unknown; data?: { label?: unknown } };
-    return typeof candidate.id === "string"
-      && !!candidate.data && typeof candidate.data === "object"
-      && typeof candidate.data.label === "string";
-  }).slice(0, 3);
-}
-
 import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
 import { ShapeGridBackground } from "./ShapeGridBackground";
