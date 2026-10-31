@@ -617,6 +617,29 @@ describe("AI endpoint security", () => {
       expect(state.statusCode).toBe(502);
     });
 
+    it("retries when provider headers succeed but reading the response body times out", async () => {
+      let call = 0;
+      mocks.providerResponse = () => {
+        call += 1;
+        if (call === 1) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => { throw timeoutError(); },
+            text: async () => "",
+          };
+        }
+        return providerContent(goodArchitecture);
+      };
+
+      const { res, state } = response();
+      await generateHandler(request(validGenerator) as never, res);
+
+      expect(state.statusCode).toBe(200);
+      expect(state.body).toMatchObject({ architectureName: "URL shortener" });
+      expect(providerCalls()).toHaveLength(2);
+    });
+
     it("rejects a generated architecture with too few valid components", async () => {
       mocks.providerResponse = () => providerContent({
         ...goodArchitecture,
