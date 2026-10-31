@@ -134,7 +134,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
                 </div>
                 <h2>{project.applicationName}</h2>
                 <p className="project-description">{project.applicationDescription || "No requirements added yet."}</p>
-                <div className="project-flow-preview" aria-label={`${project.nodes.length} connected architecture components`}><span className="project-flow-node">CLIENT</span><i /><span className="project-flow-node">API</span><i /><span className="project-flow-node">DATA</span></div>
+                <div className="project-flow-preview" aria-label={`${project.nodes.length} architecture components and ${project.edges.length} connections`}>{project.nodes.length ? project.nodes.slice(0, 3).map((node, index) => <><span className="project-flow-node" key={node.id} title={node.data.label}>{node.data.label}</span>{index < Math.min(project.nodes.length, 3) - 1 && <i key={`${node.id}-edge`} aria-hidden="true" />}</>) : <span className="project-flow-empty">No components yet</span>}</div>
                 <div className="project-updated">UPDATED {new Date(project.updatedAt).toLocaleString()}</div>
                 <div className="project-actions" data-tutorial="project-actions">
                   <button className="primary-btn compact" onClick={() => open(project.id)}>{project.status === "submitted" ? "VIEW PROJECT" : "OPEN PROJECT"}</button>
