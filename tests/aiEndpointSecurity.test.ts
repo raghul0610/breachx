@@ -112,11 +112,26 @@ const goodReview = {
   assessments: [],
 };
 
-/** Builds a fake OpenRouter chat-completion envelope. */
+/** Builds a fake OpenRouter SSE stream with the same delta framing as production. */
 function providerContent(value: unknown) {
+  const event = [
+    ": OPENROUTER PROCESSING",
+    "",
+    `data: ${JSON.stringify({ choices: [{ delta: { content: JSON.stringify(value) }, finish_reason: null }] })}`,
+    "",
+    "data: [DONE]",
+    "",
+  ].join("\\n");
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(event));
+      controller.close();
+    },
+  });
   return {
     ok: true,
     status: 200,
+    body,
     json: async () => ({ choices: [{ message: { content: JSON.stringify(value) } }] }),
     text: async () => "",
   };
@@ -713,6 +728,7 @@ describe("AI endpoint security", () => {
       expect(state.body).toMatchObject({ architectureName: "URL shortener" });
       const [, init] = providerCalls()[0] as [unknown, RequestInit];
       expect(JSON.parse(String(init.body)).model).toBe("openrouter/free");
+      expect(JSON.parse(String(init.body)).stream).toBe(true);
       const payload = state.body as { components: unknown[]; connections: unknown[] };
       expect(payload.components).toHaveLength(3);
       expect(payload.connections).toHaveLength(2);
