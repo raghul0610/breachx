@@ -54,7 +54,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
           setAutomaticShine(false);
           scheduleShine();
         }, 1250);
-      }, 4200 + Math.random() * 4200);
+      }, 6000);
     };
     scheduleShine();
     return () => {
