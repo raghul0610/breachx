@@ -897,3 +897,21 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
     padding-right:16px!important;
   }
 }
+
+
+/* Keep the navigation panel fully below the fixed workspace header. */
+.app-shell .workspace-navigation {
+  top:116px!important;
+  max-height:calc(100dvh - 132px)!important;
+}
+/* One persistent draggable toggle controls both open and closed states. */
+.app-shell .workspace-sidebar-reopen {
+  top:calc(50% - 21px)!important;
+  z-index:120!important;
+  display:grid!important;
+  place-items:center!important;
+}
+@media(max-width:600px) {
+  .app-shell .workspace-navigation { top:112px!important;max-height:calc(100dvh - 124px)!important; }
+  .app-shell .workspace-sidebar-reopen { top:calc(50% - 21px)!important; }
+}
