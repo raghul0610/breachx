@@ -1044,3 +1044,15 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 }
 .app-shell .workspace-nav-item strong { font-size:13px!important; }
 .app-shell .workspace-nav-item small { font-size:11px!important; }
+
+/* Infer Requirements action and result-focused inspector panel. */
+.infer-requirements-action { flex:none!important;white-space:nowrap!important; }
+.requirements-inspector { display:flex;flex-direction:column;gap:12px;padding:8px 2px 16px; }
+.requirements-inspector h3 { margin:0;color:#e6ebef;font-size:16px;line-height:1.3; }
+.requirements-inspector-group { padding:12px;border:1px solid #343c43;border-radius:9px;background:rgba(255,255,255,.025); }
+.requirements-inspector-group h4 { margin:0 0 9px;color:#c6cdd2;font:700 10px/1.4 var(--anchon-font-mono,ui-monospace,monospace);letter-spacing:.08em; }
+.requirements-inspector-group ol { margin:0;padding-left:19px;color:#c5d1da;font-size:12px;line-height:1.65; }
+.requirements-inspector-group li { margin:0 0 7px; }
+.requirements-inspector-group p,.requirements-inspector-assumptions { margin:0;color:#8c9aa8;font-size:11px;line-height:1.6; }
+.requirements-inspector-assumptions ul { padding-left:18px; }
+@media(max-width:700px) { .infer-requirements-action { font-size:10px!important;padding-inline:8px!important; } }
