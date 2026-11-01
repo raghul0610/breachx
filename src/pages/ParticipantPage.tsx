@@ -140,10 +140,12 @@ export function ParticipantPage({
   onBack,
   onSubmitted,
   projectId,
+  initialSection = "canvas",
 }: {
   onBack: () => void;
   onSubmitted: () => void;
   projectId: string;
+  initialSection?: "canvas" | "learn" | "guide" | "settings";
 }) {
   const saved = readSubmission(projectId);
   return (
@@ -154,6 +156,7 @@ export function ParticipantPage({
         onBack={onBack}
         onSubmitted={onSubmitted}
         startingSubmission={saved}
+        initialSection={initialSection}
       />
     </ReactFlowProvider>
   );
@@ -164,11 +167,13 @@ function ParticipantEditor({
   onSubmitted,
   projectId,
   startingSubmission,
+  initialSection,
 }: {
   onBack: () => void;
   onSubmitted: () => void;
   projectId: string;
   startingSubmission: DesignSubmission | null;
+  initialSection: "canvas" | "learn" | "guide" | "settings";
 }) {
   const { screenToFlowPosition, getViewport, fitView } = useReactFlow();
   const saved = startingSubmission;
@@ -215,7 +220,7 @@ function ParticipantEditor({
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [libraryActiveCategory, setLibraryActiveCategory] = useState("AI / ML");
-  const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<"canvas" | "requirements" | "learn" | "guide" | "share" | "settings">("canvas");
+  const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<"canvas" | "requirements" | "learn" | "guide" | "share" | "settings">(initialSection);
   const [activeLearnTopic, setActiveLearnTopic] = useState("Introduction");
   const [learnSelectedComponent, setLearnSelectedComponent] = useState<string | null>(null);
   const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
