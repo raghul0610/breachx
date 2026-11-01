@@ -657,3 +657,215 @@ button, input, textarea, select { font-family: var(--anchon-font-ui); }
  .workspace-shortcuts-dialog { padding:16px; }
  .app-shell .editor-shortcuts { display:none !important; }
 }
+
+
+/* Neutral Supabase-inspired application palette. The marketing landing page keeps its gradient;
+   all authenticated product surfaces use graphite, slate and white. */
+.project-dashboard {
+  --aqua-bg:#111311 !important;
+  --aqua-panel:#171a18 !important;
+  --aqua-panel-raised:#1c201d !important;
+  --aqua-border:#2a2f2b !important;
+  --aqua-text:#edf0ed !important;
+  --aqua-muted:#a0a8a1 !important;
+  --aqua-subtle:#78817a !important;
+  --aqua-accent:#e7ece8 !important;
+  background:#111311 !important;
+  color:#edf0ed !important;
+  font-family:var(--anchon-font-ui,Inter,ui-sans-serif,system-ui,sans-serif) !important;
+}
+.project-dashboard > .shape-grid-background { display:none !important; }
+.project-dashboard .dashboard-sidebar { background:#101210 !important; border-right:1px solid #292d2a !important; }
+.project-dashboard .dashboard-brand { color:#edf0ed !important; border-bottom-color:#292d2a !important; }
+.project-dashboard .dashboard-brand-mark { color:#e8ede9 !important; background:#202521 !important; border-color:#3b433d !important; }
+.project-dashboard .dashboard-brand strong { font-size:12px !important; font-weight:650 !important; letter-spacing:.06em !important; }
+.project-dashboard .dashboard-brand small { color:#818b83 !important; font-size:8px !important; letter-spacing:.08em !important; }
+.project-dashboard .dashboard-nav-label { color:#7e8981 !important; font-size:9px !important; letter-spacing:.1em !important; }
+.project-dashboard .dashboard-nav button { color:#aeb6af !important; font-size:11px !important; font-weight:500 !important; }
+.project-dashboard .dashboard-nav button svg { color:#909a92 !important; }
+.project-dashboard .dashboard-nav button.is-active { color:#f2f5f2 !important; background:#202521 !important; border-color:#343c35 !important; }
+.project-dashboard .dashboard-nav button.is-active svg { color:#e7ece8 !important; }
+.project-dashboard .dashboard-nav-count { color:#c6cec8 !important; background:#303731 !important; }
+.project-dashboard .dashboard-sidebar-footer { color:#818b83 !important; font-size:10px !important; }
+.project-dashboard .dashboard-status-dot { background:#aeb8b0 !important; box-shadow:none !important; }
+.project-dashboard .topbar { background:#111311 !important; border-color:#292d2a !important; }
+.project-dashboard .topbar strong,.project-dashboard .topbar-sub { color:#e8ede9 !important; font-size:11px !important; }
+.project-dashboard .status-pill { color:#aeb7b0 !important; border-color:#3a423b !important; background:#1b201c !important; font-size:9px !important; }
+.project-dashboard .nav-btn { color:#c5cdc7 !important; font-size:10px !important; }
+.project-dashboard .project-dashboard-content { width:min(1260px,100%) !important; padding:20px 20px 28px !important; }
+.project-dashboard .project-dashboard-hero { padding:8px 0 16px !important; border-color:#292d2a !important; }
+.project-dashboard .project-dashboard-hero h1 { color:#f0f3f0 !important; font-size:22px !important; font-weight:620 !important; letter-spacing:-.035em !important; }
+.project-dashboard .project-dashboard-hero .section-kicker { color:#9ba49d !important; font-size:9px !important; font-weight:550 !important; }
+.project-dashboard .project-dashboard-hero p { color:#9ba49d !important; font-size:11px !important; }
+.project-dashboard .primary-btn,
+.project-dashboard .dashboard-dialog-primary {
+  color:#111512 !important; background:#e5eae6 !important; border-color:#e5eae6 !important;
+  border-radius:6px !important; font-size:10px !important; font-weight:600 !important;
+}
+.project-dashboard .primary-btn:hover,
+.project-dashboard .dashboard-dialog-primary:hover { color:#080a08 !important; background:#fff !important; border-color:#fff !important; }
+.project-dashboard .project-grid { grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:12px !important; margin-top:14px !important; }
+.project-dashboard .project-card { min-height:156px !important; padding:14px !important; background:#181b19 !important; border:1px solid #2b302c !important; border-radius:9px !important; box-shadow:none !important; }
+.project-dashboard .project-card:hover { border-color:#4a534c !important; background:#1b1f1c !important; transform:translateY(-1px) !important; }
+.project-dashboard .project-card-top { gap:8px !important; }
+.project-dashboard .project-status { color:#c6cec8 !important; background:#202521 !important; border-color:#3a433c !important; font-size:8px !important; font-weight:500 !important; }
+.project-dashboard .project-status.is-submitted { color:#e0e7e1 !important; background:#242b25 !important; border-color:#465047 !important; }
+.project-dashboard .project-count,.project-dashboard .project-updated { color:#89938b !important; font-size:8px !important; }
+.project-dashboard .project-card h2 { color:#edf1ed !important; font-size:13px !important; font-weight:600 !important; letter-spacing:-.015em !important; margin:11px 0 5px !important; }
+.project-dashboard .project-description { color:#a0aaa2 !important; font-size:10px !important; line-height:1.5 !important; }
+.project-dashboard .project-updated { border-color:#2b302c !important; }
+.project-dashboard .project-actions { gap:5px !important; margin-top:10px !important; }
+.project-dashboard .project-actions button { min-height:29px !important; font-size:9px !important; }
+.project-dashboard .project-actions .icon-btn { min-width:29px !important; min-height:29px !important; color:#b8c0b9 !important; background:#202521 !important; border-color:#3b433d !important; }
+.project-dashboard .project-delete { color:#d7a4a4 !important; }
+.project-dashboard .github-connection-development { background:#181b19 !important; border-color:#2b302c !important; }
+.project-dashboard .github-connection-icon { color:#dce3dd !important; background:#202521 !important; border-color:#3b433d !important; }
+.project-dashboard .github-connection-title .section-kicker { color:#929d94 !important; }
+.project-dashboard .github-connection-title h2 { color:#edf1ed !important; font-size:13px !important; }
+.project-dashboard .github-connection-title p { color:#9ba59d !important; font-size:10px !important; }
+.project-dashboard .github-building-pill { color:#c4ccc5 !important; background:#202521 !important; border-color:#414a43 !important; font-size:8px !important; }
+.project-dashboard .project-storage-note { color:#818b83 !important; font-size:9px !important; }
+.project-dashboard .project-empty { color:#dce3dd !important; background:#181b19 !important; border-color:#2b302c !important; }
+.project-dashboard .project-empty h2 { color:#edf1ed !important; }
+.project-dashboard .project-error { color:#efcaca !important; background:#241a1a !important; border-color:#563b3b !important; }
+
+/* The brief belongs to the dedicated Requirements page, never in the canvas navigation rail. */
+.workspace-navigation .workspace-canvas-brief { display:none !important; }
+
+/* Keep the collapse affordance inside the sidebar header, below the global HOME bar. */
+.app-shell .workspace-navigation { position:relative !important; z-index:48 !important; }
+.app-shell .workspace-nav-brand {
+  position:relative !important; z-index:2 !important;
+  min-height:52px !important; padding:12px 6px 13px !important;
+  align-items:center !important; gap:9px !important;
+}
+.app-shell .workspace-nav-brand .panel-toggle-button {
+  position:relative !important; inset:auto !important; z-index:3 !important;
+  display:grid !important; place-items:center !important; flex:0 0 28px !important;
+  width:28px !important; height:28px !important; min-width:28px !important;
+  margin-left:auto !important; padding:0 !important;
+  color:#d8ded9 !important; background:#202521 !important;
+  border:1px solid #3b433d !important; border-radius:6px !important;
+}
+.app-shell .workspace-nav-brand .panel-toggle-button:hover { color:#fff !important; background:#2b322c !important; border-color:#59635b !important; }
+.app-shell .workspace-sidebar-reopen {
+  position:fixed !important; z-index:90 !important; top:86px !important; left:12px !important;
+  width:32px !important; height:32px !important;
+  color:#e3e8e4 !important; background:#202521 !important;
+  border:1px solid #414a43 !important; border-radius:7px !important;
+  box-shadow:0 5px 16px rgba(0,0,0,.32) !important;
+}
+.app-shell .workspace-sidebar-reopen:hover { color:#fff !important; background:#2b322c !important; border-color:#667168 !important; }
+
+/* Remove violet and aqua accents throughout the architecture editor; use neutral white/grey. */
+.app-shell:not(.project-dashboard) {
+  --ws-bg:#111311 !important;
+  --ws-panel:#181b19 !important;
+  --ws-panel-raised:#202521 !important;
+  --ws-line:#303631 !important;
+  --ws-text:#edf1ed !important;
+  --ws-muted:#a1aaa3 !important;
+  --ws-subtle:#7f8982 !important;
+  --ws-accent:#e7ece8 !important;
+  --category-accent:#cbd2cc !important;
+  background:#111311 !important;
+  color:#edf1ed !important;
+}
+.app-shell:not(.project-dashboard) .topbar,
+.app-shell:not(.project-dashboard) .canvas-toolbar { background:#151815 !important; border-color:#303631 !important; }
+.app-shell:not(.project-dashboard) .sidebar,
+.app-shell:not(.project-dashboard) .workspace-navigation { background:#141714 !important; }
+.app-shell:not(.project-dashboard) .left-panel,
+.app-shell:not(.project-dashboard) .right-panel { border-color:#303631 !important; }
+.app-shell:not(.project-dashboard) .workspace-navigation .section-kicker,
+.app-shell:not(.project-dashboard) .section-kicker,
+.app-shell:not(.project-dashboard) .eyebrow,
+.app-shell:not(.project-dashboard) .node-category,
+.app-shell:not(.project-dashboard) .catalog-detail-block strong { color:#cbd2cc !important; }
+.app-shell:not(.project-dashboard) .workspace-nav-item,
+.app-shell:not(.project-dashboard) .workspace-nav-item strong { color:#b9c1bb !important; }
+.app-shell:not(.project-dashboard) .workspace-nav-item > svg { color:#a3aca5 !important; }
+.app-shell:not(.project-dashboard) .workspace-nav-item:hover,
+.app-shell:not(.project-dashboard) .workspace-nav-item.is-active { color:#f0f3f0 !important; background:#242a25 !important; border-color:#414a43 !important; }
+.app-shell:not(.project-dashboard) .workspace-nav-item.is-active > svg { color:#f0f3f0 !important; }
+.app-shell:not(.project-dashboard) .requirements-mark,
+.app-shell:not(.project-dashboard) .brief-step,
+.app-shell:not(.project-dashboard) .catalog-component-icon,
+.app-shell:not(.project-dashboard) .catalog-item-icon {
+  color:#e2e7e3 !important; background:#242a25 !important; border-color:#424b44 !important;
+}
+.app-shell:not(.project-dashboard) .brief-card,
+.app-shell:not(.project-dashboard) .catalog-inspector,
+.app-shell:not(.project-dashboard) .component-dock,
+.app-shell:not(.project-dashboard) #component-library-popup,
+.app-shell:not(.project-dashboard) .workspace-page-content,
+.app-shell:not(.project-dashboard) .learn-reference-card {
+  background:#181c19 !important; border-color:#303832 !important;
+}
+.app-shell:not(.project-dashboard) .component-library-search,
+.app-shell:not(.project-dashboard) .component-library-controls select,
+.app-shell:not(.project-dashboard) .field input,
+.app-shell:not(.project-dashboard) .field textarea {
+  color:#e8ede9 !important; background:#101512 !important; border-color:#3a443d !important;
+}
+.app-shell:not(.project-dashboard) .component-library-search input,
+.app-shell:not(.project-dashboard) .field input:focus,
+.app-shell:not(.project-dashboard) .field textarea:focus { color:#f0f3f0 !important; border-color:#747f76 !important; }
+.app-shell:not(.project-dashboard) .primary-btn,
+.app-shell:not(.project-dashboard) .catalog-add-btn,
+.app-shell:not(.project-dashboard) .run-request-canvas {
+  color:#101411 !important; background:#e6ebe7 !important; border-color:#e6ebe7 !important;
+}
+.app-shell:not(.project-dashboard) .primary-btn:hover,
+.app-shell:not(.project-dashboard) .run-request-canvas:hover { color:#080b09 !important; background:#fff !important; border-color:#fff !important; }
+.app-shell:not(.project-dashboard) .topbar-library-button,
+.app-shell:not(.project-dashboard) .toolbar-actions > button,
+.app-shell:not(.project-dashboard) .panel-toggle-button,
+.app-shell:not(.project-dashboard) .workspace-sidebar-reopen {
+  color:#d9dfda !important; background:#252b26 !important; border-color:#424b44 !important;
+}
+.app-shell:not(.project-dashboard) .topbar-library-button.is-active { color:#fff !important; background:#303831 !important; border-color:#667168 !important; }
+.app-shell:not(.project-dashboard) .bp-node {
+  --category-accent:#cbd2cc !important;
+  border-color:#515b53 !important;
+  background:linear-gradient(145deg,#222823,#171c18) !important;
+}
+.app-shell:not(.project-dashboard) .bp-node:hover,
+.app-shell:not(.project-dashboard) .bp-node.selected {
+  border-color:#dce3dd !important;
+  box-shadow:0 0 0 2px rgba(230,236,231,.12),0 14px 30px rgba(0,0,0,.32) !important;
+}
+.app-shell:not(.project-dashboard) .bp-node .node-category-icon,
+.app-shell:not(.project-dashboard) .bp-node .handle {
+  color:#e1e7e2 !important; background:#414b43 !important; border-color:#69756b !important;
+}
+.app-shell:not(.project-dashboard) .bp-node .node-notes,
+.app-shell:not(.project-dashboard) .catalog-hint { color:#a1aaa3 !important; }
+.app-shell:not(.project-dashboard) .component-dock-item,
+.app-shell:not(.project-dashboard) .catalog-item {
+  color:#e7ece8 !important; background:#1b201c !important; border-color:#343c36 !important;
+}
+.app-shell:not(.project-dashboard) .component-dock-item:hover,
+.app-shell:not(.project-dashboard) .catalog-item:hover,
+.app-shell:not(.project-dashboard) .component-dock-item:focus-visible {
+  color:#fff !important; background:#282f29 !important; border-color:#69756b !important;
+}
+.app-shell:not(.project-dashboard) .component-dock-item small,
+.app-shell:not(.project-dashboard) .catalog-item small { color:#9aa49c !important; }
+.app-shell:not(.project-dashboard) .react-flow__controls,
+.app-shell:not(.project-dashboard) .react-flow__minimap { background:#1c211d !important; border:1px solid #424b44 !important; }
+.app-shell:not(.project-dashboard) .react-flow__controls button { color:#e5eae6 !important; background:#1c211d !important; border-color:#424b44 !important; }
+.app-shell:not(.project-dashboard) .react-flow__edge-path { stroke:#b9c2bb !important; }
+.app-shell:not(.project-dashboard) .react-flow__connection-path { stroke:#e2e8e3 !important; }
+.app-shell:not(.project-dashboard) .tutorial-help-button,
+.app-shell:not(.project-dashboard) .floating-ai-chat-trigger {
+  color:#e7ece8 !important; background:#252b26 !important; border-color:#454f47 !important;
+}
+.app-shell:not(.project-dashboard) .tutorial-help-button:hover,
+.app-shell:not(.project-dashboard) .floating-ai-chat-trigger:hover { color:#fff !important; background:#333b34 !important; }
+@media(max-width:760px) {
+ .project-dashboard .project-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+}
+@media(max-width:560px) {
+ .project-dashboard .project-grid { grid-template-columns:minmax(0,1fr) !important; }
+}
