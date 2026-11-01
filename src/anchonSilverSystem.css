@@ -451,3 +451,21 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
   .iad-headline-wrap h1 { transition:none!important; }
   .iad-headline-wrap h1:hover { filter:none!important; }
 }
+
+
+/* Cursor-following metallic highlight on the hero wordmark and neutral node accents. */
+.iad-headline-wrap h1 {
+  --pointer-x:50%;
+  background-image:
+    radial-gradient(ellipse 24% 115% at var(--pointer-x) 50%,rgba(255,255,255,.95) 0%,rgba(226,233,238,.34) 42%,transparent 100%),
+    linear-gradient(112deg,#ffffff 0%,#aeb8c0 18%,#f7f9fa 34%,#89949d 49%,#f4f6f7 65%,#aeb8c0 82%,#ffffff 100%) !important;
+  background-size:100% 100%,220% 100% !important;
+  background-position:0 0,0% 50% !important;
+}
+.iad-headline-wrap h1:hover {
+  background-position:0 0,100% 50% !important;
+  filter:drop-shadow(0 0 12px rgba(229,236,241,.5)) drop-shadow(0 0 32px rgba(196,207,216,.3)) !important;
+}
+.iad-node { --node-accent:#cbd2d8 !important; }
+.iad-node .iad-node-pulse { background:#e3e8ec!important; box-shadow:0 0 9px rgba(226,233,238,.35)!important; }
+.iad-node.is-selected { border-color:#e4e9ec!important; box-shadow:0 0 20px rgba(220,226,231,.12)!important; }
