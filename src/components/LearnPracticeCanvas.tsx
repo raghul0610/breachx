@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { addEdge, Background, Controls, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type Node } from "@xyflow/react";
 import { Database, Play, Plus, Radio, Server, Zap } from "lucide-react";
 
@@ -18,7 +18,6 @@ export function LearnPracticeCanvas() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [trace, setTrace] = useState<string[]>([]);
   const [runState, setRunState] = useState<"idle" | "success" | "error">("idle");
-  const nodeTypes = useMemo(() => ({}), []);
 
   const addService = (kind: "cache" | "queue" | "worker") => {
     const id = `${kind}-${Date.now()}`;
