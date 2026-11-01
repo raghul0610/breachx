@@ -855,46 +855,29 @@ function ParticipantEditor({
           <section id="component-library-popup" className="component-dock component-dock-open" role="dialog" aria-modal="true" aria-label="Architecture component library" data-tutorial="component-library">
             <div className="component-dock-heading"><div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY <span className="niche-library-tag">NICHE INFRASTRUCTURE INCLUDED</span></div><p>Search by component, category, or product pattern (WhatsApp, Netflix, Amazon, VS Code, ChatGPT). Select a component to inspect it before adding it.</p></div><button type="button" className="component-library-close" onClick={() => setComponentLibraryOpen(false)} aria-label="Close component library"><X size={16} /></button></div>
             <div className="component-library-controls">
-              <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="Try WhatsApp, Netflix, Amazon, VS Code, ChatGPT…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
-              <select aria-label="Filter by category" value={componentCategoryFilter} onChange={(event) => setComponentCategoryFilter(event.target.value)}><option value="all">All categories</option>{[...new Set(CATALOG.map((item) => item.category))].sort().map((category) => <option key={category} value={category}>{category}</option>)}</select>
-              <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="category">Group by category</option><option value="layer">Group by system layer</option></select>
-              <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Default order</option><option value="name">Name A–Z</option><option value="category">Category A–Z</option></select>
+              <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="Search components…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
+              <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Recommended order</option><option value="name">Name A–Z</option></select>
             </div>
-            <div className="component-dock-scroll-area">
-            {(componentGroupBy === "category"
-              ? [...new Set(CATALOG.map((item) => item.category))].sort((a, b) => a.localeCompare(b)).map((category) => ({ title: category.toUpperCase(), description: ({ "AI / ML": "Models, embeddings, retrieval, and AI runtime", "API": "Public and internal API interfaces", "Cache": "Fast, temporary in-memory data", "Database": "Structured, document, graph, time-series, and vector databases", "Compute": "Application runtimes, workers, and containers", "Edge": "Client entry points and edge delivery", "Messaging": "Queues, events, streams, and message delivery", "Media": "Media processing, encoding, and delivery", "Network": "Private networking and traffic distribution", "Observability": "Logs, metrics, traces, and alerts", "Routing": "Request routing and API entry points", "Security": "Identity, access control, and protection", "Storage": "Files, objects, and durable blobs", "Reliability": "Resilience, recovery, and health", "Platform": "Shared configuration and platform services", "External": "Third-party services and integrations" } as Record<string, string>)[category] ?? `Components for ${category.toLowerCase()}`, categories: [category] }))
-              : [
-                { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
-                { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage, media and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration", "Media", "Messaging & Social", "Media & Streaming", "Commerce & Marketplace", "Developer Tools", "AI Assistant Apps", "Search & Discovery", "Collaboration & Productivity", "Maps & Delivery"] },
-                { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML", "Identity & Accounts", "Commerce & Billing", "Integration & Automation", "Cloud & Infrastructure"] },
-              ]
-            ).map((group) => {
-              const query = componentSearch.trim().toLowerCase();
-              const items = CATALOG.filter((item) => group.categories.includes(item.category))
-                .filter((item) => componentCategoryFilter === "all" || item.category === componentCategoryFilter)
-                .filter((item) => !query || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(query))
-                .sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : componentSort === "category" ? a.category.localeCompare(b.category) || a.label.localeCompare(b.label) : 0);
-              if (items.length === 0) return null;
-              return (
-                <div className="component-lane" key={group.title}>
-                  <div className="component-lane-label">
-                    <span>{group.title}</span>
-                    <small>{group.description}</small>
-                    <span className="component-lane-count">{items.length}</span>
-                  </div>
-                  <div className="component-dock-items" aria-label={group.title}>
-                    {items.map((item) => (
-                      <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(true); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} onDoubleClick={() => { addCatalogNode(item); setComponentLibraryOpen(false); setRightPanelOpen(true); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
-                        <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={14} /></span><span>{item.label}</span></span>
-                        <small>{item.category}</small>
-                      </button>
-                    ))}
-                  </div>
+            <div className="component-library-browser">
+              <nav className="component-library-categories" aria-label="Component categories">
+                {[...new Set(CATALOG.map((item) => item.category))].sort((a, b) => a.localeCompare(b)).map((category) => {
+                  const count = CATALOG.filter((item) => item.category === category).length;
+                  return <button type="button" key={category} className={libraryActiveCategory === category ? "is-active" : ""} onClick={() => { setLibraryActiveCategory(category); setComponentCategoryFilter(category); }} aria-current={libraryActiveCategory === category ? "true" : undefined}>
+                    <span className="component-category-icon"><CategoryIcon category={category} size={14} /></span><span>{category}</span><small>{count}</small>
+                  </button>;
+                })}
+              </nav>
+              <div className="component-library-results">
+                <div className="component-library-results-heading"><div><span className="section-kicker">{componentSearch.trim() ? "SEARCH RESULTS" : "COMPONENT CATEGORY"}</span><h3>{componentSearch.trim() ? "Matching components" : libraryActiveCategory}</h3><p>{componentSearch.trim() ? "Results across every category" : "Select a component to inspect it. Double-click to add it to the canvas."}</p></div><span className="component-results-count">{CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length} ITEMS</span></div>
+                <div className="component-library-node-grid">
+                  {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : 0).map((item) => <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(true); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} onDoubleClick={() => { addCatalogNode(item); setComponentLibraryOpen(false); setRightPanelOpen(true); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
+                    <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={15} /></span><span>{item.label}</span></span><small>{item.category}</small>
+                  </button>)}
+                  {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length === 0 && <div className="component-library-empty"><BookOpen size={22} /><strong>No components found</strong><span>Try another search term or category.</span></div>}
                 </div>
-              );
-            })}
+              </div>
             </div>
-          </section></>}
+
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
           <div className="canvas-toolbar">
             <div>
