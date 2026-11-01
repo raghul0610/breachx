@@ -523,3 +523,37 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 .app-shell .workspace-info-panel a,.app-shell .learn-reference-card a{color:#dce2e6!important;border-color:#7b8790!important}
 .app-shell .workspace-info-panel a:hover,.app-shell .learn-reference-card a:hover{color:#fff!important}
 @media(prefers-reduced-motion:reduce){.project-dashboard .project-card,.project-play-button{transition:none!important}}
+
+
+/* The interactive learning sandbox follows the same graphite-and-silver palette. */
+.app-shell .learn-practice {
+  background:linear-gradient(145deg,#20262b,#151a1e)!important;
+  border-color:#414b53!important;box-shadow:0 14px 42px rgba(0,0,0,.24)!important;
+}
+.app-shell .learn-practice-heading h3 { color:#eef1f3!important;font-size:16px!important; }
+.app-shell .learn-practice-heading p,.app-shell .learn-practice-trace p { color:#aeb8c0!important; }
+.app-shell .learn-practice-toolbar button,.app-shell .learn-practice-toolbar span {
+  color:#dce2e6!important;background:#252c31!important;border-color:#505b64!important;border-radius:7px!important;
+}
+.app-shell .learn-practice-toolbar button:hover { background:#39434a!important;border-color:#aeb8c0!important; }
+.app-shell .learn-practice-flow { background-color:#11171c!important;border-color:#46515a!important; }
+.app-shell .learn-practice-flow .react-flow__node,
+.app-shell .learn-practice-flow .react-flow__node-input,
+.app-shell .learn-practice-flow .react-flow__node-output {
+  color:#edf0f2!important;background:linear-gradient(145deg,#343d44,#20262b)!important;border-color:#aeb8c0!important;
+}
+.app-shell .learn-practice-flow .react-flow__handle { background:#dce2e6!important;border-color:#252c31!important; }
+.app-shell .learn-practice-flow .react-flow__edge-path { stroke:#c4cdd3!important; }
+.app-shell .learn-practice-flow .react-flow__edge-text { fill:#dce2e6!important; }
+.app-shell .learn-practice-flow .react-flow__controls { background:#20262b!important;border-color:#59646d!important; }
+.app-shell .learn-practice-flow .react-flow__controls-button { background:#252c31!important;border-color:#46515a!important;fill:#dce2e6!important; }
+.app-shell .learn-practice-trace { color:#aeb8c0!important;background:#151a1e!important;border-color:#414b53!important; }
+.app-shell .learn-practice-trace strong { color:#e3e8ec!important; }
+.app-shell .learn-practice-trace.success,.app-shell .learn-practice-trace.error { border-color:#68737b!important; }
+.app-shell .learn-practice-trace.success strong,.app-shell .learn-practice-trace.error strong { color:#e3e8ec!important; }
+.app-shell h1,.app-shell h2,.app-shell h3,.app-shell .project-card h2 {
+  background:linear-gradient(105deg,#f8fafb 0%,#aeb8c0 38%,#f4f6f7 62%,#89949d 82%,#f8fafb 100%);
+  background-size:180% 100%;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 7px rgba(220,228,234,.13));
+}
+.app-shell .project-card h2 { font-weight:600!important; }
