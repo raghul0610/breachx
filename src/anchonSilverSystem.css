@@ -915,3 +915,57 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
   .app-shell .workspace-navigation { top:112px!important;max-height:calc(100dvh - 124px)!important; }
   .app-shell .workspace-sidebar-reopen { top:calc(50% - 21px)!important; }
 }
+
+
+/* Final workspace drawer geometry: keep clear of the fixed top toolbar. */
+.app-shell .workspace .sidebar.left-panel.requirements-panel.workspace-navigation {
+  position:fixed!important;
+  top:100px!important;
+  bottom:20px!important;
+  left:64px!important;
+  width:min(330px,calc(100vw - 84px))!important;
+  max-width:min(330px,calc(100vw - 84px))!important;
+  height:auto!important;
+  max-height:calc(100dvh - 120px)!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  z-index:115!important;
+}
+.app-shell .workspace .sidebar.left-panel.requirements-panel.workspace-navigation.is-open {
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:translateX(0)!important;
+}
+.app-shell .workspace .sidebar.left-panel.requirements-panel.workspace-navigation.is-collapsed {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+.app-shell .workspace .workspace-sidebar-reopen {
+  position:fixed!important;
+  left:16px!important;
+  top:calc(50% - 21px)!important;
+  width:42px!important;
+  height:42px!important;
+  z-index:130!important;
+  touch-action:none!important;
+  cursor:grab!important;
+}
+.app-shell .workspace .workspace-sidebar-reopen:active { cursor:grabbing!important; }
+@media(max-width:600px) {
+  .app-shell .workspace .sidebar.left-panel.requirements-panel.workspace-navigation {
+    top:92px!important;
+    left:58px!important;
+    bottom:12px!important;
+    width:calc(100vw - 70px)!important;
+    max-width:calc(100vw - 70px)!important;
+    max-height:calc(100dvh - 104px)!important;
+  }
+  .app-shell .workspace .workspace-sidebar-reopen {
+    left:10px!important;
+    top:calc(50% - 21px)!important;
+  }
+}
