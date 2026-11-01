@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { Bot, Check, LoaderCircle, MessageSquare, Send, Sparkles, WandSparkles } from "lucide-react";
+import { Check, LoaderCircle, MessageSquare, Send, Sparkles, WandSparkles } from "lucide-react";
+import { AnchonLogo } from "./AnchonLogo";
 import { MarkerType, Position, type Edge, type Node } from "@xyflow/react";
 import { supabase } from "../lib/supabase";
 import { readApiResponse } from "../lib/apiResponse";
@@ -153,7 +154,7 @@ export function ArchitectureAIChat({
   return (
     <section className="architecture-ai-chat" aria-label="AI architecture assistant" data-tutorial="architecture-ai-chat">
       <div className="ai-chat-heading">
-        <div className="ai-chat-title-icon"><Bot size={16} /></div>
+        <div className="ai-chat-title-icon"><AnchonLogo size={21} /></div>
         <div className="ai-chat-title"><strong>ARCHITECTURE AI</strong><span>CRUD assistant · OpenRouter</span></div>
         <span className="ai-chat-live-dot" title="Assistant available" />
       </div>
