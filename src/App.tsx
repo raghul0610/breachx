@@ -4,8 +4,9 @@ import { LandingPage } from "./pages/LandingPage";
 import { ParticipantPage } from "./pages/ParticipantPage";
 import { ProjectDashboard } from "./components/ProjectDashboard";
 import { AuthGate } from "./components/AuthGate";
+import { AppSectionPage } from "./components/AppSectionPage";
 
-type AppMode = "home" | "projects" | "participant";
+type AppMode = "home" | "projects" | "participant" | "learn" | "guide" | "settings";
 type WorkspaceSection = "canvas" | "learn" | "guide" | "settings";
 
 function AppContent() {
@@ -22,13 +23,13 @@ function AppContent() {
           setInitialWorkspaceSection("canvas");
           setMode("participant");
         }}
-        onOpenWorkspaceSection={(projectId, section) => {
-          setSelectedProjectId(projectId);
-          setInitialWorkspaceSection(section);
-          setMode("participant");
-        }}
+        onOpenWorkspaceSection={(section) => setMode(section)}
       />
     );
+  }
+
+  if (mode === "learn" || mode === "guide" || mode === "settings") {
+    return <AppSectionPage section={mode} onNavigate={(section) => setMode(section)} />;
   }
 
   if (mode === "participant" && selectedProjectId) {
