@@ -595,3 +595,65 @@ button, input, textarea, select { font-family: var(--anchon-font-ui); }
  .app-learn-lesson { padding:17px; }
  .app-section-content { padding:18px 14px 28px !important; }
 }
+
+
+/* Architecture workspace navigation typography aligned with the app-wide Inter system. */
+.app-shell .workspace-navigation,
+.app-shell .workspace-navigation button,
+.app-shell .workspace-navigation p,
+.app-shell .workspace-navigation strong,
+.app-shell .workspace-navigation small,
+.app-shell .workspace-navigation .section-kicker {
+  font-family: var(--anchon-font-ui) !important;
+}
+.app-shell .workspace-navigation { background:#101311 !important; border-right:1px solid #292f2b !important; }
+.app-shell .workspace-nav-brand { gap:10px !important; border-bottom:1px solid #292f2b !important; }
+.app-shell .workspace-nav-brand .section-kicker { color:#84918a !important; font-size:9px !important; font-weight:600 !important; letter-spacing:.12em !important; }
+.app-shell .workspace-nav-brand p { color:#8e9992 !important; font-size:11px !important; font-weight:400 !important; }
+.app-shell .workspace-nav-item {
+  display:flex !important; align-items:center !important; gap:10px !important;
+  min-height:40px !important; padding:7px 10px !important;
+  color:#aab3ad !important; border:1px solid transparent !important;
+  border-radius:7px !important; font-size:12px !important; font-weight:550 !important;
+}
+.app-shell .workspace-nav-item > span { display:flex !important; flex-direction:column !important; gap:3px !important; min-width:0; }
+.app-shell .workspace-nav-item strong { color:inherit !important; font-size:12px !important; font-weight:600 !important; letter-spacing:-.01em !important; }
+.app-shell .workspace-nav-item small { color:#77837c !important; font-size:10px !important; font-weight:400 !important; line-height:1.3 !important; }
+.app-shell .workspace-nav-item > svg { color:#89958d !important; width:16px !important; height:16px !important; }
+.app-shell .workspace-nav-item:hover { color:#f1f4f2 !important; background:#1b211e !important; border-color:#303a33 !important; transform:none !important; }
+.app-shell .workspace-nav-item.is-active { color:#f1f4f2 !important; background:#1b211e !important; border-color:#35433b !important; box-shadow:none !important; }
+.app-shell .workspace-nav-item.is-active > svg { color:#55d6c2 !important; }
+.app-shell .workspace-nav-item.is-active small { color:#9ba89f !important; }
+.app-shell .workspace-navigation .requirements-panel-header,
+.app-shell .workspace-navigation .brief-card,
+.app-shell .workspace-navigation .requirements-status { font-family:var(--anchon-font-ui) !important; }
+.app-shell .workspace-navigation .requirements-panel-header h2,
+.app-shell .workspace-navigation .brief-card h2 { font-family:var(--anchon-font-ui) !important; letter-spacing:-.02em !important; }
+
+/* Double-click quick-add and editor shortcuts. */
+.app-shell .editor-shortcuts { color:#87948c !important; font:500 9px var(--anchon-font-data) !important; letter-spacing:0 !important; }
+.app-shell .component-library-node-grid .catalog-item { cursor:grab !important; }
+.app-shell .component-library-node-grid .catalog-item:active { cursor:grabbing !important; }
+.app-shell .bp-node { cursor:grab !important; }
+.app-shell .bp-node:active { cursor:grabbing !important; }
+.workspace-shortcuts-backdrop {
+  position:fixed; inset:0; z-index:1200; display:grid; place-items:center; padding:20px;
+  background:rgba(0,0,0,.66); backdrop-filter:blur(5px);
+}
+.workspace-shortcuts-dialog {
+  width:min(460px,100%); padding:20px; color:#edf3ef;
+  background:#171c18; border:1px solid #354139; border-radius:12px;
+  box-shadow:0 24px 80px rgba(0,0,0,.48);
+}
+.workspace-shortcuts-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.workspace-shortcuts-heading h2 { margin:6px 0 0; color:#f1f4f2; font:650 18px var(--anchon-font-ui); letter-spacing:-.035em; }
+.workspace-shortcuts-heading button { display:grid; place-items:center; width:30px; height:30px; color:#b4beb7; background:#252c27; border:1px solid #414b43; border-radius:7px; cursor:pointer; }
+.workspace-shortcuts-list { display:grid; }
+.workspace-shortcut-row { display:flex; align-items:center; justify-content:space-between; gap:14px; min-height:39px; border-bottom:1px solid #2b332d; color:#c1cbc3; font:450 11px var(--anchon-font-ui); }
+.workspace-shortcut-keys { display:flex; align-items:center; gap:5px; }
+.workspace-shortcut-keys kbd { padding:4px 7px; color:#e3ebe5; background:#252d27; border:1px solid #465148; border-radius:5px; font:550 9px var(--anchon-font-data); white-space:nowrap; }
+.workspace-shortcuts-dialog > p { margin:14px 0 0; color:#849188; font:400 10px/1.5 var(--anchon-font-ui); }
+@media(max-width:760px) {
+ .workspace-shortcuts-dialog { padding:16px; }
+ .app-shell .editor-shortcuts { display:none !important; }
+}
