@@ -847,6 +847,7 @@ function ParticipantEditor({
           {activeWorkspaceSection === "settings" && <div className="workspace-info-panel"><div className="section-kicker">WORKSPACE SETTINGS</div><h2>Canvas preferences</h2><p>Current project: <strong>{applicationName || "Untitled architecture"}</strong></p><p>{nodes.length} components · {edges.length} connections</p><p className="github-muted">Workspace preferences are currently managed per project. Additional editor preferences can be added here later.</p></div>}
           </div>
         </aside>
+        {!leftPanelOpen && <button type="button" className="workspace-sidebar-reopen" onClick={() => setLeftPanelOpen(true)} aria-label="Open workspace navigation" title="Open navigation"><PanelLeftOpen size={16} /></button>}
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
