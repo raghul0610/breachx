@@ -789,14 +789,14 @@ function ParticipantEditor({
             <button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse workspace navigation"><PanelLeftClose size={15} /></button>
           </div>
           <nav className="workspace-primary-nav" aria-label="Workspace sections">
-            <button type="button" className={`workspace-nav-item workspace-nav-canvas ${activeWorkspaceSection === "requirements" ? "is-active" : ""}`} onClick={() => setActiveWorkspaceSection("requirements")} aria-current={activeWorkspaceSection === "requirements" ? "page" : undefined}><Layers size={16} /><span><strong>Architecture canvas</strong><small>Return to your design</small></span></button>
+            <button type="button" className={`workspace-nav-item workspace-nav-canvas ${activeWorkspaceSection === "requirements" ? "is-active" : ""}`} onClick={() => { setChatOpen(false); setActiveWorkspaceSection("requirements"); }} aria-current={activeWorkspaceSection === "requirements" ? "page" : undefined}><Layers size={16} /><span><strong>Architecture canvas</strong><small>Return to your design</small></span></button>
             {([
               { id: "requirements", label: "Requirements", icon: FileText, hint: "Define the problem" },
               { id: "learn", label: "Learn", icon: BookOpen, hint: "System design academy" },
               { id: "guide", label: "Guide", icon: Sparkles, hint: "How to use ANCHON" },
               { id: "share", label: "Share", icon: Link2, hint: "Share your architecture" },
               { id: "settings", label: "Settings", icon: Layers, hint: "Workspace preferences" },
-            ] as const).map((item) => <button key={item.id} type="button" className={`workspace-nav-item ${activeWorkspaceSection === item.id ? "is-active" : ""}`} onClick={() => setActiveWorkspaceSection(item.id)} aria-current={activeWorkspaceSection === item.id ? "page" : undefined}>
+            ] as const).map((item) => <button key={item.id} type="button" className={`workspace-nav-item ${activeWorkspaceSection === item.id ? "is-active" : ""}`} onClick={() => { setChatOpen(false); setActiveWorkspaceSection(item.id); }} aria-current={activeWorkspaceSection === item.id ? "page" : undefined}>
               <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
             </button>)}
           </nav>
