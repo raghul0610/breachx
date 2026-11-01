@@ -930,7 +930,7 @@ function ParticipantEditor({
           }}
           aria-label={leftPanelOpen ? "Close workspace navigation" : "Open workspace navigation"}
           title="Drag to move or click to toggle navigation"
-        >{leftPanelOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}</button>}
+        >{leftPanelOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}</button>
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
