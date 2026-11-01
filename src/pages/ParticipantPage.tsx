@@ -780,7 +780,7 @@ function ParticipantEditor({
         </span></div>
       </header>
 
-      <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
+      <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         
         {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel workspace-navigation" aria-label="Workspace navigation">
           <div className="workspace-nav-brand">
@@ -789,6 +789,7 @@ function ParticipantEditor({
             <button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse workspace navigation"><PanelLeftClose size={15} /></button>
           </div>
           <nav className="workspace-primary-nav" aria-label="Workspace sections">
+            <button type="button" className={`workspace-nav-item workspace-nav-canvas ${activeWorkspaceSection === "requirements" ? "is-active" : ""}`} onClick={() => setActiveWorkspaceSection("requirements")} aria-current={activeWorkspaceSection === "requirements" ? "page" : undefined}><Workflow size={16} /><span><strong>Architecture canvas</strong><small>Return to your design</small></span></button>
             {([
               { id: "requirements", label: "Requirements", icon: FileText, hint: "Define the problem" },
               { id: "learn", label: "Learn", icon: BookOpen, hint: "System design academy" },
