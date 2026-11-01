@@ -203,6 +203,7 @@ function ParticipantEditor({
   const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
   const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
+  const [requirementsInspectorOpen, setRequirementsInspectorOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [requestTraceStep, setRequestTraceStep] = useState(-1);
   const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null);
@@ -446,7 +447,7 @@ function ParticipantEditor({
     const highestSeverity = (["critical", "high", "medium", "low"] as const).find((severity) => nodeFindings.some((finding) => finding.severity === severity));
     return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
   }), [nodes, requestTraceEdges, requestTraceStep, activeEvaluationResult]);
-  useEffect(() => { if (!selectedId) setRightPanelOpen(false); }, [selectedId]);
+  useEffect(() => { if (!selectedId && !requirementsInspectorOpen) setRightPanelOpen(false); }, [selectedId, requirementsInspectorOpen]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -811,9 +812,7 @@ function ParticipantEditor({
               >
                 <Sparkles size={13} /> RUN REQUEST
               </button>
-            </div></div><span className="status-pill">
-          {submitted ? "SUBMITTED · EDITABLE" : saveStatus === "saving" ? "SAVING…" : saveStatus === "error" ? "SAVE ERROR" : "SAVING TO CLOUD"}
-        </span></div>
+            </div></div><button type="button" className="primary-btn compact infer-requirements-action" onClick={() => { setRequirementsInspectorOpen(true); setRightPanelOpen(true); inferRequirementsFromArchitecture(); }} disabled={inferringRequirements || nodes.length === 0} title="Infer the functional capabilities and quality requirements represented by this architecture"><Sparkles size={13} /> {inferringRequirements ? "ANALYZING…" : "INFER REQUIREMENTS"}</button></div>
       </header>
 
       <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
@@ -859,7 +858,7 @@ function ParticipantEditor({
             </section>
             <section className="brief-card" aria-labelledby="inferred-requirements-title">
               <div className="brief-card-heading"><span className="brief-step">02</span><div><h2 id="inferred-requirements-title">Architecture requirements</h2><p>Agent-inferred from the current components and connections.</p></div></div>
-              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginTop: 12, marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
+
               {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
               {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
               {inferredRequirements && <>
@@ -999,10 +998,10 @@ function ParticipantEditor({
             deleteKeyCode={null}
             onConnect={onConnect}
             onReconnect={onReconnect}
-            onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
+            onNodeClick={(_, node) => { setRequirementsInspectorOpen(false); setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
             onNodeDoubleClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); window.setTimeout(() => document.querySelector<HTMLInputElement>(".right-panel input")?.focus(), 0); }}
-            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
-            onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); }}
+            onEdgeClick={(_, edge) => { setRequirementsInspectorOpen(false); setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
+            onPaneClick={() => { setRequirementsInspectorOpen(false); setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); }}
             onDragOver={(event) => {
               event.preventDefault();
               event.dataTransfer.dropEffect = "move";
@@ -1033,7 +1032,7 @@ function ParticipantEditor({
 
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-right ${rightPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize inspector sidebar" aria-orientation="vertical" title="Drag to resize inspector" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "right", start: event.clientX, initial: rightPanelWidth }); }}><GripVertical size={14} /></div>
         {rightPanelOpen ? <aside className="sidebar right-panel" data-tutorial="inspector">
-          <div className="panel-heading-row"><div className="section-kicker">INSPECTOR</div><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(false)} aria-label="Collapse inspector sidebar" title="Collapse sidebar"><PanelRightClose size={15} /></button></div>
+          <div className="panel-heading-row"><div className="section-kicker">INSPECTOR</div><button className="panel-toggle-button" type="button" onClick={() => { setRightPanelOpen(false); setRequirementsInspectorOpen(false); }} aria-label="Collapse inspector sidebar" title="Collapse sidebar"><PanelRightClose size={15} /></button></div>
 
           {selectedCatalogItem && selectedKnowledge ? (
             <div className="catalog-inspector">
@@ -1120,6 +1119,25 @@ function ParticipantEditor({
               <div className="catalog-inspector-title"><div className="catalog-component-icon"><Link2 size={18} /></div><div><div className="section-kicker">CONNECTION</div><h3>Directed connection</h3></div></div>
               <p className="catalog-summary">This connection carries flow from <strong>{nodes.find((node) => node.id === selectedEdge.source)?.data.label ?? selectedEdge.source}</strong> to <strong>{nodes.find((node) => node.id === selectedEdge.target)?.data.label ?? selectedEdge.target}</strong>.</p>
               <button className="danger-btn"  onClick={removeSelected}><Trash2 size={13} /> DELETE CONNECTION</button>
+            </div>
+          ) : requirementsInspectorOpen ? (
+            <div className="requirements-inspector">
+              <div className="section-kicker">ARCHITECTURE ANALYSIS</div>
+              <h3>Requirements this design addresses</h3>
+              {inferringRequirements && <p className="catalog-hint">Analyzing current components and connections…</p>}
+              {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
+              {!inferredRequirements && !inferringRequirements && <p className="catalog-hint">Run Infer Requirements to identify the functional capabilities and non-functional qualities represented by the current architecture.</p>}
+              {inferredRequirements && <>
+                <p className="catalog-summary">{inferredRequirements.summary}</p>
+                <section className="requirements-inspector-group"><h4>FUNCTIONAL REQUIREMENTS</h4>
+                  {inferredRequirements.functionalRequirements.length ? <ol>{inferredRequirements.functionalRequirements.map((item,index)=><li key={index}>{item}</li>)}</ol> : <p>No functional requirements could be inferred.</p>}
+                </section>
+                <section className="requirements-inspector-group"><h4>NON-FUNCTIONAL REQUIREMENTS</h4>
+                  {inferredRequirements.nonFunctionalRequirements.length ? <ol>{inferredRequirements.nonFunctionalRequirements.map((item,index)=><li key={index}>{item}</li>)}</ol> : <p>No non-functional requirements could be inferred.</p>}
+                </section>
+                {inferredRequirements.assumptions.length>0 && <details className="requirements-inspector-assumptions"><summary>Assumptions and unknowns</summary><ul>{inferredRequirements.assumptions.map((item,index)=><li key={index}>{item}</li>)}</ul></details>}
+                <p className="catalog-hint">Inferred from the current architecture; validate against the actual product brief.</p>
+              </>}
             </div>
           ) : (
             <div className="empty-inspector">
