@@ -171,7 +171,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
         ) : (
           <section className="project-grid" aria-label="Saved architecture projects" data-tutorial="project-grid">
             {projects.map((project) => (
-              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); setContextMenu({ project, x: Math.min(event.clientX, window.innerWidth - 190), y: Math.min(event.clientY, window.innerHeight - 160) }); }} aria-label={`${project.applicationName}, right-click for project actions`}>
+              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); setContextMenu({ project, x: Math.max(8, Math.min(event.clientX, window.innerWidth - 196)), y: Math.max(8, Math.min(event.clientY, window.innerHeight - 112)) }); }} aria-label={`${project.applicationName}, right-click for project actions`}>
                 <div className="project-card-heading">
                   <h2>{project.applicationName}</h2>
                   <button type="button" className="project-play-button" onClick={() => open(project.id)} aria-label={`Open ${project.applicationName}`} title="Open project"><Play size={14} fill="currentColor" /></button>
@@ -187,9 +187,8 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
       {contextMenu && (
         <div className="project-context-menu" role="menu" aria-label={`Actions for ${contextMenu.project.applicationName}`} style={{ left: contextMenu.x, top: contextMenu.y }} onPointerDown={(event) => event.stopPropagation()}>
           <div className="project-context-title">{contextMenu.project.applicationName}</div>
-          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); rename(project); }}><Pencil size={13} /> Rename</button>
-          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); duplicate(project); }}><Copy size={13} /> Duplicate</button>
-          <button type="button" role="menuitem" className="project-context-delete" onClick={() => { const project = contextMenu.project; setContextMenu(null); remove(project); }}><Trash2 size={13} /> Delete</button>
+          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); rename(project); }}><Pencil size={13} /> Edit project</button>
+          <button type="button" role="menuitem" className="project-context-delete" onClick={() => { const project = contextMenu.project; setContextMenu(null); remove(project); }}><Trash2 size={13} /> Delete project</button>
         </div>
       )}
       {dialog && (
