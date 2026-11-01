@@ -262,3 +262,24 @@ button, input, textarea, select { font-family: var(--anchon-font-ui); }
 .app-shell:not(.project-dashboard) .bp-node.selected { border-color: #55d6c2 !important; box-shadow: 0 0 0 2px rgba(85,214,194,.2),0 12px 28px rgba(0,0,0,.32) !important; }
 .app-shell:not(.project-dashboard) .handle { background: #55d6c2 !important; }
 .app-shell:not(.project-dashboard) .status-pill { border-color: rgba(85,214,194,.25) !important; background: rgba(85,214,194,.08) !important; color: #8de1d4 !important; }
+
+
+/* Final typography pass: one consistent, neutral product typeface. */
+.iad-root {
+  font-family: var(--anchon-font-ui) !important;
+}
+.iad-headline-wrap h1.iad-brand-title {
+  font-family: var(--anchon-font-ui) !important;
+  font-size: clamp(64px, 10vw, 112px) !important;
+  font-weight: 800 !important;
+  line-height: .98 !important;
+  letter-spacing: -.075em !important;
+  font-stretch: normal !important;
+}
+.auth-screen, .auth-card, .auth-card h1 {
+  font-family: var(--anchon-font-ui) !important;
+}
+.auth-card h1 {
+  font-weight: 750 !important;
+  letter-spacing: -.045em !important;
+}
