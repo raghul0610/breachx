@@ -312,9 +312,13 @@ function ParticipantEditor({
 
   useEffect(() => {
     if (requestTraceStep < 0 || requestTraceStep >= requestTraceEdges.length) return;
-    const timeout = window.setTimeout(() => setRequestTraceStep((step) => step + 1), 900);
+    const activeEdge = requestTraceEdges[requestTraceStep];
+    if (activeEdge?.target) {
+      void fitView({ nodes: [{ id: activeEdge.target }], padding: 0.58, duration: 680, maxZoom: 1.75 });
+    }
+    const timeout = window.setTimeout(() => setRequestTraceStep((step) => step + 1), 1550);
     return () => window.clearTimeout(timeout);
-  }, [requestTraceStep, requestTraceEdges.length]);
+  }, [requestTraceStep, requestTraceEdges, fitView]);
 
   const runRequestTrace = useCallback(() => {
     const result = evaluateSystemDesign({
@@ -433,8 +437,8 @@ function ParticipantEditor({
     return {
       ...edge, type: "curvedArchitectureEdge", animated: true,
       className: ["request-trace-edge", isTraceActive ? "is-active" : "", isTraceComplete ? "is-complete" : "", hasFinding ? "architecture-edge-issue" : ""].filter(Boolean).join(" "),
-      style: { ...edge.style, stroke: hasFinding ? "#fb7185" : accent, strokeWidth: hasFinding ? 3.4 : isTraceActive ? 4 : isTraceComplete ? 3 : 2.1, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.28 : 1 },
-      markerEnd: { type: MarkerType.ArrowClosed, color: hasFinding ? "#fb7185" : accent, width: 22, height: 22 },
+      style: { ...edge.style, stroke: hasFinding ? "#e2a0a0" : accent, strokeWidth: hasFinding ? 3.4 : isTraceActive ? 4.2 : isTraceComplete ? 3 : 2.7, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.42 : 1, filter: isTraceActive ? "drop-shadow(0 0 7px rgba(235,241,245,.88))" : "drop-shadow(0 0 3px rgba(210,220,228,.42))" },
+      markerEnd: { type: MarkerType.ArrowClosed, color: hasFinding ? "#e2a0a0" : "#dce3e8", width: 22, height: 22 },
       label: typeof edge.label === "string" ? edge.label : "",
       labelStyle: { ...edge.labelStyle, fill: hasFinding ? "#fda4af" : accent }, interactionWidth: 20,
     };
@@ -442,10 +446,11 @@ function ParticipantEditor({
   const tracedNodes = useMemo(() => nodes.map((node) => {
     const activeEdge = requestTraceEdges[requestTraceStep];
     const active = requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length && (activeEdge?.source === node.id || activeEdge?.target === node.id);
+    const traceTarget = activeEdge?.target === node.id;
     const complete = requestTraceStep > 0 && requestTraceEdges.slice(0, Math.min(requestTraceStep, requestTraceEdges.length)).some((edge) => edge.source === node.id || edge.target === node.id);
     const nodeFindings = activeEvaluationResult?.findings.filter((finding) => finding.nodeIds?.includes(node.id)) ?? [];
     const highestSeverity = (["critical", "high", "medium", "low"] as const).find((severity) => nodeFindings.some((finding) => finding.severity === severity));
-    return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
+    return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length, traceActive: traceTarget, traceStep: requestTraceStep + 1, traceFrom: activeEdge?.source ? nodes.find((item) => item.id === activeEdge.source)?.data.label ?? activeEdge.source : "", traceTo: activeEdge?.target ? nodes.find((item) => item.id === activeEdge.target)?.data.label ?? activeEdge.target : "" }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
   }), [nodes, requestTraceEdges, requestTraceStep, activeEvaluationResult]);
   useEffect(() => { if (!selectedId) setRightPanelOpen(false); }, [selectedId]);
   const selected = nodes.find((node) => node.id === selectedId);
@@ -817,7 +822,7 @@ function ParticipantEditor({
         </span></div>
       </header>
 
-      <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
+      <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "0px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "0px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         
         <aside className={`sidebar left-panel requirements-panel workspace-navigation ${leftPanelOpen ? "is-open" : "is-collapsed"}`} aria-label="Workspace navigation">
           <div className="workspace-nav-brand">
@@ -895,6 +900,7 @@ function ParticipantEditor({
           </main>}
 
         {!leftPanelOpen && <button type="button" className="workspace-sidebar-reopen" onClick={() => setLeftPanelOpen(true)} aria-label="Open workspace navigation" title="Open navigation"><PanelLeftOpen size={16} /></button>}
+        {!rightPanelOpen && <button type="button" className="workspace-inspector-reopen" onClick={() => { setRightPanelOpen(true); if (!selectedId && nodes[0]) setSelectedId(nodes[0].id); }} aria-label="Open inspector" title="Open inspector"><PanelRightOpen size={16} /></button>}
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
