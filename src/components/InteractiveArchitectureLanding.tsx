@@ -198,7 +198,6 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         <div className="iad-bottom-copy"><span className="iad-overline">YOUR TURN</span><h2>Now design <span>your own.</span></h2><p>ANCHON turns your application idea into a connected, inspectable architecture. Build it visually or let AI propose a starting point.</p></div>
         <button className="iad-open-btn" onClick={onOpenDesigner}>Open architecture designer <ArrowRight size={16} /></button>
       </section>
-      <div className="iad-cursor-overlay" aria-hidden="true"><SwarmCursor count={360} size={2.1} color="#bcb3d6" accentColor="#55d6c2" spread={90} speed={0.72} swirl={0.62} tail={0.46} trail={0.48} wander={0.5} depth={0.62} targets="" idle="roam" clickEffect="pulse" intro enabled style={{ width: "100%", height: "100%" }} /></div>
       <div className="iad-footnote"><span><LockKeyhole size={11} /> BUILT FOR CLEARER SYSTEM THINKING</span><span><Layers3 size={11} /> VISUALIZE · CONNECT · REFINE</span><span><Zap size={11} /> INTERACTIVE BY DESIGN</span></div>
     </main>
   );
