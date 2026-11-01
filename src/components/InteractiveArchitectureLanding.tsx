@@ -1,4 +1,5 @@
 import { AnchonLogo } from "./AnchonLogo";
+import LiquidChrome from "./LiquidChrome";
 import { useEffect, useState } from "react";
 import {
   ArrowDownRight, ArrowRight, Check, CircleDot, Database, GitBranch,
@@ -90,6 +91,9 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
 
   return (
     <main className="iad-root" data-theme={theme}>
+      <div className="iad-liquid-background" aria-hidden="true">
+        <LiquidChrome color="#ffffff" speed={0.2} amplitude={0.3} detail={4} thickness={1} interactive={true} />
+      </div>
       <div className="iad-atmosphere" aria-hidden="true">
         <div className="iad-orbit iad-orbit-one" />
         <div className="iad-orbit iad-orbit-two" />
