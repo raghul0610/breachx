@@ -18,6 +18,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [dialog, setDialog] = useState<{ type: "rename"; project: ArchitectureProject; name: string } | { type: "delete"; project: ArchitectureProject } | null>(null);
 
   const refresh = useCallback(() => {
     try {
@@ -65,10 +66,15 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
   };
 
   const rename = (project: ArchitectureProject) => {
-    const name = window.prompt("New project name", project.applicationName);
-    if (name === null) return;
+    setDialog({ type: "rename", project, name: project.applicationName });
+  };
+
+  const submitRename = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (dialog?.type !== "rename") return;
     try {
-      renameProject(project.id, name);
+      renameProject(dialog.project.id, dialog.name);
+      setDialog(null);
       refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not rename this project.");
@@ -85,17 +91,21 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
     }
   };
 
-  const remove = async (project: ArchitectureProject) => {
-    if (!window.confirm(`Delete "${project.applicationName}"? This cannot be undone.`)) return;
+  const remove = (project: ArchitectureProject) => setDialog({ type: "delete", project });
+
+  const confirmDelete = async () => {
+    if (dialog?.type !== "delete") return;
+    const project = dialog.project;
+    setBusy(true);
     try {
-      void deleteOwnedProject(project.id).then(() => {
-        deleteProject(project.id);
-        refresh();
-      }).catch((cause: unknown) => {
-        setError(cause instanceof Error ? cause.message : "Could not delete this project from the cloud.");
-      });
+      await deleteOwnedProject(project.id);
+      deleteProject(project.id);
+      setDialog(null);
+      refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not delete this project.");
+      setError(cause instanceof Error ? cause.message : "Could not delete this project from the cloud.");
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -172,6 +182,35 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
         <p className="project-storage-note">Cloud persistence is enabled. If a save fails, the cloud-sync banner at the top will show the error.</p>
       </main>
       </div>
+      {dialog && (
+        <div className="dashboard-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) setDialog(null); }}>
+          <section className="dashboard-dialog" role="dialog" aria-modal="true" aria-labelledby="dashboard-dialog-title">
+            {dialog.type === "rename" ? (
+              <form onSubmit={submitRename}>
+                <div className="dashboard-dialog-kicker">PROJECT SETTINGS</div>
+                <h2 id="dashboard-dialog-title">Rename project</h2>
+                <p>Choose a clear name for this architecture workspace.</p>
+                <label htmlFor="dashboard-project-name">Project name</label>
+                <input id="dashboard-project-name" autoFocus maxLength={80} value={dialog.name} onChange={(event) => setDialog({ ...dialog, name: event.target.value })} required />
+                <div className="dashboard-dialog-actions">
+                  <button type="button" className="dashboard-dialog-secondary" onClick={() => setDialog(null)}>Cancel</button>
+                  <button type="submit" className="dashboard-dialog-primary" disabled={!dialog.name.trim()}>Save changes</button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div className="dashboard-dialog-kicker is-danger">DELETE PROJECT</div>
+                <h2 id="dashboard-dialog-title">Delete this project?</h2>
+                <p><strong>{dialog.project.applicationName}</strong> and its saved architecture will be removed. This action cannot be undone.</p>
+                <div className="dashboard-dialog-actions">
+                  <button type="button" className="dashboard-dialog-secondary" onClick={() => setDialog(null)} disabled={busy}>Cancel</button>
+                  <button type="button" className="dashboard-dialog-danger" onClick={confirmDelete} disabled={busy}>{busy ? "Deleting…" : "Delete project"}</button>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      )}
       <InteractiveTutorial page="dashboard" />
     </div>
   );
