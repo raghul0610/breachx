@@ -2598,3 +2598,42 @@ body, .app-shell, .home, .lp-root {
  .workspace-section-learn .workspace-navigation .workspace-nav-content,.workspace-section-guide .workspace-navigation .workspace-nav-content,.workspace-section-share .workspace-navigation .workspace-nav-content,.workspace-section-settings .workspace-navigation .workspace-nav-content{top:58px!important;left:0!important;padding:20px 14px 32px!important}
  .workspace-navigation.is-open{width:min(270px,84vw)!important}
 }
+
+
+/* Section pages render in the main viewport, outside the visual bounds of the sidebar. */
+.workspace-navigation.is-open{transform:none!important;overflow:visible!important}
+.workspace-section-learn .workspace-navigation .workspace-nav-content,
+.workspace-section-guide .workspace-navigation .workspace-nav-content,
+.workspace-section-share .workspace-navigation .workspace-nav-content,
+.workspace-section-settings .workspace-navigation .workspace-nav-content{
+ position:fixed!important;z-index:46!important;top:68px!important;bottom:0!important;left:250px!important;right:0!important;
+ width:auto!important;height:auto!important;max-height:none!important;min-height:0!important;
+ overflow-y:auto!important;overflow-x:hidden!important;padding:34px clamp(22px,5vw,76px) 48px!important;
+ background:radial-gradient(ellipse at 50% 0%,rgba(117,86,171,.10),transparent 48%),#0b1019!important;
+ border-left:1px solid rgba(148,163,184,.12)!important;scrollbar-width:thin!important;scrollbar-color:#514767 #111722!important;
+}
+.workspace-section-learn .workspace-navigation .workspace-nav-content>*,
+.workspace-section-guide .workspace-navigation .workspace-nav-content>*,
+.workspace-section-share .workspace-navigation .workspace-nav-content>*,
+.workspace-section-settings .workspace-navigation .workspace-nav-content>*{max-width:980px;margin-left:auto!important;margin-right:auto!important}
+.workspace-section-learn .workspace-navigation .learn-layout{max-width:980px;margin:0 auto}
+.workspace-section-learn .workspace-navigation .learn-topic-content{padding:24px;min-height:360px}
+.workspace-section-learn .workspace-navigation .learn-topic-nav{position:sticky;top:0;z-index:2;flex-wrap:wrap;padding:8px 0;background:#0b1019ed;backdrop-filter:blur(12px)}
+.workspace-section-guide .workspace-info-panel,.workspace-section-share .workspace-info-panel,.workspace-section-settings .workspace-info-panel{max-width:980px!important;margin:0 auto!important;padding:14px 0!important}
+.workspace-section-guide .workspace-info-panel h2,.workspace-section-share .workspace-info-panel h2,.workspace-section-settings .workspace-info-panel h2{font-size:clamp(24px,3vw,36px)!important}
+.workspace-section-guide .workspace-info-panel ol{font-size:14px!important;line-height:1.9!important}
+.workspace-section-guide .workspace-info-panel li{padding:8px 0}
+.workspace-section-guide .workspace-info-panel li::marker{color:#a78bfa}
+.workspace-section-share .workspace-info-panel p,.workspace-section-settings .workspace-info-panel p{font-size:14px!important;line-height:1.7!important}
+.workspace-section-learn .canvas-column,.workspace-section-guide .canvas-column,.workspace-section-share .canvas-column,.workspace-section-settings .canvas-column,
+.workspace-section-learn .right-panel,.workspace-section-guide .right-panel,.workspace-section-share .right-panel,.workspace-section-settings .right-panel{display:none!important}
+.workspace-navigation.is-collapsed{transform:translateX(-100%)!important;overflow:hidden!important}
+@media(max-width:700px){
+ .workspace-section-learn .workspace-navigation .workspace-nav-content,.workspace-section-guide .workspace-navigation .workspace-nav-content,
+ .workspace-section-share .workspace-navigation .workspace-nav-content,.workspace-section-settings .workspace-navigation .workspace-nav-content{
+  top:58px!important;left:0!important;padding:22px 16px 36px!important;border-left:0!important;
+ }
+ .workspace-section-learn .workspace-navigation.is-open,.workspace-section-guide .workspace-navigation.is-open,
+ .workspace-section-share .workspace-navigation.is-open,.workspace-section-settings .workspace-navigation.is-open{width:min(270px,84vw)!important}
+ .workspace-section-learn .workspace-navigation .learn-topic-content{padding:16px!important}
+}
