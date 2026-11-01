@@ -711,3 +711,20 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 @media(prefers-reduced-motion:reduce) {
   .app-shell .workspace-navigation,.app-shell .workspace-primary-nav .workspace-nav-item { transition:none!important; }
 }
+
+
+/* Automatic, intermittent metallic sweep on the landing-page wordmark. */
+.iad-headline-wrap h1.iad-brand-title.is-auto-shining {
+  animation:anchon-wordmark-shine 1.25s ease-in-out both;
+}
+@keyframes anchon-wordmark-shine {
+  0% { background-position:0 0,0% 50%;filter:drop-shadow(0 2px 10px rgba(210,220,228,.08)); }
+  38% { background-position:0 0,100% 50%;filter:drop-shadow(0 0 13px rgba(239,245,249,.56)) drop-shadow(0 0 34px rgba(196,207,216,.34)); }
+  72% { background-position:0 0,72% 50%;filter:drop-shadow(0 0 8px rgba(229,236,241,.28)); }
+  100% { background-position:0 0,0% 50%;filter:drop-shadow(0 2px 10px rgba(210,220,228,.08)); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .iad-headline-wrap h1.iad-brand-title.is-auto-shining { animation:none!important; }
+}
+.app-shell .floating-ai-chat-trigger .anchon-bubble-mark { width:30px!important;height:30px!important; }
+.app-shell .floating-ai-chat-trigger .anchon-bubble-mark svg { width:27px!important;height:27px!important; }
