@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Copy, FolderPlus, Github, Pencil, Plus, Trash2, Workflow } from "lucide-react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { ArrowLeft, BookOpen, Copy, FolderPlus, Github, Layers3, Pencil, Play, Plus, Settings, Sparkles, Trash2, Workflow } from "lucide-react";
 import {
   createProject,
   deleteProject,
@@ -13,11 +13,17 @@ import { deleteOwnedProject } from "../lib/projectsRepository";
 import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
 import { ShapeGridBackground } from "./ShapeGridBackground";
+import { AnchonLogo } from "./AnchonLogo";
 
-export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void; onOpenProject: (projectId: string) => void }) {
+export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection }: { onBack: () => void; onOpenProject: (projectId: string) => void; onOpenWorkspaceSection: (section: "learn" | "guide" | "settings") => void }) {
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [dialog, setDialog] = useState<{ type: "rename"; project: ArchitectureProject; name: string } | { type: "delete"; project: ArchitectureProject } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ project: ArchitectureProject; x: number; y: number } | null>(null);
+  const [lastOpened, setLastOpened] = useState<Record<string, string>>({});
+  const markOpened = (id: string) => { const timestamp = new Date().toISOString(); try { window.localStorage.setItem(`anchon:project-last-opened:${id}`, timestamp); } catch { /* local tracking is optional */ } setLastOpened(current => ({ ...current, [id]: timestamp })); };
+  const formatLastOpened = (id: string) => { const value = lastOpened[id]; if (!value) return "Not opened yet"; const date = new Date(value); return Number.isNaN(date.getTime()) ? "Not opened yet" : `Last opened ${date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · ${date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`; };
 
   const refresh = useCallback(() => {
     try {
@@ -28,12 +34,22 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { refresh(); try { const values: Record<string, string> = {}; for (const project of listProjects()) { const value = window.localStorage.getItem(`anchon:project-last-opened:${project.id}`); if (value) values[project.id] = value; } setLastOpened(values); } catch { /* Last-opened metadata is best effort. */ } }, [refresh]);
+
+  useEffect(() => {
+    if (!dialog) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !busy) setDialog(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [dialog, busy]);
 
   const create = () => {
     try {
       setBusy(true);
       const project = createProject();
+      markOpened(project.id);
       refresh();
       onOpenProject(project.id);
     } catch (cause) {
@@ -46,6 +62,8 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
   const open = (projectId: string) => {
     try {
       setActiveProject(projectId);
+      markOpened(projectId);
+      setContextMenu(null);
       onOpenProject(projectId);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not open this project.");
@@ -53,11 +71,19 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
     }
   };
 
+  const openWorkspaceSection = (section: "learn" | "guide" | "settings") => onOpenWorkspaceSection(section);
+  useEffect(() => { if (!contextMenu) return; const close = () => setContextMenu(null); const keydown = (event: KeyboardEvent) => { if (event.key === "Escape") close(); }; window.addEventListener("pointerdown", close); window.addEventListener("resize", close); window.addEventListener("scroll", close, true); window.addEventListener("keydown", keydown); return () => { window.removeEventListener("pointerdown", close); window.removeEventListener("resize", close); window.removeEventListener("scroll", close, true); window.removeEventListener("keydown", keydown); }; }, [contextMenu]);
+
   const rename = (project: ArchitectureProject) => {
-    const name = window.prompt("New project name", project.applicationName);
-    if (name === null) return;
+    setDialog({ type: "rename", project, name: project.applicationName });
+  };
+
+  const submitRename = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (dialog?.type !== "rename") return;
     try {
-      renameProject(project.id, name);
+      renameProject(dialog.project.id, dialog.name);
+      setDialog(null);
       refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not rename this project.");
@@ -74,23 +100,40 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
     }
   };
 
-  const remove = async (project: ArchitectureProject) => {
-    if (!window.confirm(`Delete "${project.applicationName}"? This cannot be undone.`)) return;
+  const remove = (project: ArchitectureProject) => setDialog({ type: "delete", project });
+
+  const confirmDelete = async () => {
+    if (dialog?.type !== "delete") return;
+    const project = dialog.project;
+    setBusy(true);
     try {
-      void deleteOwnedProject(project.id).then(() => {
-        deleteProject(project.id);
-        refresh();
-      }).catch((cause: unknown) => {
-        setError(cause instanceof Error ? cause.message : "Could not delete this project from the cloud.");
-      });
+      await deleteOwnedProject(project.id);
+      deleteProject(project.id);
+      setDialog(null);
+      refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not delete this project.");
+      setError(cause instanceof Error ? cause.message : "Could not delete this project from the cloud.");
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
     <div className="app-shell project-dashboard">
       <ShapeGridBackground />
+      <aside className="dashboard-sidebar" aria-label="Main navigation">
+        <a className="dashboard-brand" href="#" onClick={(event) => { event.preventDefault(); onBack(); }} aria-label="ANCHON home"><span className="dashboard-brand-mark"><AnchonLogo size={25} /></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></a>
+        <div className="dashboard-nav-label">WORKSPACE</div>
+        <nav className="dashboard-nav">
+          <button type="button" className="is-active" aria-current="page"><Layers3 size={17} /><span>Projects</span><span className="dashboard-nav-count">{projects.length}</span></button>
+          <button type="button" onClick={() => openWorkspaceSection("learn")}><BookOpen size={17} /><span>Learn</span></button>
+          <button type="button" onClick={() => openWorkspaceSection("guide")}><Sparkles size={17} /><span>Guide</span></button>
+        </nav>
+        <div className="dashboard-sidebar-spacer" />
+        <div className="dashboard-nav dashboard-nav-bottom"><button type="button" onClick={() => openWorkspaceSection("settings")}><Settings size={17} /><span>Settings</span></button></div>
+        <div className="dashboard-sidebar-footer"><span className="dashboard-status-dot" /> Private workspace</div>
+      </aside>
+      <div className="dashboard-main">
       <header className="topbar">
         <button className="nav-btn" onClick={onBack}><ArrowLeft size={14} /> HOME</button>
         <div><strong>ANCHON</strong><span className="topbar-sub"> // PROJECT WORKSPACE</span></div>
@@ -127,26 +170,56 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
         ) : (
           <section className="project-grid" aria-label="Saved architecture projects" data-tutorial="project-grid">
             {projects.map((project) => (
-              <article className="project-card panel" key={project.id}>
-                <div className="project-card-top">
-                  <span className={`project-status ${project.status === "submitted" ? "is-submitted" : ""}`}>{project.status === "submitted" ? "SUBMITTED · EDITABLE" : "DRAFT"}</span>
-                  <span className="project-count">{project.nodes.length} components · {project.edges.length} connections</span>
+              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); setContextMenu({ project, x: Math.min(event.clientX, window.innerWidth - 190), y: Math.min(event.clientY, window.innerHeight - 160) }); }} aria-label={`${project.applicationName}, right-click for project actions`}>
+                <div className="project-card-heading">
+                  <h2>{project.applicationName}</h2>
+                  <button type="button" className="project-play-button" onClick={() => open(project.id)} aria-label={`Open ${project.applicationName}`} title="Open project"><Play size={14} fill="currentColor" /></button>
                 </div>
-                <h2>{project.applicationName}</h2>
-                <p className="project-description">{project.applicationDescription || "No requirements added yet."}</p>
-                <div className="project-updated">UPDATED {new Date(project.updatedAt).toLocaleString()}</div>
-                <div className="project-actions" data-tutorial="project-actions">
-                  <button className="primary-btn compact" onClick={() => open(project.id)}>{project.status === "submitted" ? "VIEW PROJECT" : "OPEN PROJECT"}</button>
-                  <button className="icon-btn" onClick={() => rename(project)} aria-label={`Rename ${project.applicationName}`} title="Rename"><Pencil size={13} /></button>
-                  <button className="icon-btn" onClick={() => duplicate(project)} aria-label={`Duplicate ${project.applicationName}`} title="Duplicate"><Copy size={13} /></button>
-                  <button className="icon-btn project-delete" onClick={() => remove(project)} aria-label={`Delete ${project.applicationName}`} title="Delete"><Trash2 size={13} /></button>
-                </div>
+                <p className="project-last-opened">{formatLastOpened(project.id)}</p>
               </article>
             ))}
           </section>
         )}
         <p className="project-storage-note">Cloud persistence is enabled. If a save fails, the cloud-sync banner at the top will show the error.</p>
       </main>
+      </div>
+      {contextMenu && (
+        <div className="project-context-menu" role="menu" aria-label={`Actions for ${contextMenu.project.applicationName}`} style={{ left: contextMenu.x, top: contextMenu.y }} onPointerDown={(event) => event.stopPropagation()}>
+          <div className="project-context-title">{contextMenu.project.applicationName}</div>
+          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); rename(project); }}><Pencil size={13} /> Rename</button>
+          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); duplicate(project); }}><Copy size={13} /> Duplicate</button>
+          <button type="button" role="menuitem" className="project-context-delete" onClick={() => { const project = contextMenu.project; setContextMenu(null); remove(project); }}><Trash2 size={13} /> Delete</button>
+        </div>
+      )}
+      {dialog && (
+        <div className="dashboard-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) setDialog(null); }}>
+          <section className="dashboard-dialog" role="dialog" aria-modal="true" aria-labelledby="dashboard-dialog-title">
+            {dialog.type === "rename" ? (
+              <form onSubmit={submitRename}>
+                <div className="dashboard-dialog-kicker">PROJECT SETTINGS</div>
+                <h2 id="dashboard-dialog-title">Rename project</h2>
+                <p>Choose a clear name for this architecture workspace.</p>
+                <label htmlFor="dashboard-project-name">Project name</label>
+                <input id="dashboard-project-name" autoFocus maxLength={80} value={dialog.name} onChange={(event) => setDialog({ ...dialog, name: event.target.value })} required />
+                <div className="dashboard-dialog-actions">
+                  <button type="button" className="dashboard-dialog-secondary" onClick={() => setDialog(null)}>Cancel</button>
+                  <button type="submit" className="dashboard-dialog-primary" disabled={!dialog.name.trim()}>Save changes</button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div className="dashboard-dialog-kicker is-danger">DELETE PROJECT</div>
+                <h2 id="dashboard-dialog-title">Delete this project?</h2>
+                <p><strong>{dialog.project.applicationName}</strong> and its saved architecture will be removed. This action cannot be undone.</p>
+                <div className="dashboard-dialog-actions">
+                  <button type="button" className="dashboard-dialog-secondary" onClick={() => setDialog(null)} disabled={busy}>Cancel</button>
+                  <button type="button" className="dashboard-dialog-danger" onClick={confirmDelete} disabled={busy}>{busy ? "Deleting…" : "Delete project"}</button>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      )}
       <InteractiveTutorial page="dashboard" />
     </div>
   );
