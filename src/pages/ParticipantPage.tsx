@@ -34,6 +34,7 @@ import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 import { LearnPracticeCanvas } from "../components/LearnPracticeCanvas";
 import { WorkspaceGuide, WorkspaceShare, WorkspaceSettings } from "../components/WorkspacePanels";
 import { evaluateSystemDesign, type EvaluationResult } from "../lib/evaluationEngine";
+import { ModalDialog } from "../components/ModalDialog";
 
 
 
@@ -203,6 +204,7 @@ function ParticipantEditor({
   const [evaluationResult, setEvaluationResult] = useState<EvaluationResult | null>(null);
   const [evaluationFingerprint, setEvaluationFingerprint] = useState<string | null>(null);
   const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null);
+  const [connectionAlert, setConnectionAlert] = useState<{ open: boolean; title: string; message: string } | null>(null);
   const currentEvaluationFingerprint = useMemo(() => JSON.stringify({
     name: applicationName,
     description: applicationDescription,
@@ -512,7 +514,11 @@ function ParticipantEditor({
       const dnsTypes = new Set(["dns", "authoritative_dns", "dns_resolver"]);
       const databaseTypes = new Set(["database", "nosql_database", "graph_database", "time_series_db", "database_replica", "database_shard"]);
       if ((dnsTypes.has(sourceType) && databaseTypes.has(targetType)) || (databaseTypes.has(sourceType) && dnsTypes.has(targetType))) {
-        window.alert("Connection needs a second look\n\nDNS resolves names to network endpoints; it does not carry database queries or application data. Connect the client or application to DNS for name resolution, then connect the application service to the database.\n\nYou can still model an unusual relationship with a labeled edge if your design has a specific reason.");
+        setConnectionAlert({
+          open: true,
+          title: "Connection Advisory",
+          message: "DNS resolves names to network endpoints; it does not carry database queries or application data. Connect the client or application to DNS for name resolution, then connect the application service to the database. You can still model an unusual relationship with a labeled edge if your design has a specific reason."
+        });
         return;
       }
 
@@ -745,41 +751,219 @@ function ParticipantEditor({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, setNodes, setEdges]);
 
+  
+  const renderProjectBrief = () => (
+    <>
+      <div className="requirements-panel-header">
+        <div className="requirements-mark"><FileText size={16} /></div>
+        <div>
+          <div className="section-kicker">PROJECT BRIEF</div>
+          <p>Start with the problem. Shape the system around it.</p>
+        </div>
+      </div>
+      <section className="brief-card" aria-labelledby="brief-identity-title">
+        <div className="brief-card-heading">
+          <span className="brief-step">01</span>
+          <div>
+            <h2 id="brief-identity-title">Project identity</h2>
+            <p>Give this architecture a clear name.</p>
+          </div>
+        </div>
+        <div className="field">
+          <label htmlFor="application-name">APPLICATION NAME</label>
+          <input
+            id="application-name"
+            value={applicationName}
+            onChange={(event) => setApplicationName(event.target.value)}
+            placeholder="e.g. Real-time chat platform"
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="application-description">PRODUCT BRIEF &amp; CORE USER JOURNEYS</label>
+          <textarea
+            id="application-description"
+            value={applicationDescription}
+            onChange={(event) => setApplicationDescription(event.target.value)}
+            rows={5}
+            placeholder="Who uses this product? What are the main journeys? Include expected users, peak traffic, data sensitivity, latency and availability targets, and constraints."
+          />
+        </div>
+      </section>
+      <section className="brief-card" aria-labelledby="inferred-requirements-title">
+        <div className="brief-card-heading">
+          <span className="brief-step">02</span>
+          <div>
+            <h2 id="inferred-requirements-title">Architecture requirements</h2>
+            <p>Agent-inferred from the current components and connections.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="primary-btn compact"
+          onClick={inferRequirementsFromArchitecture}
+          disabled={inferringRequirements || nodes.length === 0}
+          style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}
+        >
+          <Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}
+        </button>
+        {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
+        {!inferredRequirements && !inferringRequirements && (
+          <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>
+        )}
+        {inferredRequirements && (
+          <>
+            <p style={{ color: "#94a3b8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
+            <div style={{ marginTop: 14 }}>
+              <h3 style={{ color: "#8ab4f8", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>
+              {inferredRequirements.functionalRequirements.length ? (
+                <ol style={{ paddingLeft: 18, margin: 0, color: "#cbd5e1", fontSize: 11, lineHeight: 1.65 }}>
+                  {inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}
+                </ol>
+              ) : <p className="github-muted">No functional requirements could be inferred.</p>}
+            </div>
+            <div style={{ marginTop: 14 }}>
+              <h3 style={{ color: "#8ab4f8", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>
+              {inferredRequirements.nonFunctionalRequirements.length ? (
+                <ol style={{ paddingLeft: 18, margin: 0, color: "#cbd5e1", fontSize: 11, lineHeight: 1.65 }}>
+                  {inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}
+                </ol>
+              ) : <p className="github-muted">No non-functional requirements could be inferred.</p>}
+            </div>
+            {inferredRequirements.assumptions.length > 0 && (
+              <details style={{ marginTop: 12, color: "#94a3b8", fontSize: 11 }}>
+                <summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary>
+                <ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>
+                  {inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}
+                </ul>
+              </details>
+            )}
+            <p style={{ color: "#64748b", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>
+              These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.
+            </p>
+          </>
+        )}
+      </section>
+      <div className="requirements-status" role="status">
+        <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
+        <div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div>
+        <small className={saveStatus === "error" ? "requirements-save-error" : ""}>
+          <span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />
+          {saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}
+        </small>
+      </div>
+    </>
+  );
+
   return (
     <div className="app-shell">
       <header className="topbar">
-        <button className="nav-btn" onClick={onBack}>
-          <ArrowLeft size={14} /> HOME
-        </button>
-        <div>
-          <strong>ANCHON</strong>
-          <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
+        <div className="topbar-left">
+          <button className="nav-btn topbar-back-btn" onClick={onBack} title="Back to Projects">
+            <ArrowLeft size={14} />
+            <span>Projects</span>
+          </button>
+          <div className="topbar-divider" />
+          <div className="topbar-project-info">
+            <span className="topbar-project-title" title={applicationName || "Untitled Architecture"}>
+              {applicationName || "Untitled Architecture"}
+            </span>
+            <span className="status-pill">
+              <span className={`status-dot ${saveStatus === "saving" ? "status-dot-saving" : saveStatus === "error" ? "status-dot-error" : "status-dot-saved"}`} />
+              {saveStatus === "saving" ? "Saving…" : saveStatus === "error" ? "Save error" : "Saved to cloud"}
+            </span>
+          </div>
         </div>
-        <div className="topbar-right"><div className="topbar-actions"><div className="toolbar-actions topbar-toolbar-actions">
-              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); setRightPanelOpen(false); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
-              <label className="component-search-inline"><BookOpen size={13} /><input aria-label="Search architecture components" placeholder="Search components…" value={componentSearch} onChange={(event) => { setComponentSearch(event.target.value); setComponentLibraryOpen(true); }} onFocus={() => { setComponentLibraryOpen(true); setRightPanelOpen(true); }} /></label>
-              <button type="button" className="topbar-add-component-button" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={"Add " + (selectedCatalogItem?.label ?? CATALOG[0].label) + " to the canvas"}><PlusCircle size={13} /> ADD COMPONENT</button>
-              <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
-              <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
-              <button data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
-              <button
-                data-tutorial="save-draft"
-                onClick={() => save(submitted ? "submitted" : "draft")}
-                disabled={persisting}
-              >
-                <Save size={13} /> {persisting ? "SAVING…" : submitted ? "SAVE CHANGES" : "SAVE DRAFT"}
+
+        <nav className="topbar-nav-tabs" aria-label="Workspace views">
+          <button
+            type="button"
+            className={`topbar-tab-btn ${activeWorkspaceSection === "canvas" ? "is-active" : ""}`}
+            onClick={() => { setChatOpen(false); setActiveWorkspaceSection("canvas"); }}
+          >
+            <Layers size={13} />
+            <span>Canvas</span>
+          </button>
+          <button
+            type="button"
+            className={`topbar-tab-btn ${activeWorkspaceSection === "requirements" ? "is-active" : ""}`}
+            onClick={() => { setChatOpen(false); setActiveWorkspaceSection("requirements"); }}
+          >
+            <FileText size={13} />
+            <span>Requirements</span>
+          </button>
+          <button
+            type="button"
+            className={`topbar-tab-btn ${activeWorkspaceSection === "learn" ? "is-active" : ""}`}
+            onClick={() => { setChatOpen(false); setActiveWorkspaceSection("learn"); }}
+          >
+            <BookOpen size={13} />
+            <span>Academy</span>
+          </button>
+          <button
+            type="button"
+            className={`topbar-tab-btn ${activeWorkspaceSection === "guide" ? "is-active" : ""}`}
+            onClick={() => { setChatOpen(false); setActiveWorkspaceSection("guide"); }}
+          >
+            <Sparkles size={13} />
+            <span>Guide</span>
+          </button>
+          <button
+            type="button"
+            className={`topbar-tab-btn ${activeWorkspaceSection === "share" ? "is-active" : ""}`}
+            onClick={() => { setChatOpen(false); setActiveWorkspaceSection("share"); }}
+          >
+            <Link2 size={13} />
+            <span>Share</span>
+          </button>
+        </nav>
+
+        <div className="topbar-right">
+          <div className="topbar-actions">
+            <button
+              type="button"
+              className={`topbar-action-btn ${componentLibraryOpen ? "is-active" : ""}`}
+              onClick={() => {
+                const nextOpen = !componentLibraryOpen;
+                setComponentLibraryOpen(nextOpen);
+                if (nextOpen) setRightPanelOpen(false);
+              }}
+              data-tutorial="component-library-trigger"
+            >
+              <PlusCircle size={13} />
+              <span>Add Component</span>
+            </button>
+            <div className="topbar-history-group">
+              <button className="icon-btn" onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl+Z)" aria-label="Undo">
+                <Undo2 size={13} />
               </button>
-              <button
-                className="primary-btn compact"
-                data-tutorial="run-request"
-                onClick={runRequestTrace}
-                title="Describe what you want ANCHON to design or change"
-              >
-                <Sparkles size={13} /> RUN REQUEST
+              <button className="icon-btn" onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl+Shift+Z)" aria-label="Redo">
+                <Redo2 size={13} />
               </button>
-            </div></div><span className="status-pill">
-          {submitted ? "SUBMITTED · EDITABLE" : saveStatus === "saving" ? "SAVING…" : saveStatus === "error" ? "SAVE ERROR" : "SAVING TO CLOUD"}
-        </span></div>
+            </div>
+            <button className="secondary-btn compact" data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}>
+              <FileDown size={13} />
+              <span>Export PDF</span>
+            </button>
+            <button
+              className="secondary-btn compact"
+              data-tutorial="save-draft"
+              onClick={() => save(submitted ? "submitted" : "draft")}
+              disabled={persisting}
+            >
+              <Save size={13} />
+              <span>{persisting ? "Saving…" : submitted ? "Saved" : "Save Draft"}</span>
+            </button>
+            <button
+              className="primary-btn compact"
+              data-tutorial="run-request"
+              onClick={runRequestTrace}
+              title="Trace flows and evaluate system design"
+            >
+              <Sparkles size={13} />
+              <span>Run Request</span>
+            </button>
+          </div>
+        </div>
       </header>
 
       <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
@@ -802,55 +986,19 @@ function ParticipantEditor({
               <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
             </button>)}
           </nav>
-          {activeWorkspaceSection === "canvas" && <div className="workspace-nav-content workspace-canvas-brief">
-          {(activeWorkspaceSection === "canvas" || activeWorkspaceSection === "requirements") && <>
-            <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
-            <section className="brief-card" aria-labelledby="brief-identity-title">
-              <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
-              <div className="field"><label htmlFor="application-name">APPLICATION NAME</label><input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" /></div>
-              <div className="field"><label htmlFor="application-description">PRODUCT BRIEF & CORE USER JOURNEYS</label><textarea id="application-description" value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} rows={5} placeholder="Who uses this product? What are the main journeys? Include expected users, peak traffic, data sensitivity, latency and availability targets, and constraints." /></div>
-            </section>
-            <section className="brief-card" aria-labelledby="inferred-requirements-title">
-              <div className="brief-card-heading"><span className="brief-step">02</span><div><h2 id="inferred-requirements-title">Architecture requirements</h2><p>Agent-inferred from the current components and connections.</p></div></div>
-              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
-              {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
-              {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
-              {inferredRequirements && <>
-                <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
-                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}</div>
-                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}</div>
-                {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
-                <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
-              </>}
-            </section>
-            <div className="requirements-status" role="status"><div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div><div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div><small className={saveStatus === "error" ? "requirements-save-error" : ""}><span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />{saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}</small></div>
-          </>}
-          </div>}
+          {activeWorkspaceSection === "canvas" && (
+            <div className="workspace-nav-content workspace-canvas-brief">
+              {renderProjectBrief()}
+            </div>
+          )}
         </aside>
         {activeWorkspaceSection !== "canvas" && <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
           <div className="workspace-nav-content">
-          {activeWorkspaceSection === "requirements" && <>
-            <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
-            <section className="brief-card" aria-labelledby="brief-identity-title">
-              <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
-              <div className="field"><label htmlFor="application-name">APPLICATION NAME</label><input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" /></div>
-              <div className="field"><label htmlFor="application-description">PRODUCT BRIEF & CORE USER JOURNEYS</label><textarea id="application-description" value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} rows={5} placeholder="Who uses this product? What are the main journeys? Include expected users, peak traffic, data sensitivity, latency and availability targets, and constraints." /></div>
-            </section>
-            <section className="brief-card" aria-labelledby="inferred-requirements-title">
-              <div className="brief-card-heading"><span className="brief-step">02</span><div><h2 id="inferred-requirements-title">Architecture requirements</h2><p>Agent-inferred from the current components and connections.</p></div></div>
-              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
-              {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
-              {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
-              {inferredRequirements && <>
-                <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
-                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}</div>
-                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}</div>
-                {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
-                <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
-              </>}
-            </section>
-            <div className="requirements-status" role="status"><div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div><div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div><small className={saveStatus === "error" ? "requirements-save-error" : ""}><span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />{saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}</small></div>
-          </>}
+          {activeWorkspaceSection === "requirements" && (
+            <div className="workspace-center-brief">
+              {renderProjectBrief()}
+            </div>
+          )}
           {activeWorkspaceSection === "learn" && <>
             <div className="learn-panel-intro"><div className="section-kicker">SYSTEM DESIGN ACADEMY</div><h2>Learn by building.</h2><p>Understand the concepts, explore real-world architectures, then practice by adding components to your canvas.</p></div>
             <div className="learn-layout">
@@ -1117,9 +1265,20 @@ function ParticipantEditor({
           </div>
         </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
       </div>
-      {activeWorkspaceSection === "canvas" && !chatOpen && <button type="button" className="floating-ai-chat-trigger" style={{ left: `calc(50% + ${chatOffset.x}px)`, bottom: `calc(18vh - ${chatOffset.y}px)` }} onPointerDown={(event) => { chatDragRef.current = { pointerX: event.clientX, pointerY: event.clientY, originX: chatOffset.x, originY: chatOffset.y, moved: false }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { const drag = chatDragRef.current; if (!drag) return; const dx = event.clientX - drag.pointerX, dy = event.clientY - drag.pointerY; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) { const maxX = Math.max(0, window.innerWidth / 2 - 36); const baseBottom = window.innerHeight * 0.18; const minY = baseBottom - (window.innerHeight - 36); const maxY = baseBottom - 18; setChatOffset({ x: Math.max(-maxX, Math.min(maxX, drag.originX + dx)), y: Math.max(minY, Math.min(maxY, drag.originY + dy)) }); } }} onPointerUp={() => { const moved = chatDragRef.current?.moved ?? false; chatDragRef.current = null; if (!moved) setChatOpen(true); }} onPointerCancel={() => { chatDragRef.current = null; }} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Open ANCHON assistant" title="Drag to move · Click to open">
-        <span className="anchon-bubble-mark" aria-hidden="true"><Layers size={22} /></span>
-      </button>}
+      {activeWorkspaceSection === "canvas" && !chatOpen && (
+        <button
+          type="button"
+          className="floating-ai-chat-trigger"
+          onClick={() => setChatOpen(true)}
+          aria-expanded={chatOpen}
+          aria-controls="floating-ai-chat-panel"
+          aria-label="Open ANCHON assistant"
+          title="Open ANCHON AI Assistant"
+        >
+          <Sparkles size={15} />
+          <span>ANCHON AI</span>
+        </button>
+      )}
       {activeWorkspaceSection === "canvas" && <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
         <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" className="anchon-chat-close" onClick={() => setChatOpen(false)} aria-label="Close ANCHON assistant"><X size={16} /></button></div>
                   <ArchitectureAIChat
@@ -1146,6 +1305,17 @@ function ParticipantEditor({
             }}
           />
       </div>}
+      <ModalDialog
+        isOpen={Boolean(connectionAlert?.open)}
+        onClose={() => setConnectionAlert(null)}
+        title={connectionAlert?.title ?? "Connection Notice"}
+        type="warning"
+        confirmLabel="Understood"
+        onConfirm={() => setConnectionAlert(null)}
+        cancelLabel="Close"
+      >
+        <p>{connectionAlert?.message}</p>
+      </ModalDialog>
       <InteractiveTutorial page="workspace" onStepChange={handleTutorialStepChange} />
     </div>
   );
