@@ -969,3 +969,78 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
     top:calc(50% - 21px)!important;
   }
 }
+
+
+/* Requirements and Settings use a centered content column with equal side gutters. */
+.app-shell.workspace-section-requirements .workspace-page-content,
+.app-shell.workspace-section-settings .workspace-page-content {
+  position:fixed!important;
+  top:68px!important;
+  right:0!important;
+  bottom:0!important;
+  left:var(--left-panel-width,260px)!important;
+  width:auto!important;
+  padding:30px 32px 42px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+}
+.app-shell.workspace-section-requirements .workspace-nav-content,
+.app-shell.workspace-section-settings .workspace-nav-content {
+  width:min(100%,1120px)!important;
+  max-width:1120px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+.app-shell.workspace-section-requirements .workspace-nav-content > *,
+.app-shell.workspace-section-settings .workspace-nav-content > * {
+  width:100%!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+.app-shell.workspace-section-requirements .brief-card,
+.app-shell.workspace-section-settings .settings-card {
+  width:100%!important;
+  max-width:100%!important;
+}
+.app-shell.workspace-section-requirements .requirements-panel-header,
+.app-shell.workspace-section-settings .workspace-nav-content > .workspace-info-panel {
+  width:100%!important;
+  max-width:100%!important;
+}
+@media(max-width:700px) {
+  .app-shell.workspace-section-requirements .workspace-page-content,
+  .app-shell.workspace-section-settings .workspace-page-content {
+    left:0!important;
+    right:0!important;
+    top:66px!important;
+    padding:20px 16px 30px!important;
+  }
+}
+
+/* Compact, consistent application typography. Preserve hierarchy while reducing visual density. */
+.app-shell { font-size:13px!important; }
+.app-shell p,
+.app-shell li,
+.app-shell label,
+.app-shell input,
+.app-shell textarea,
+.app-shell select {
+  font-size:13px;
+}
+.app-shell button,
+.app-shell [role="button"] {
+  font-size:12px;
+}
+.app-shell h1 { font-size:26px; line-height:1.2; }
+.app-shell h2 { font-size:20px; line-height:1.25; }
+.app-shell h3 { font-size:16px; line-height:1.3; }
+.app-shell h4 { font-size:14px; line-height:1.35; }
+.app-shell .section-kicker,
+.app-shell .learn-eyebrow,
+.app-shell .field label {
+  font-size:10px!important;
+  letter-spacing:.08em;
+}
+.app-shell .workspace-nav-item strong { font-size:13px!important; }
+.app-shell .workspace-nav-item small { font-size:11px!important; }
