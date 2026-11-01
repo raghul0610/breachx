@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, BookOpen, Copy, FolderPlus, Github, Layers3, Pencil, Play, Plus, Settings, Sparkles, Trash2, Workflow } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft, Copy, FolderPlus, Github, Pencil, Plus, Trash2, Workflow, Layers, CheckCircle2, Clock } from "lucide-react";
 import {
   createProject,
   deleteProject,
@@ -13,17 +13,17 @@ import { deleteOwnedProject } from "../lib/projectsRepository";
 import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
 import { ShapeGridBackground } from "./ShapeGridBackground";
-import { AnchonLogo } from "./AnchonLogo";
+import { ModalDialog } from "./ModalDialog";
 
-export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection }: { onBack: () => void; onOpenProject: (projectId: string) => void; onOpenWorkspaceSection: (section: "learn" | "guide" | "settings") => void }) {
+export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void; onOpenProject: (projectId: string) => void }) {
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [dialog, setDialog] = useState<{ type: "rename"; project: ArchitectureProject; name: string } | { type: "delete"; project: ArchitectureProject } | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ project: ArchitectureProject; x: number; y: number } | null>(null);
-  const [lastOpened, setLastOpened] = useState<Record<string, string>>({});
-  const markOpened = (id: string) => { const timestamp = new Date().toISOString(); try { window.localStorage.setItem(`anchon:project-last-opened:${id}`, timestamp); } catch { /* local tracking is optional */ } setLastOpened(current => ({ ...current, [id]: timestamp })); };
-  const formatLastOpened = (id: string) => { const value = lastOpened[id]; if (!value) return "Not opened yet"; const date = new Date(value); return Number.isNaN(date.getTime()) ? "Not opened yet" : `Last opened ${date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · ${date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`; };
+
+  // Modal dialog states
+  const [renameTarget, setRenameTarget] = useState<ArchitectureProject | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<ArchitectureProject | null>(null);
 
   const refresh = useCallback(() => {
     try {
@@ -34,22 +34,12 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
     }
   }, []);
 
-  useEffect(() => { refresh(); try { const values: Record<string, string> = {}; for (const project of listProjects()) { const value = window.localStorage.getItem(`anchon:project-last-opened:${project.id}`); if (value) values[project.id] = value; } setLastOpened(values); } catch { /* Last-opened metadata is best effort. */ } }, [refresh]);
-
-  useEffect(() => {
-    if (!dialog) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !busy) setDialog(null);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [dialog, busy]);
+  useEffect(() => { refresh(); }, [refresh]);
 
   const create = () => {
     try {
       setBusy(true);
       const project = createProject();
-      markOpened(project.id);
       refresh();
       onOpenProject(project.id);
     } catch (cause) {
@@ -62,8 +52,6 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
   const open = (projectId: string) => {
     try {
       setActiveProject(projectId);
-      markOpened(projectId);
-      setContextMenu(null);
       onOpenProject(projectId);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not open this project.");
@@ -71,19 +59,16 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
     }
   };
 
-  const openWorkspaceSection = (section: "learn" | "guide" | "settings") => onOpenWorkspaceSection(section);
-  useEffect(() => { if (!contextMenu) return; const close = () => setContextMenu(null); const keydown = (event: KeyboardEvent) => { if (event.key === "Escape") close(); }; window.addEventListener("pointerdown", close); window.addEventListener("resize", close); window.addEventListener("scroll", close, true); window.addEventListener("keydown", keydown); return () => { window.removeEventListener("pointerdown", close); window.removeEventListener("resize", close); window.removeEventListener("scroll", close, true); window.removeEventListener("keydown", keydown); }; }, [contextMenu]);
-
-  const rename = (project: ArchitectureProject) => {
-    setDialog({ type: "rename", project, name: project.applicationName });
+  const startRename = (project: ArchitectureProject) => {
+    setRenameTarget(project);
+    setRenameValue(project.applicationName);
   };
 
-  const submitRename = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (dialog?.type !== "rename") return;
+  const confirmRename = () => {
+    if (!renameTarget || !renameValue.trim()) return;
     try {
-      renameProject(dialog.project.id, dialog.name);
-      setDialog(null);
+      renameProject(renameTarget.id, renameValue.trim());
+      setRenameTarget(null);
       refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not rename this project.");
@@ -100,126 +85,180 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
     }
   };
 
-  const remove = (project: ArchitectureProject) => setDialog({ type: "delete", project });
+  const startDelete = (project: ArchitectureProject) => {
+    setDeleteTarget(project);
+  };
 
   const confirmDelete = async () => {
-    if (dialog?.type !== "delete") return;
-    const project = dialog.project;
-    setBusy(true);
+    if (!deleteTarget) return;
+    const project = deleteTarget;
+    setDeleteTarget(null);
     try {
-      await deleteOwnedProject(project.id);
-      deleteProject(project.id);
-      setDialog(null);
-      refresh();
+      void deleteOwnedProject(project.id).then(() => {
+        deleteProject(project.id);
+        refresh();
+      }).catch((cause: unknown) => {
+        setError(cause instanceof Error ? cause.message : "Could not delete this project from the cloud.");
+      });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not delete this project from the cloud.");
-    } finally {
-      setBusy(false);
+      setError(cause instanceof Error ? cause.message : "Could not delete this project.");
     }
   };
 
   return (
     <div className="app-shell project-dashboard">
       <ShapeGridBackground />
-      <aside className="dashboard-sidebar" aria-label="Main navigation">
-        <a className="dashboard-brand" href="#" onClick={(event) => { event.preventDefault(); onBack(); }} aria-label="ANCHON home"><span className="dashboard-brand-mark"><AnchonLogo size={25} /></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></a>
-        <div className="dashboard-nav-label">WORKSPACE</div>
-        <nav className="dashboard-nav">
-          <button type="button" className="is-active" aria-current="page"><Layers3 size={17} /><span>Projects</span><span className="dashboard-nav-count">{projects.length}</span></button>
-          <button type="button" onClick={() => openWorkspaceSection("learn")}><BookOpen size={17} /><span>Learn</span></button>
-          <button type="button" onClick={() => openWorkspaceSection("guide")}><Sparkles size={17} /><span>Guide</span></button>
-        </nav>
-        <div className="dashboard-sidebar-spacer" />
-        <div className="dashboard-nav dashboard-nav-bottom"><button type="button" onClick={() => openWorkspaceSection("settings")}><Settings size={17} /><span>Settings</span></button></div>
-        <div className="dashboard-sidebar-footer"><span className="dashboard-status-dot" /> Private workspace</div>
-      </aside>
-      <div className="dashboard-main">
       <header className="topbar">
-        <button className="nav-btn" onClick={onBack}><ArrowLeft size={14} /> HOME</button>
-        <div><strong>ANCHON</strong><span className="topbar-sub"> // PROJECT WORKSPACE</span></div>
-        <span className="status-pill">{projects.length} PROJECT{projects.length === 1 ? "" : "S"}</span>
+        <button className="nav-btn" onClick={onBack} aria-label="Go to Home">
+          <ArrowLeft size={15} />
+          <span>Home</span>
+        </button>
+        <div className="topbar-brand">
+          <div className="topbar-logo-mark">
+            <Layers size={16} />
+          </div>
+          <span className="topbar-title">ANCHON</span>
+          <span className="topbar-badge">Architecture Studio</span>
+        </div>
+        <div className="topbar-right">
+          <span className="status-pill">
+            {projects.length} {projects.length === 1 ? "project" : "projects"}
+          </span>
+        </div>
       </header>
+
       <main className="project-dashboard-content">
         <section className="project-dashboard-hero">
           <div>
-            <div className="section-kicker"><Workflow size={13} /> YOUR ARCHITECTURES</div>
-            <h1>PROJECT WORKSPACE</h1>
-            <p>Keep each system design separate. Your private projects sync to your account across devices.</p>
+            <div className="section-kicker">
+              <Workflow size={13} />
+              <span>System Design Workspaces</span>
+            </div>
+            <h1>Your Architectures</h1>
+            <p>Design, evaluate, and share production-grade distributed architectures. Projects are synced securely to your cloud account.</p>
           </div>
-          <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> NEW PROJECT</button>
+          <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}>
+            <Plus size={15} />
+            <span>New Architecture</span>
+          </button>
         </section>
+
         <section className="github-connection panel github-connection-development" aria-labelledby="github-connection-title">
           <div className="github-connection-heading">
-            <div className="github-connection-icon"><Github size={20} /></div>
+            <div className="github-connection-icon"><Github size={18} /></div>
             <div className="github-connection-title">
-              <div className="section-kicker"><Workflow size={13} /> REPOSITORY INTEGRATION</div>
-              <h2 id="github-connection-title">Connect GitHub</h2>
-              <p>Repository connection and codebase analysis are currently being built. This feature will be available in a future update.</p>
+              <div className="section-kicker">
+                <Workflow size={12} />
+                <span>Repository Integration</span>
+              </div>
+              <h2 id="github-connection-title">Connect GitHub Repositories</h2>
+              <p>Automated codebase topology inference and pull-request architecture verification are currently in preview.</p>
             </div>
-            <span className="github-building-pill">IN BUILDING</span>
+            <span className="github-building-pill">Preview</span>
           </div>
         </section>
+
         {error && <div className="project-error" role="alert">{error}</div>}
+
         {projects.length === 0 && !error ? (
           <section className="project-empty panel">
-            <FolderPlus size={28} />
-            <h2>No projects yet</h2>
-            <p>Create your first architecture project to start designing.</p>
-            <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}><Plus size={14} /> CREATE PROJECT</button>
+            <div className="project-empty-icon-wrapper">
+              <FolderPlus size={32} />
+            </div>
+            <h2>No architectures yet</h2>
+            <p>Start from a clean slate or let ANCHON AI draft your system architecture.</p>
+            <button data-tutorial="new-project" className="primary-btn" onClick={create} disabled={busy}>
+              <Plus size={15} />
+              <span>Create First Architecture</span>
+            </button>
           </section>
         ) : (
           <section className="project-grid" aria-label="Saved architecture projects" data-tutorial="project-grid">
             {projects.map((project) => (
-              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); setContextMenu({ project, x: Math.min(event.clientX, window.innerWidth - 190), y: Math.min(event.clientY, window.innerHeight - 160) }); }} aria-label={`${project.applicationName}, right-click for project actions`}>
-                <div className="project-card-heading">
-                  <h2>{project.applicationName}</h2>
-                  <button type="button" className="project-play-button" onClick={() => open(project.id)} aria-label={`Open ${project.applicationName}`} title="Open project"><Play size={14} fill="currentColor" /></button>
+              <article className="project-card panel" key={project.id}>
+                <div className="project-card-top">
+                  <span className={`project-status ${project.status === "submitted" ? "is-submitted" : ""}`}>
+                    {project.status === "submitted" ? <><CheckCircle2 size={11} /> Ready</> : "Draft"}
+                  </span>
+                  <span className="project-count">
+                    {project.nodes.length} {project.nodes.length === 1 ? "component" : "components"} · {project.edges.length} {project.edges.length === 1 ? "link" : "links"}
+                  </span>
                 </div>
-                <p className="project-last-opened">{formatLastOpened(project.id)}</p>
+
+                <h2>{project.applicationName || "Untitled Architecture"}</h2>
+                <p className="project-description">{project.applicationDescription || "No design brief or requirements added yet."}</p>
+
+                <div className="project-updated">
+                  <Clock size={11} />
+                  <span>Updated {new Date(project.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+
+                <div className="project-actions" data-tutorial="project-actions">
+                  <button className="primary-btn compact" onClick={() => open(project.id)}>
+                    {project.status === "submitted" ? "Open Architecture" : "Edit Architecture"}
+                  </button>
+                  <div className="project-action-icons">
+                    <button className="icon-btn" onClick={() => startRename(project)} aria-label={`Rename ${project.applicationName}`} title="Rename">
+                      <Pencil size={13} />
+                    </button>
+                    <button className="icon-btn" onClick={() => duplicate(project)} aria-label={`Duplicate ${project.applicationName}`} title="Duplicate">
+                      <Copy size={13} />
+                    </button>
+                    <button className="icon-btn project-delete" onClick={() => startDelete(project)} aria-label={`Delete ${project.applicationName}`} title="Delete">
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
               </article>
             ))}
           </section>
         )}
-        <p className="project-storage-note">Cloud persistence is enabled. If a save fails, the cloud-sync banner at the top will show the error.</p>
+
+        <p className="project-storage-note">Cloud synchronization is active. All architectures autosave locally and continuously back up to your account.</p>
       </main>
-      </div>
-      {contextMenu && (
-        <div className="project-context-menu" role="menu" aria-label={`Actions for ${contextMenu.project.applicationName}`} style={{ left: contextMenu.x, top: contextMenu.y }} onPointerDown={(event) => event.stopPropagation()}>
-          <div className="project-context-title">{contextMenu.project.applicationName}</div>
-          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); rename(project); }}><Pencil size={13} /> Rename</button>
-          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); duplicate(project); }}><Copy size={13} /> Duplicate</button>
-          <button type="button" role="menuitem" className="project-context-delete" onClick={() => { const project = contextMenu.project; setContextMenu(null); remove(project); }}><Trash2 size={13} /> Delete</button>
-        </div>
-      )}
-      {dialog && (
-        <div className="dashboard-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) setDialog(null); }}>
-          <section className="dashboard-dialog" role="dialog" aria-modal="true" aria-labelledby="dashboard-dialog-title">
-            {dialog.type === "rename" ? (
-              <form onSubmit={submitRename}>
-                <div className="dashboard-dialog-kicker">PROJECT SETTINGS</div>
-                <h2 id="dashboard-dialog-title">Rename project</h2>
-                <p>Choose a clear name for this architecture workspace.</p>
-                <label htmlFor="dashboard-project-name">Project name</label>
-                <input id="dashboard-project-name" autoFocus maxLength={80} value={dialog.name} onChange={(event) => setDialog({ ...dialog, name: event.target.value })} required />
-                <div className="dashboard-dialog-actions">
-                  <button type="button" className="dashboard-dialog-secondary" onClick={() => setDialog(null)}>Cancel</button>
-                  <button type="submit" className="dashboard-dialog-primary" disabled={!dialog.name.trim()}>Save changes</button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <div className="dashboard-dialog-kicker is-danger">DELETE PROJECT</div>
-                <h2 id="dashboard-dialog-title">Delete this project?</h2>
-                <p><strong>{dialog.project.applicationName}</strong> and its saved architecture will be removed. This action cannot be undone.</p>
-                <div className="dashboard-dialog-actions">
-                  <button type="button" className="dashboard-dialog-secondary" onClick={() => setDialog(null)} disabled={busy}>Cancel</button>
-                  <button type="button" className="dashboard-dialog-danger" onClick={confirmDelete} disabled={busy}>{busy ? "Deleting…" : "Delete project"}</button>
-                </div>
-              </>
-            )}
-          </section>
-        </div>
-      )}
+
+      {/* Rename Dialog */}
+      <ModalDialog
+        isOpen={Boolean(renameTarget)}
+        onClose={() => setRenameTarget(null)}
+        title="Rename Architecture"
+        type="prompt"
+        confirmLabel="Save Name"
+        onConfirm={confirmRename}
+        confirmDisabled={!renameValue.trim()}
+      >
+        <p>Enter a clear, descriptive name for this system architecture:</p>
+        <input
+          type="text"
+          className="modal-input"
+          value={renameValue}
+          onChange={(e) => setRenameValue(e.target.value)}
+          placeholder="e.g. Distributed Payment Pipeline"
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && renameValue.trim()) confirmRename();
+          }}
+        />
+      </ModalDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ModalDialog
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete Architecture"
+        type="danger"
+        isDestructive
+        confirmLabel="Delete Project"
+        onConfirm={confirmDelete}
+      >
+        <p>
+          Are you sure you want to permanently delete <strong>{deleteTarget?.applicationName}</strong>?
+        </p>
+        <p style={{ color: "#94a3b8", fontSize: "13px" }}>
+          This will remove all nodes, connections, design notes, and evaluation histories associated with this architecture.
+        </p>
+      </ModalDialog>
+
       <InteractiveTutorial page="dashboard" />
     </div>
   );
