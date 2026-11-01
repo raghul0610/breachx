@@ -561,7 +561,7 @@ button, input, textarea, select { font-family: var(--anchon-font-ui); }
 
 /* Neutral utility controls: compact circular help and restrained assistant launcher. */
 .tutorial-help-button {
-  right:20px !important; bottom:20px !important;
+  right:74px !important; bottom:22px !important;
   width:36px !important; height:36px !important; min-width:36px !important;
   padding:0 !important; gap:0 !important;
   color:#e5e9e6 !important; background:#242a26 !important;
