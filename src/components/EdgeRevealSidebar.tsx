@@ -12,7 +12,7 @@ type EdgeRevealSidebarProps = {
 export function EdgeRevealSidebar({ className, isOpen, label, onMouseLeave, children }: EdgeRevealSidebarProps) {
   return (
     <aside
-      className={`edge-reveal-sidebar ${className} ${isOpen ? "is-revealed" : ""}`}
+      className={`edge-reveal-sidebar ${className} ${isOpen ? "is-revealed is-open" : "is-collapsed"}`}
       aria-label={label}
       onMouseLeave={onMouseLeave}
     >
