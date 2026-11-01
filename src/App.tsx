@@ -6,10 +6,12 @@ import { ProjectDashboard } from "./components/ProjectDashboard";
 import { AuthGate } from "./components/AuthGate";
 
 type AppMode = "home" | "projects" | "participant";
+type WorkspaceSection = "canvas" | "learn" | "guide" | "settings";
 
 function AppContent() {
   const [mode, setMode] = useState<AppMode>("projects");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [initialWorkspaceSection, setInitialWorkspaceSection] = useState<WorkspaceSection>("canvas");
 
   if (mode === "projects") {
     return (
@@ -17,6 +19,12 @@ function AppContent() {
         onBack={() => setMode("home")}
         onOpenProject={(projectId) => {
           setSelectedProjectId(projectId);
+          setInitialWorkspaceSection("canvas");
+          setMode("participant");
+        }}
+        onOpenWorkspaceSection={(projectId, section) => {
+          setSelectedProjectId(projectId);
+          setInitialWorkspaceSection(section);
           setMode("participant");
         }}
       />
@@ -27,6 +35,7 @@ function AppContent() {
     return (
       <ParticipantPage
         projectId={selectedProjectId}
+        initialSection={initialWorkspaceSection}
         onBack={() => setMode("projects")}
         onSubmitted={() => setMode("projects")}
       />
