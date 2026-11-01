@@ -194,7 +194,7 @@ function ParticipantEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
-  const [leftPanelOpen, setLeftPanelOpen] = useState(false);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [requestTraceStep, setRequestTraceStep] = useState(-1);
@@ -212,12 +212,10 @@ function ParticipantEditor({
   const activeEvaluationResult = evaluationFingerprint === currentEvaluationFingerprint ? evaluationResult : null;
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
-  const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
   const [libraryActiveCategory, setLibraryActiveCategory] = useState("AI / ML");
   const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<"requirements" | "learn" | "guide" | "share" | "settings">("requirements");
   const [activeLearnTopic, setActiveLearnTopic] = useState("Introduction");
   const [learnSelectedComponent, setLearnSelectedComponent] = useState<string | null>(null);
-  const [componentGroupBy, setComponentGroupBy] = useState<"layer" | "category">("category");
   const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
   const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
   const chatDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
@@ -862,7 +860,7 @@ function ParticipantEditor({
               <nav className="component-library-categories" aria-label="Component categories">
                 {[...new Set(CATALOG.map((item) => item.category))].sort((a, b) => a.localeCompare(b)).map((category) => {
                   const count = CATALOG.filter((item) => item.category === category).length;
-                  return <button type="button" key={category} className={libraryActiveCategory === category ? "is-active" : ""} onClick={() => { setLibraryActiveCategory(category); setComponentCategoryFilter(category); }} aria-current={libraryActiveCategory === category ? "true" : undefined}>
+                  return <button type="button" key={category} className={libraryActiveCategory === category ? "is-active" : ""} onClick={() => { setLibraryActiveCategory(category); }} aria-current={libraryActiveCategory === category ? "true" : undefined}>
                     <span className="component-category-icon"><CategoryIcon category={category} size={14} /></span><span>{category}</span><small>{count}</small>
                   </button>;
                 })}
