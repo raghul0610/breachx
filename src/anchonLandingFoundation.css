@@ -18,7 +18,7 @@
 .iad-live-dot { background:#55d6c2!important; box-shadow:0 0 10px rgba(85,214,194,.35)!important; }
 .iad-headline-wrap h1 { color:#f0f5f8!important; text-shadow:none!important; }
 .iad-headline-wrap h1 span,.iad-bottom-copy h2 span,.iad-spiral-copy h2 span,.iad-capabilities-heading h2 span {
-  color:var(--iad-accent)!important; background:linear-gradient(100deg,#8ce4d5 0%,#55d6c2 55%,#78bde4 100%)!important;
+  color:var(--iad-accent)!important; background:linear-gradient(100deg,#edf4f8 0%,#55d6c2 48%,#6bb8e8 100%)!important;
   background-clip:text!important; -webkit-background-clip:text!important; -webkit-text-fill-color:transparent!important;
 }
 .iad-intro,.iad-bottom-copy p,.iad-spiral-copy>p:not(.iad-overline),.iad-capabilities-heading>p:not(.iad-overline) { color:#a5b3c0!important; }
