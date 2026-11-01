@@ -896,7 +896,7 @@ function ParticipantEditor({
             </div>
           </main>}
 
-        {!leftPanelOpen && <button
+        <button
           type="button"
           className="workspace-sidebar-reopen"
           style={{ transform: `translate3d(${navigationButtonOffset.x}px, ${navigationButtonOffset.y}px, 0)` }}
@@ -913,7 +913,7 @@ function ParticipantEditor({
             if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true;
             if (drag.moved) {
               const baseLeft = Math.min(200, Math.max(16, window.innerWidth * 0.12));
-              const baseTop = 132;
+              const baseTop = Math.max(116, window.innerHeight / 2 - 21);
               setNavigationButtonOffset({
                 x: Math.max(0, Math.min(window.innerWidth - 58, drag.originX + dx + baseLeft) - baseLeft),
                 y: Math.max(0, Math.min(window.innerHeight - 58, drag.originY + dy + baseTop) - baseTop),
@@ -926,11 +926,11 @@ function ParticipantEditor({
             const drag = navigationButtonDragRef.current;
             if (drag?.moved) { navigationButtonDragRef.current = null; return; }
             navigationButtonDragRef.current = null;
-            setLeftPanelOpen(true);
+            setLeftPanelOpen((open) => !open);
           }}
-          aria-label="Open workspace navigation"
-          title="Drag to move or click to open navigation"
-        ><PanelLeftOpen size={16} /></button>}
+          aria-label={leftPanelOpen ? "Close workspace navigation" : "Open workspace navigation"}
+          title="Drag to move or click to toggle navigation"
+        >{leftPanelOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}</button>}
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
