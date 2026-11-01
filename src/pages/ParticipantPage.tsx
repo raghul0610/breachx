@@ -24,7 +24,7 @@ import { ArrowLeft, FileText, Layers, Save, Trash2, FileDown, BookOpen, PlusCirc
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { supabase } from "../lib/supabase";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
-import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
+import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
@@ -425,7 +425,7 @@ function ParticipantEditor({
   const edgeTypes = useMemo(() => ({ curvedArchitectureEdge: CurvedArchitectureEdge }), []);
   const renderedEdges = useMemo(() => edges.map((edge) => {
     const source = nodes.find((item) => item.id === edge.source);
-    const accent = getCategoryAccent(String(source?.data?.category ?? ""));
+    const accent = "#cbd2cc";
     const traceIndex = requestTraceEdges.findIndex((traceEdge) => traceEdge.id === edge.id);
     const isTraceActive = traceIndex === requestTraceStep;
     const isTraceComplete = requestTraceStep > 0 && traceIndex >= 0 && traceIndex < requestTraceStep;
