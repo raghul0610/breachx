@@ -52,7 +52,7 @@
 .iad-brandline { color:#a9a2bb; }
 .iad-headline-wrap { max-width:880px;margin:42px auto 36px; }
 .iad-headline-wrap .iad-overline { margin-bottom:18px; }
-.iad-headline-wrap h1.iad-brand-title { margin:0;font-size:clamp(76px,15vw,174px);line-height:.82;font-weight:800;letter-spacing:.015em;color:#f7f3ff;text-shadow:0 0 70px rgba(196,181,253,.12); }
+.iad-headline-wrap h1.iad-brand-title { margin:0;font-size:clamp(88px,18vw,210px);line-height:.82;font-weight:800;letter-spacing:.015em;color:#f7f3ff;text-shadow:0 0 70px rgba(196,181,253,.12); }
 
 .iad-hero-tagline { margin:20px 0 9px;font-size:clamp(17px,2.3vw,25px);color:#e7e1f7;font-weight:600;letter-spacing:-.04em; }
 .iad-headline-wrap .iad-intro { max-width:520px; }
