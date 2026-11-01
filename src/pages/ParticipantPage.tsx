@@ -31,6 +31,7 @@ import { readSubmission, writeSubmission, logActivity, type DesignSubmission } f
 import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
 import { AnchonLogo } from "../components/AnchonLogo";
+import { EdgeRevealSidebar } from "../components/EdgeRevealSidebar";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 import { WorkspaceShare, WorkspaceSettings } from "../components/WorkspacePanels";
 import { evaluateSystemDesign, type EvaluationResult } from "../lib/evaluationEngine";
@@ -820,7 +821,7 @@ function ParticipantEditor({
 
       <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         
-        <aside className={`sidebar left-panel requirements-panel workspace-navigation ${leftPanelOpen ? "is-open" : "is-collapsed"}`} aria-label="Workspace navigation" onMouseLeave={(event) => { if (event.clientX > 24) setLeftPanelOpen(false); }}>
+        <EdgeRevealSidebar className="sidebar left-panel requirements-panel workspace-navigation" isOpen={leftPanelOpen} label="Workspace navigation" onMouseLeave={(event) => { if (event.clientX > 24) setLeftPanelOpen(false); }}>
           <div className="workspace-nav-brand">
             <div className="requirements-mark"><AnchonLogo size={24} /></div>
             <div><div className="section-kicker">DESIGN WORKSPACE</div><p>Build · Learn · Validate</p></div>
@@ -852,7 +853,7 @@ function ParticipantEditor({
               <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
             </button>)}
           </nav>
-        </aside>
+        </EdgeRevealSidebar>
           {activeWorkspaceSection !== "canvas" && <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
             <div className="workspace-nav-content">
               {activeWorkspaceSection === "requirements" && <>
