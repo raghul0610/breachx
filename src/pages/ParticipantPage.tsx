@@ -66,7 +66,7 @@ function readInferredRequirements(notes: string): InferredRequirements | null {
 
 function CurvedArchitectureEdge(props: EdgeProps) {
   const [path, labelX, labelY] = getBezierPath({ ...props, curvature: 0.42 });
-  const accent = String(props.style?.stroke ?? "#38bdf8");
+  const accent = String(props.style?.stroke ?? "#cbd2cc");
   return (
     <g>
       <BaseEdge {...props} path={path} style={{ ...props.style, stroke: accent, strokeWidth: props.selected ? 2.8 : 2.1 }} markerEnd={props.markerEnd} />
