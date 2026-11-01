@@ -1065,3 +1065,40 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 .app-shell .workspace-navigation { transition:transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease,box-shadow .24s ease!important; }
 .app-shell .workspace-navigation.is-open { box-shadow:0 16px 42px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.035)!important; }
 @media(max-width:760px) { .app-shell .workspace-navigation { top:112px!important;bottom:10px!important;width:min(325px,86vw)!important;max-height:calc(100dvh - 122px)!important; } }
+
+
+/* Neutral graphite context menu for project-level actions. */
+.project-context-menu {
+  min-width:184px!important;
+  padding:6px!important;
+  color:#e4e8eb!important;
+  background:linear-gradient(145deg,#252c31,#171c20)!important;
+  border:1px solid #59646d!important;
+  border-radius:9px!important;
+  box-shadow:0 16px 40px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.04)!important;
+  backdrop-filter:blur(14px);
+}
+.project-context-title {
+  color:#aeb8c0!important;
+  border-bottom-color:#3d474f!important;
+}
+.project-context-menu button {
+  min-height:34px!important;
+  color:#dce2e6!important;
+  border-radius:6px!important;
+  transition:background .14s ease,color .14s ease!important;
+}
+.project-context-menu button:hover,
+.project-context-menu button:focus-visible {
+  color:#fff!important;
+  background:#3a434a!important;
+  outline:none!important;
+}
+.project-context-menu .project-context-delete {
+  color:#c8cdd1!important;
+}
+.project-context-menu .project-context-delete:hover,
+.project-context-menu .project-context-delete:focus-visible {
+  color:#fff!important;
+  background:#454b50!important;
+}
