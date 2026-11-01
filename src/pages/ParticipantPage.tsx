@@ -780,7 +780,7 @@ function ParticipantEditor({
   }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, duplicateSelected, fitView, pushHistory, setNodes, setEdges]);
 
   return (
-    <div className="app-shell" onMouseMove={(event) => { if (event.clientX <= 24) setLeftPanelOpen(true); }}>
+    <div className="app-shell" onMouseMove={(event) => { if (event.clientX <= 18) setLeftPanelOpen(true); }}>
       <header className="topbar">
         <button className="nav-btn" onClick={onBack}>
           <ArrowLeft size={14} /> HOME
@@ -824,7 +824,6 @@ function ParticipantEditor({
           <nav className="workspace-primary-nav" aria-label="Workspace sections">
             <button type="button" className={`workspace-nav-item workspace-nav-canvas ${activeWorkspaceSection === "canvas" ? "is-active" : ""}`} onClick={() => { setChatOpen(false); setActiveWorkspaceSection("canvas"); }} aria-current={activeWorkspaceSection === "canvas" ? "page" : undefined}><Layers size={16} /><span><strong>Architecture canvas</strong><small>Return to your design</small></span></button>
             {([
-              { id: "requirements", label: "Requirements", icon: FileText, hint: "Define the problem" },
               { id: "learn", label: "Learn", icon: BookOpen, hint: "System design academy" },
               { id: "guide", label: "Guide", icon: Sparkles, hint: "How to use ANCHON" },
               { id: "share", label: "Share", icon: Link2, hint: "Share your architecture" },
