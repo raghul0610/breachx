@@ -782,14 +782,14 @@ function ParticipantEditor({
 
       <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         
-        {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel workspace-navigation" aria-label="Workspace navigation">
+        <aside className={`sidebar left-panel requirements-panel workspace-navigation ${leftPanelOpen ? "is-open" : "is-collapsed"}`} aria-label="Workspace navigation">
           <div className="workspace-nav-brand">
             <div className="requirements-mark"><Layers size={16} /></div>
             <div><div className="section-kicker">DESIGN WORKSPACE</div><p>Build · Learn · Validate</p></div>
             <button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse workspace navigation"><PanelLeftClose size={15} /></button>
           </div>
           <nav className="workspace-primary-nav" aria-label="Workspace sections">
-            <button type="button" className={`workspace-nav-item workspace-nav-canvas ${activeWorkspaceSection === "requirements" ? "is-active" : ""}`} onClick={() => setActiveWorkspaceSection("requirements")} aria-current={activeWorkspaceSection === "requirements" ? "page" : undefined}><Workflow size={16} /><span><strong>Architecture canvas</strong><small>Return to your design</small></span></button>
+            <button type="button" className={`workspace-nav-item workspace-nav-canvas ${activeWorkspaceSection === "requirements" ? "is-active" : ""}`} onClick={() => setActiveWorkspaceSection("requirements")} aria-current={activeWorkspaceSection === "requirements" ? "page" : undefined}><Layers size={16} /><span><strong>Architecture canvas</strong><small>Return to your design</small></span></button>
             {([
               { id: "requirements", label: "Requirements", icon: FileText, hint: "Define the problem" },
               { id: "learn", label: "Learn", icon: BookOpen, hint: "System design academy" },
@@ -846,7 +846,7 @@ function ParticipantEditor({
           {activeWorkspaceSection === "share" && <div className="workspace-info-panel"><div className="section-kicker">SHARE ARCHITECTURE</div><h2>Make your design reviewable</h2><p>Save your draft first. Export a PDF from the workspace toolbar to share a snapshot of the current architecture.</p><p className="github-muted">A live public share link is not enabled yet. Your project remains private to your signed-in workspace.</p><button type="button" className="primary-btn compact" onClick={() => exportArchitecturePdf(applicationName, applicationDescription, notes, nodes, edges)}>Export architecture PDF <FileDown size={13} /></button></div>}
           {activeWorkspaceSection === "settings" && <div className="workspace-info-panel"><div className="section-kicker">WORKSPACE SETTINGS</div><h2>Canvas preferences</h2><p>Current project: <strong>{applicationName || "Untitled architecture"}</strong></p><p>{nodes.length} components · {edges.length} connections</p><p className="github-muted">Workspace preferences are currently managed per project. Additional editor preferences can be added here later.</p></div>}
           </div>
-        </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-left"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(true)} aria-label="Open workspace navigation" title="Open workspace navigation"><PanelLeftOpen size={16} /></button><span>WORKSPACE</span></div>}
+        </aside>
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
