@@ -2,8 +2,8 @@ import { AnchonLogo } from "./AnchonLogo";
 import { useEffect, useState } from "react";
 import {
   ArrowDownRight, ArrowRight, Check, CircleDot, Database, GitBranch,
-  Layers3, LockKeyhole, Play, RotateCcw, Server, ShieldCheck, Sparkles,
-  Workflow, Zap,
+  Layers3, LockKeyhole, Moon, Play, RotateCcw, Server, ShieldCheck, Sparkles,
+  Sun, Workflow, Zap,
 } from "lucide-react";
 import "./InteractiveArchitectureLanding.css";
 
@@ -36,6 +36,7 @@ const CONNECTIONS = [
 ];
 
 export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesigner: () => void }) {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [selected, setSelected] = useState("gateway");
   const [traceStep, setTraceStep] = useState(-1);
   const [completed, setCompleted] = useState<number[]>([]);
@@ -68,7 +69,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
   const finished = traceStep === 5;
 
   return (
-    <main className="iad-root">
+    <main className="iad-root" data-theme={theme}>
       <div className="iad-atmosphere" aria-hidden="true">
         <div className="iad-orbit iad-orbit-one" />
         <div className="iad-orbit iad-orbit-two" />
@@ -78,7 +79,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
       </div>
 
       <section className="iad-hero">
-        <div className="iad-brandline"><span className="iad-brand-mark"><AnchonLogo size={28} /></span> SYSTEM DESIGN, MADE VISIBLE</div>
+        <div className="iad-brandline"><span className="iad-brand-mark"><AnchonLogo size={28} /></span><span>SYSTEM DESIGN, MADE VISIBLE</span><button className="iad-theme-toggle" type="button" onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")} aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}<span>{theme === "dark" ? "LIGHT" : "DARK"}</span></button></div>
         <div className="iad-headline-wrap">
           <p className="iad-overline"><span className="iad-live-dot" /> SYSTEM ARCHITECTURE DESIGNER</p>
           <h1 className="iad-brand-title">ANCHON</h1>
