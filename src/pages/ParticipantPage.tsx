@@ -875,6 +875,7 @@ function ParticipantEditor({
                 </div>
               </div>
             </div>
+          </section></>}
 
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
           <div className="canvas-toolbar">
