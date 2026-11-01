@@ -511,3 +511,87 @@ button, input, textarea, select { font-family: var(--anchon-font-ui); }
 @media(prefers-reduced-motion:reduce) {
   .dashboard-dialog { animation: none !important; }
 }
+
+
+/* Standalone application sections reuse the project shell and never mount a project canvas. */
+.app-section-shell { display:flex !important; }
+.app-section-main { min-width:0; }
+.app-section-content { max-width:1440px !important; }
+.app-section-content > .workspace-info-panel { max-width:980px; }
+.app-learn-page { max-width:1120px; }
+.app-learn-page > h1 { margin:10px 0 7px; color:#f1f4f2; font:650 clamp(25px,3vw,34px)/1.2 var(--anchon-font-ui); letter-spacing:-.045em; }
+.app-section-lead { max-width:720px; margin:0 0 24px; color:#a0aaa5; font:400 13px/1.7 var(--anchon-font-ui); }
+.app-learn-layout { display:grid; grid-template-columns:250px minmax(0,1fr); gap:14px; margin:20px 0 24px; }
+.app-learn-topics { display:grid; align-content:start; gap:5px; padding:9px; border:1px solid #292d2a; border-radius:10px; background:#181a18; }
+.app-learn-topics button { display:flex; align-items:center; gap:10px; min-height:38px; padding:7px 9px; border:1px solid transparent; border-radius:6px; color:#a0aaa5; background:transparent; text-align:left; font:500 11px var(--anchon-font-ui); cursor:pointer; }
+.app-learn-topics button span { color:#78847d; font:500 9px var(--anchon-font-data); }
+.app-learn-topics button:hover { color:#f1f4f2; background:#202420; }
+.app-learn-topics button.is-active { color:#f1f4f2; background:#202723; border-color:#35433b; }
+.app-learn-topics button.is-active span { color:#55d6c2; }
+.app-learn-lesson { min-height:280px; padding:23px; border:1px solid #292d2a; border-radius:10px; background:#181a18; }
+.app-learn-lesson h2 { margin:9px 0; color:#f1f4f2; font:650 21px/1.3 var(--anchon-font-ui); letter-spacing:-.03em; }
+.app-learn-lesson > p { color:#a0aaa5; font:400 12px/1.7 var(--anchon-font-ui); }
+.app-learn-lesson h3 { margin:20px 0 8px; color:#e7ede9; font:600 12px var(--anchon-font-ui); }
+.app-learn-lesson ul { display:grid; gap:9px; padding-left:18px; color:#bac4bd; font:400 11px/1.65 var(--anchon-font-ui); }
+.app-learn-lesson li::marker { color:#55d6c2; }
+.app-learn-pagination { display:flex; justify-content:space-between; gap:8px; margin-top:22px; padding-top:14px; border-top:1px solid #292d2a; }
+.app-learn-pagination button { min-height:32px; padding:0 10px; color:#dce5df; background:#222923; border:1px solid #3a453d; border-radius:6px; font:550 10px var(--anchon-font-ui); cursor:pointer; }
+.app-learn-pagination button:disabled { opacity:.35; cursor:not-allowed; }
+.app-section-content .learn-practice { margin-top:24px; }
+.app-section-content .learn-reference-card { display:grid; gap:9px; margin-top:18px; padding:18px; border:1px solid #292d2a; border-radius:9px; background:#181a18; }
+.app-section-content .learn-reference-card h3 { color:#f1f4f2; font:600 14px var(--anchon-font-ui); }
+.app-section-content .learn-reference-card a { color:#aebbb3; font-size:11px; }
+.app-section-content .learn-reference-card a:hover { color:#55d6c2; }
+.app-section-shell .dashboard-nav button { min-height:39px; }
+.app-section-shell .dashboard-nav button.is-active { color:#f2f6f3 !important; background:#1b211e !important; border-color:#2c3731 !important; }
+.app-section-shell .dashboard-nav button.is-active svg { color:#55d6c2 !important; }
+
+/* Keep the workspace navigation visually identical to the application sidebar. */
+.workspace-navigation { background:#101210 !important; border-right:1px solid #252925 !important; }
+.workspace-nav-brand { border-bottom-color:#292d2a !important; }
+.workspace-nav-brand .requirements-mark { color:#55d6c2 !important; background:#1b2924 !important; border:1px solid #30433a !important; border-radius:7px !important; }
+.workspace-nav-brand .section-kicker { color:#8c9a92 !important; }
+.workspace-nav-brand p { color:#77847c !important; }
+.workspace-primary-nav { gap:4px !important; }
+.workspace-nav-item { min-height:40px !important; padding:7px 9px !important; border-radius:7px !important; color:#aab3ad !important; }
+.workspace-nav-item:hover { color:#f1f4f2 !important; background:#1b211e !important; transform:none !important; }
+.workspace-nav-item.is-active { color:#f1f4f2 !important; background:#1b211e !important; border-color:#2c3731 !important; }
+.workspace-nav-item.is-active>svg { color:#55d6c2 !important; }
+.workspace-nav-item.is-active small { color:#8f9d95 !important; }
+
+/* Neutral utility controls: compact circular help and restrained assistant launcher. */
+.tutorial-help-button {
+  right:20px !important; bottom:20px !important;
+  width:36px !important; height:36px !important; min-width:36px !important;
+  padding:0 !important; gap:0 !important;
+  color:#e5e9e6 !important; background:#242a26 !important;
+  border:1px solid #454d47 !important; border-radius:50% !important;
+  box-shadow:0 5px 18px rgba(0,0,0,.28) !important;
+}
+.tutorial-help-button svg { width:16px !important; height:16px !important; }
+.tutorial-help-button span { display:none !important; }
+.tutorial-help-button:hover { color:#fff !important; background:#303832 !important; border-color:#69756c !important; box-shadow:0 7px 22px rgba(0,0,0,.34) !important; }
+.floating-ai-chat-trigger {
+  width:40px !important; min-width:40px !important; height:40px !important; min-height:40px !important;
+  padding:0 !important; gap:0 !important; border:1px solid #454d47 !important;
+  border-radius:50% !important; color:#e7ece8 !important; background:#242a26 !important;
+  box-shadow:0 6px 22px rgba(0,0,0,.3) !important;
+}
+.floating-ai-chat-trigger:hover { color:#fff !important; background:#303832 !important; border-color:#69756c !important; }
+.floating-ai-chat-trigger span { display:none !important; }
+.floating-ai-chat-trigger svg { color:inherit !important; }
+.floating-ai-chat-panel { border-color:#343d36 !important; background:rgba(20,24,21,.98) !important; color:#e8eee9 !important; }
+.floating-ai-chat-panel-heading { color:#eef2ef !important; border-bottom-color:#303832 !important; }
+.anchon-chat-close { color:#b4bdb6 !important; background:#242a26 !important; border:1px solid #454d47 !important; }
+.anchon-chat-close:hover { color:#fff !important; background:#303832 !important; }
+.ai-chat-title-icon,.ai-chat-mode button,.ai-chat-composer-footer button,.ai-chat-apply {
+  color:#e2e8e3 !important; background:#252c27 !important; border-color:#454f47 !important;
+}
+.ai-chat-mode button.active { color:#f3f6f3 !important; background:#343d36 !important; border-color:#69766c !important; }
+.ai-chat-composer-footer button:hover,.ai-chat-apply:hover { background:#343d36 !important; }
+@media(max-width:760px) {
+ .app-learn-layout { grid-template-columns:minmax(0,1fr); }
+ .app-learn-topics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .app-learn-lesson { padding:17px; }
+ .app-section-content { padding:18px 14px 28px !important; }
+}
