@@ -627,3 +627,132 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
     transition:none!important;transform:none!important;
   }
 }
+
+
+/* Canvas trace: focus one component at a time and keep the active connection legible. */
+.app-shell:not(.lp-root) .react-flow__edge-path {
+  stroke:#d8e0e5!important;
+  stroke-width:2.6px!important;
+  filter:drop-shadow(0 0 3px rgba(220,229,235,.48));
+  opacity:.94;
+}
+.app-shell:not(.lp-root) .react-flow__edge .react-flow__arrowhead {
+  fill:#e5eaee!important;stroke:#e5eaee!important;
+}
+.app-shell:not(.lp-root) .architecture-edge-label {
+  color:#e3e8ec!important;
+  background:rgba(17,22,27,.72)!important;
+  border:1px solid rgba(190,201,209,.2)!important;
+  border-radius:5px!important;
+  padding:3px 7px!important;
+  text-shadow:0 1px 5px rgba(0,0,0,.95)!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.24)!important;
+}
+.app-shell:not(.lp-root) .react-flow__edge.request-trace-edge.is-active .react-flow__edge-path {
+  stroke:#f2f5f7!important;
+  stroke-width:4px!important;
+  filter:drop-shadow(0 0 4px rgba(245,248,250,.95)) drop-shadow(0 0 11px rgba(190,204,214,.72))!important;
+  stroke-dasharray:9 6!important;
+  animation:anchon-silver-flow-dash .72s linear infinite!important;
+}
+.app-shell:not(.lp-root) .react-flow__edge.request-trace-edge.is-complete .react-flow__edge-path {
+  stroke:#aebbc4!important;
+  filter:drop-shadow(0 0 5px rgba(190,203,212,.58))!important;
+}
+.app-shell:not(.lp-root) .react-flow__node.request-trace-node.is-active .bp-node {
+  border-color:#f0f3f5!important;
+  box-shadow:0 0 0 1px rgba(240,245,248,.34),0 0 22px rgba(220,230,236,.36),0 16px 40px rgba(0,0,0,.62)!important;
+}
+.app-shell:not(.lp-root) .react-flow__node.request-trace-node.is-complete .bp-node {
+  border-color:#aebbc4!important;
+  box-shadow:0 0 0 1px rgba(210,220,227,.15),0 10px 30px rgba(0,0,0,.5)!important;
+}
+.trace-component-popover {
+  z-index:40!important;
+  min-width:230px!important;
+  max-width:min(330px,calc(100vw - 36px))!important;
+  padding:12px 14px!important;
+  border:1px solid rgba(218,227,233,.62)!important;
+  border-radius:11px!important;
+  color:#edf1f4!important;
+  background:linear-gradient(145deg,rgba(39,47,54,.98),rgba(17,22,27,.98))!important;
+  box-shadow:0 12px 38px rgba(0,0,0,.62),0 0 20px rgba(210,222,230,.18)!important;
+  backdrop-filter:blur(12px);
+  pointer-events:none!important;
+}
+.trace-component-popover-kicker {
+  margin-bottom:5px;
+  color:#c5cfd6!important;
+  font:600 9px/1.4 var(--anchon-font-data)!important;
+  letter-spacing:.1em;
+}
+.trace-component-popover strong {
+  display:block;
+  color:#fff!important;
+  font:600 13px/1.4 var(--anchon-font-ui)!important;
+}
+.trace-component-popover span {
+  display:block;
+  margin-top:5px;
+  color:#d9e0e5!important;
+  font-size:10px!important;
+  line-height:1.5;
+}
+.trace-component-popover span b { color:#fff!important;padding:0 3px; }
+.trace-component-popover p {
+  margin:7px 0 0!important;
+  color:#aeb9c1!important;
+  font-size:10px!important;
+  line-height:1.5!important;
+}
+.app-shell:not(.lp-root) .request-trace-status {
+  border-color:rgba(204,215,223,.48)!important;
+  color:#f0f3f5!important;
+  background:rgba(23,29,34,.97)!important;
+  box-shadow:0 14px 38px rgba(0,0,0,.62),0 0 18px rgba(210,220,228,.12)!important;
+}
+.app-shell:not(.lp-root) .request-trace-status strong { color:#e4e9ed!important; }
+.app-shell:not(.lp-root) .request-trace-status span:not(.request-trace-status-dot) { color:#c0cbd2!important; }
+.app-shell:not(.lp-root) .request-trace-status-dot {
+  background:#e4eaee!important;
+  box-shadow:0 0 0 4px rgba(220,230,236,.14),0 0 10px rgba(235,242,246,.48)!important;
+}
+@keyframes anchon-silver-flow-dash { to { stroke-dashoffset:-30; } }
+
+/* Collapsed navigation is a floating control, not a 36px full-height rail. */
+.app-shell .workspace.left-panel-closed,
+.app-shell .workspace.right-panel-closed {
+  --left-panel-width:0px!important;
+  --right-panel-width:0px!important;
+}
+.app-shell .workspace-navigation.is-collapsed { display:none!important; }
+.app-shell .workspace-sidebar-reopen,
+.app-shell .workspace-inspector-reopen {
+  position:fixed!important;
+  z-index:95!important;
+  top:74px!important;
+  display:grid!important;
+  place-items:center!important;
+  width:36px!important;
+  height:36px!important;
+  padding:0!important;
+  color:#e5eaee!important;
+  background:linear-gradient(145deg,#343d44,#1c2227)!important;
+  border:1px solid #68747d!important;
+  border-radius:9px!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.1)!important;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease!important;
+}
+.app-shell .workspace-sidebar-reopen { left:12px!important; }
+.app-shell .workspace-inspector-reopen { right:12px!important; }
+.app-shell .workspace-sidebar-reopen:hover,
+.app-shell .workspace-inspector-reopen:hover {
+  transform:translateY(-2px)!important;
+  border-color:#dce4e9!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.55),0 0 14px rgba(220,230,236,.2)!important;
+}
+.app-shell .workspace .panel-resizer.is-hidden { display:none!important; }
+@media(prefers-reduced-motion:reduce) {
+  .app-shell:not(.lp-root) .react-flow__edge.request-trace-edge.is-active .react-flow__edge-path { animation:none!important; }
+  .app-shell .workspace-sidebar-reopen,.app-shell .workspace-inspector-reopen { transition:none!important; }
+}
