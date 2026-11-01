@@ -424,7 +424,6 @@ function ParticipantEditor({
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const edgeTypes = useMemo(() => ({ curvedArchitectureEdge: CurvedArchitectureEdge }), []);
   const renderedEdges = useMemo(() => edges.map((edge) => {
-    const source = nodes.find((item) => item.id === edge.source);
     const accent = "#cbd2cc";
     const traceIndex = requestTraceEdges.findIndex((traceEdge) => traceEdge.id === edge.id);
     const isTraceActive = traceIndex === requestTraceStep;
