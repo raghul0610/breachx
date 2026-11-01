@@ -20,11 +20,11 @@ type FlowNode = {
 };
 
 const NODES: FlowNode[] = [
-  { id: "client", title: "CLIENT", kind: "ENTRY POINT", detail: "A person opens ANCHON and describes the application they want to design.", role: "The request begins at the user interface.", icon: CircleDot, x: 7, y: 43, color: "#55d6c2" },
-  { id: "gateway", title: "API GATEWAY", kind: "ROUTING", detail: "The gateway receives the request, checks its shape, and routes it to the right capability.", role: "One entry point. Clear routing and boundaries.", icon: GitBranch, x: 28, y: 43, color: "#6bb8e8" },
-  { id: "service", title: "APP SERVICE", kind: "COMPUTE", detail: "Application logic validates the request and coordinates the work needed to produce a result.", role: "Business logic belongs in a service, not the database.", icon: Server, x: 50, y: 43, color: "#75c9a5" },
-  { id: "database", title: "DATA STORE", kind: "PERSISTENCE", detail: "The service reads or writes durable data through an explicit persistence boundary.", role: "Store state where it can be queried and protected.", icon: Database, x: 72, y: 25, color: "#d9ad70" },
-  { id: "response", title: "RESPONSE", kind: "OUTPUT", detail: "The service returns a result to the client. The connection direction makes the request path legible.", role: "Trace the path from input to outcome.", icon: ShieldCheck, x: 91, y: 43, color: "#8bb7d9" },
+  { id: "client", title: "CLIENT", kind: "ENTRY POINT", detail: "A person opens ANCHON and describes the application they want to design.", role: "The request begins at the user interface.", icon: CircleDot, x: 7, y: 43, color: "#dce2e6" },
+  { id: "gateway", title: "API GATEWAY", kind: "ROUTING", detail: "The gateway receives the request, checks its shape, and routes it to the right capability.", role: "One entry point. Clear routing and boundaries.", icon: GitBranch, x: 28, y: 43, color: "#aeb8c0" },
+  { id: "service", title: "APP SERVICE", kind: "COMPUTE", detail: "Application logic validates the request and coordinates the work needed to produce a result.", role: "Business logic belongs in a service, not the database.", icon: Server, x: 50, y: 43, color: "#c4cbd1" },
+  { id: "database", title: "DATA STORE", kind: "PERSISTENCE", detail: "The service reads or writes durable data through an explicit persistence boundary.", role: "Store state where it can be queried and protected.", icon: Database, x: 72, y: 25, color: "#f1f3f5" },
+  { id: "response", title: "RESPONSE", kind: "OUTPUT", detail: "The service returns a result to the client. The connection direction makes the request path legible.", role: "Trace the path from input to outcome.", icon: ShieldCheck, x: 91, y: 43, color: "#8b959d" },
 ];
 
 const CONNECTIONS = [
@@ -82,7 +82,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         <div className="iad-brandline"><span className="iad-brand-mark"><AnchonLogo size={28} /></span><span>SYSTEM DESIGN, MADE VISIBLE</span><button className="iad-theme-toggle" type="button" onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")} aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}<span>{theme === "dark" ? "LIGHT" : "DARK"}</span></button></div>
         <div className="iad-headline-wrap">
           <p className="iad-overline"><span className="iad-live-dot" /> SYSTEM ARCHITECTURE DESIGNER</p>
-          <h1 className="iad-brand-title">ANCHON</h1>
+          <h1 className="iad-brand-title" onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--pointer-x", `${((event.clientX - bounds.left) / bounds.width) * 100}%`); }} onPointerLeave={(event) => event.currentTarget.style.setProperty("--pointer-x", "50%")}>ANCHON</h1>
           <p className="iad-hero-tagline">Think in systems. Design with clarity.</p>
           <p className="iad-intro">Turn an application idea into a living system blueprint. Explore the flow, understand every boundary, and build architecture that makes sense.</p>
           <button className="iad-hero-cta" onClick={onOpenDesigner}>Start designing <ArrowRight size={15} /></button>
@@ -99,8 +99,8 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
           <div className="iad-canvas-meta"><span>REFERENCE ARCHITECTURE <b>·</b> WEB APPLICATION</span><span>SELECT A NODE TO INSPECT <ArrowDownRight size={12} /></span></div>
           <svg className="iad-wires" viewBox="0 0 1000 380" preserveAspectRatio="none" aria-hidden="true">
             <defs>
-              <linearGradient id="iad-wire-gradient"><stop offset="0%" stopColor="#55d6c2" stopOpacity=".25" /><stop offset="50%" stopColor="#6bb8e8" stopOpacity=".8" /><stop offset="100%" stopColor="#8bb7d9" stopOpacity=".35" /></linearGradient>
-              <marker id="iad-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#55d6c2" /></marker>
+              <linearGradient id="iad-wire-gradient"><stop offset="0%" stopColor="#dce2e6" stopOpacity=".25" /><stop offset="50%" stopColor="#aeb8c0" stopOpacity=".8" /><stop offset="100%" stopColor="#8b959d" stopOpacity=".35" /></linearGradient>
+              <marker id="iad-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#dce2e6" /></marker>
             </defs>
             <path className="iad-wire-base" d="M125 190 H275" />
             <path className="iad-wire-base" d="M335 190 H490" />
