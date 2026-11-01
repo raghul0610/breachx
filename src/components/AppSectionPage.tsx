@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BookOpen, FolderKanban, GraduationCap, HelpCircle, Layers3, Settings } from "lucide-react";
+import { AnchonLogo } from "./AnchonLogo";
 import { LearnPracticeCanvas } from "./LearnPracticeCanvas";
 import { WorkspaceGuide, WorkspaceSettings } from "./WorkspacePanels";
 type Section = "learn" | "guide" | "settings";
@@ -14,7 +15,7 @@ export function AppSectionPage({section,onNavigate}:{section:Section;onNavigate:
 const [activeLesson,setActiveLesson]=useState(0); const current=lessons[activeLesson];
 return <div className="app-shell project-dashboard app-section-shell">
 <aside className="dashboard-sidebar" aria-label="Main navigation">
-<button type="button" className="dashboard-brand" onClick={()=>onNavigate("projects")} aria-label="ANCHON projects"><span className="dashboard-brand-mark"><Layers3 size={19}/></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></button>
+<button type="button" className="dashboard-brand" onClick={()=>onNavigate("projects")} aria-label="ANCHON projects"><span className="dashboard-brand-mark"><AnchonLogo size={25}/></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></button>
 <div className="dashboard-nav-label">WORKSPACE</div><nav className="dashboard-nav">
 <button type="button" onClick={()=>onNavigate("projects")}><FolderKanban size={17}/><span>Projects</span></button>
 <button type="button" className={section==="learn"?"is-active":""} onClick={()=>onNavigate("learn")} aria-current={section==="learn"?"page":undefined}><BookOpen size={17}/><span>Learn</span></button>
