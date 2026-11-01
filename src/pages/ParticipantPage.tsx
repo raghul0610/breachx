@@ -30,6 +30,7 @@ import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
 import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
+import { AnchonLogo } from "../components/AnchonLogo";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 import { LearnPracticeCanvas } from "../components/LearnPracticeCanvas";
 import { WorkspaceGuide, WorkspaceShare, WorkspaceSettings } from "../components/WorkspacePanels";
@@ -820,7 +821,7 @@ function ParticipantEditor({
         
         <aside className={`sidebar left-panel requirements-panel workspace-navigation ${leftPanelOpen ? "is-open" : "is-collapsed"}`} aria-label="Workspace navigation">
           <div className="workspace-nav-brand">
-            <div className="requirements-mark"><Layers size={16} /></div>
+            <div className="requirements-mark"><AnchonLogo size={24} /></div>
             <div><div className="section-kicker">DESIGN WORKSPACE</div><p>Build · Learn · Validate</p></div>
             <button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse workspace navigation"><PanelLeftClose size={15} /></button>
           </div>
