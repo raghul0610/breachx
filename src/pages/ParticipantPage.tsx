@@ -218,6 +218,8 @@ function ParticipantEditor({
   }), [applicationName, applicationDescription, notes, inferredRequirements, nodes, edges]);
   const activeEvaluationResult = evaluationFingerprint === currentEvaluationFingerprint ? evaluationResult : null;
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
+  const [pendingInsertPosition, setPendingInsertPosition] = useState<{ x: number; y: number } | null>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [libraryActiveCategory, setLibraryActiveCategory] = useState("AI / ML");
   const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<"canvas" | "requirements" | "learn" | "guide" | "share" | "settings">(initialSection);
@@ -472,7 +474,7 @@ function ParticipantEditor({
         id,
         type: "blueprintNode",
         position:
-          position ?? { x: 120 + Math.random() * 420, y: 90 + Math.random() * 320 },
+          position ?? pendingInsertPosition ?? { x: 120 + Math.random() * 420, y: 90 + Math.random() * 320 },
         data: {
           label: item.label,
           typeKey: item.typeKey,
@@ -484,6 +486,8 @@ function ParticipantEditor({
     setSelectedId(id);
     setSelectedEdgeId(null);
     setSelectedCatalogTypeKey(null);
+    setRightPanelOpen(true);
+    setPendingInsertPosition(null);
     setCatalogNotes("");
     setShowFullExplanation(false);
     logActivity("NODE_ADDED", { typeKey: item.typeKey });
@@ -688,6 +692,21 @@ function ParticipantEditor({
     );
   };
 
+  const duplicateSelected = useCallback(() => {
+    const selectedNodes = nodesRef.current.filter((node) => node.selected || node.id === selectedId);
+    if (!selectedNodes.length) return;
+    pushHistory();
+    const idMap = new Map(selectedNodes.map((node) => [node.id, crypto.randomUUID()]));
+    const duplicates = selectedNodes.map((node) => ({ ...structuredClone(node), id: idMap.get(node.id)!, selected: true, position: { x: node.position.x + 48, y: node.position.y + 48 } }));
+    const duplicatedEdges = edgesRef.current.filter((edge) => idMap.has(edge.source) && idMap.has(edge.target)).map((edge) => ({ ...structuredClone(edge), id: crypto.randomUUID(), source: idMap.get(edge.source)!, target: idMap.get(edge.target)!, selected: false }));
+    setNodes((current) => [...current.map((node) => ({ ...node, selected: false })), ...duplicates]);
+    setEdges((current) => [...current, ...duplicatedEdges]);
+    setSelectedId(duplicates[0].id);
+    setSelectedEdgeId(null);
+    setSelectedCatalogTypeKey(null);
+    setRightPanelOpen(true);
+  }, [selectedId, pushHistory, setNodes, setEdges]);
+
   const removeSelected = useCallback(() => {
 
     const selectedNodeIds = new Set(nodesRef.current.filter((node) => node.selected || node.id === selectedId).map((node) => node.id));
@@ -741,6 +760,18 @@ function ParticipantEditor({
         setSelectedCatalogTypeKey(null);
         return;
       }
+      if (modifier && event.key.toLowerCase() === "k") {
+        event.preventDefault(); setComponentLibraryOpen(true); setRightPanelOpen(false);
+        window.setTimeout(() => document.querySelector<HTMLInputElement>(".component-library-search input")?.focus(), 0); return;
+      }
+      if (modifier && event.key.toLowerCase() === "d" && hasGraphSelection) { event.preventDefault(); duplicateSelected(); return; }
+      if (!modifier && event.key.toLowerCase() === "f") { event.preventDefault(); void fitView({ padding: 0.2, duration: 350 }); return; }
+      if (!modifier && event.key.toLowerCase() === "l") {
+        event.preventDefault(); pushHistory();
+        setNodes((current) => layoutArchitecture(current, edgesRef.current).map((node) => ({ ...node, selected: false })));
+        setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(false); void fitView({ padding: 0.2, duration: 400 }); return;
+      }
+      if (event.key === "?" || (event.shiftKey && event.key === "/")) { event.preventDefault(); setShortcutsOpen(true); return; }
       if ((event.key === "Delete" || event.key === "Backspace") && hasGraphSelection) {
         event.preventDefault();
         removeSelected();
@@ -748,7 +779,7 @@ function ParticipantEditor({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, setNodes, setEdges]);
+  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, duplicateSelected, fitView, pushHistory, setNodes, setEdges]);
 
   return (
     <div className="app-shell">
@@ -910,7 +941,7 @@ function ParticipantEditor({
               <div className="component-library-results">
                 <div className="component-library-results-heading"><div><span className="section-kicker">{componentSearch.trim() ? "SEARCH RESULTS" : "COMPONENT CATEGORY"}</span><h3>{componentSearch.trim() ? "Matching components" : libraryActiveCategory}</h3><p>{componentSearch.trim() ? "Results across every category" : "Select a component to inspect it. Double-click to add it to the canvas."}</p></div><span className="component-results-count">{CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length} ITEMS</span></div>
                 <div className="component-library-node-grid">
-                  {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : 0).map((item) => <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(true); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} onDoubleClick={() => { addCatalogNode(item); setComponentLibraryOpen(false); setRightPanelOpen(true); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
+                  {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : 0).map((item) => <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(true); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} onDoubleClick={() => { addCatalogNode(item, pendingInsertPosition ?? undefined); setPendingInsertPosition(null); setComponentLibraryOpen(false); setRightPanelOpen(true); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
                     <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={15} /></span><span>{item.label}</span></span><small>{item.category}</small>
                   </button>)}
                   {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length === 0 && <div className="component-library-empty"><BookOpen size={22} /><strong>No components found</strong><span>Try another search term or category.</span></div>}
@@ -919,7 +950,7 @@ function ParticipantEditor({
             </div>
           </section></>}
 
-        <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
+        <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true" onDoubleClick={(event) => { if (!(event.target instanceof HTMLElement) || !event.target.closest(".react-flow__pane")) return; setPendingInsertPosition(screenToFlowPosition({ x: event.clientX, y: event.clientY })); setComponentSearch(""); setComponentLibraryOpen(true); setRightPanelOpen(false); }}>
           <div className="canvas-toolbar">
             <div>
               <div className="section-kicker">
@@ -928,7 +959,7 @@ function ParticipantEditor({
               <span className="counter">
                 {nodes.length} components · {edges.length} connections
               </span>
-              <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
+              <span className="editor-shortcuts">Double-click canvas to add · Ctrl/Cmd K library · Ctrl/Cmd D duplicate · F fit · L layout · ? shortcuts</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
             <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!nodes.length}>
@@ -976,6 +1007,7 @@ function ParticipantEditor({
             onConnect={onConnect}
             onReconnect={onReconnect}
             onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
+            onNodeDoubleClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); window.setTimeout(() => document.querySelector<HTMLInputElement>(".right-panel input")?.focus(), 0); }}
             onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
             onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); }}
             onDragOver={(event) => {
