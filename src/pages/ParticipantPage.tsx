@@ -784,67 +784,70 @@ function ParticipantEditor({
 
       <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         
-        {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
-          <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
-            <div className="requirements-mark"><FileText size={16} /></div>
-            <div>
-              <div className="section-kicker">PROJECT BRIEF</div>
-              <p>Start with the problem. Shape the system around it.</p>
-            </div>
+        {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel workspace-navigation" aria-label="Workspace navigation">
+          <div className="workspace-nav-brand">
+            <div className="requirements-mark"><Layers size={16} /></div>
+            <div><div className="section-kicker">DESIGN WORKSPACE</div><p>Build · Learn · Validate</p></div>
+            <button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse workspace navigation"><PanelLeftClose size={15} /></button>
           </div>
-
-          <section className="brief-card" aria-labelledby="brief-identity-title">
-            <div className="brief-card-heading">
-              <span className="brief-step">01</span>
-              <div>
-                <h2 id="brief-identity-title">Project identity</h2>
-                <p>Give this architecture a clear name.</p>
+          <nav className="workspace-primary-nav" aria-label="Workspace sections">
+            {([
+              { id: "requirements", label: "Requirements", icon: FileText, hint: "Define the problem" },
+              { id: "learn", label: "Learn", icon: BookOpen, hint: "System design academy" },
+              { id: "guide", label: "Guide", icon: Sparkles, hint: "How to use ANCHON" },
+              { id: "share", label: "Share", icon: Link2, hint: "Share your architecture" },
+              { id: "settings", label: "Settings", icon: Layers, hint: "Workspace preferences" },
+            ] as const).map((item) => <button key={item.id} type="button" className={`workspace-nav-item ${activeWorkspaceSection === item.id ? "is-active" : ""}`} onClick={() => setActiveWorkspaceSection(item.id)} aria-current={activeWorkspaceSection === item.id ? "page" : undefined}>
+              <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
+            </button>)}
+          </nav>
+          <div className="workspace-nav-divider" />
+          <div className="workspace-nav-content">
+          {activeWorkspaceSection === "requirements" && <>
+            <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
+            <section className="brief-card" aria-labelledby="brief-identity-title">
+              <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
+              <div className="field"><label htmlFor="application-name">APPLICATION NAME</label><input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" /></div>
+            </section>
+            <section className="brief-card" aria-labelledby="inferred-requirements-title">
+              <div className="brief-card-heading"><span className="brief-step">02</span><div><h2 id="inferred-requirements-title">Architecture requirements</h2><p>Agent-inferred from the current components and connections.</p></div></div>
+              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
+              {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
+              {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
+              {inferredRequirements && <>
+                <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
+                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}</div>
+                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}</div>
+                {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
+                <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
+              </>}
+            </section>
+            <div className="requirements-status" role="status"><div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div><div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div><small className={saveStatus === "error" ? "requirements-save-error" : ""}><span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />{saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}</small></div>
+          </>}
+          {activeWorkspaceSection === "learn" && <>
+            <div className="learn-panel-intro"><div className="section-kicker">SYSTEM DESIGN ACADEMY</div><h2>Learn by building.</h2><p>Understand the concepts, explore real-world architectures, then practice by adding components to your canvas.</p></div>
+            <div className="learn-layout">
+              <nav className="learn-topic-nav" aria-label="System design learning topics">
+                {["Introduction","Architecture patterns","Use cases","Edge cases","Scalability","Reliability & availability","Security","Data & storage","AI / ML", ...[...new Set(CATALOG.map((item) => item.category))].sort()].map((topic) => <button key={topic} type="button" className={activeLearnTopic === topic ? "is-active" : ""} onClick={() => { setActiveLearnTopic(topic); setLearnSelectedComponent(null); }}>{topic}</button>)}
+              </nav>
+              <div className="learn-topic-content">
+                {activeLearnTopic === "Introduction" ? <><span className="learn-eyebrow">01 · FOUNDATIONS</span><h3>What is system design?</h3><p>System design is the process of defining a system's components, their responsibilities, interfaces, data flows, and operational constraints so the product can meet its requirements at a given scale.</p><h4>A practical design sequence</h4><ol><li>Clarify users, core use cases, and business constraints.</li><li>Estimate traffic, storage, latency, and availability needs.</li><li>Define APIs, data ownership, and core entities.</li><li>Draw the high-level architecture and request flows.</li><li>Identify bottlenecks, failure modes, and trade-offs.</li><li>Validate the design against measurable quality attributes.</li></ol><div className="learn-callout"><strong>Practice:</strong> Start with a simple client → API → database flow on the canvas. Add a cache only when you can explain which read path it accelerates.</div></> :
+                activeLearnTopic === "Architecture patterns" ? <><span className="learn-eyebrow">02 · STRUCTURE</span><h3>Common architecture patterns</h3>{[{name:"Monolith",body:"One deployable application with clear internal modules. Simple to operate initially; enforce module boundaries as the codebase grows."},{name:"Microservices",body:"Independently deployable services around business capabilities. Gains independent scaling and ownership at the cost of network, data, and operational complexity."},{name:"Event-driven",body:"Producers publish events and consumers react asynchronously. Useful for decoupling workflows; requires idempotency, retries, and observability."},{name:"CQRS",body:"Separate write models from read models when query and update needs differ substantially. Adds projection lag and consistency complexity."}].map((item) => <article className="learn-concept-card" key={item.name}><h4>{item.name}</h4><p>{item.body}</p></article>)}</> :
+                activeLearnTopic === "Use cases" ? <><span className="learn-eyebrow">03 · REAL-WORLD PRACTICE</span><h3>Explore system design use cases</h3><p>Choose a product, identify its critical path, and model the system on the canvas.</p>{[{name:"URL shortener",flow:"Client → API → key generator → database → cache",focus:"Unique IDs, redirect latency, hot keys, expiration, abuse prevention."},{name:"Real-time chat",flow:"Client → WebSocket gateway → message service → event broker → message store",focus:"Presence, ordering, delivery acknowledgements, offline sync, fan-out."},{name:"Video streaming",flow:"Upload → transcoding workers → object storage → CDN → playback client",focus:"Adaptive bitrate, transcoding queues, regional delivery, DRM, origin failures."},{name:"Ride-hailing",flow:"Rider app → API gateway → dispatch service ↔ location stream → driver app",focus:"Geospatial indexing, matching latency, stale GPS, surge, idempotent booking."},{name:"E-commerce",flow:"Web app → catalog/search → cart → order service → payment → inventory",focus:"Inventory races, payment retries, order state machines, cache invalidation."},{name:"Social feed",flow:"Client → feed API → ranking → fan-out workers → cache/store",focus:"Fan-out on write vs read, celebrity users, ranking freshness, moderation."}].map((item) => <article className="learn-usecase-card" key={item.name}><h4>{item.name}</h4><code>{item.flow}</code><p>{item.focus}</p><button type="button" onClick={() => { setApplicationName(item.name + " architecture"); setActiveWorkspaceSection("requirements"); setComponentLibraryOpen(false); }}>Use as project brief <ArrowLeft size={12} /></button></article>)}</> :
+                activeLearnTopic === "Edge cases" ? <><span className="learn-eyebrow">04 · FAILURE THINKING</span><h3>Design for edge cases</h3><p>For every happy path, ask what happens when dependencies are slow, duplicated, unavailable, or return unexpected data.</p>{[{name:"Network & retries",items:"Timeouts, partial responses, retry storms, exponential backoff, circuit breakers."},{name:"Data consistency",items:"Duplicate writes, concurrent updates, stale reads, out-of-order events, schema changes."},{name:"Capacity",items:"Traffic spikes, hot partitions, queue backlog, connection exhaustion, large payloads."},{name:"Security",items:"Broken authorization, replay attacks, credential leakage, rate-limit bypass, tenant isolation."},{name:"Operations",items:"Bad deployments, failed migrations, unavailable regions, missing metrics, noisy alerts."}].map((item) => <article className="learn-concept-card" key={item.name}><h4>{item.name}</h4><p>{item.items}</p></article>)}</> :
+                activeLearnTopic === "Scalability" ? <><span className="learn-eyebrow">05 · CAPACITY</span><h3>Scale with evidence</h3><p>Estimate requests per second, concurrent users, data growth, and read/write ratios before choosing infrastructure.</p><ul><li>Scale vertically to buy time; scale horizontally when workload and architecture support it.</li><li>Use caching for repeated reads with a defined freshness policy.</li><li>Partition data when one database node becomes a measured bottleneck.</li><li>Use queues to absorb bursts and isolate slow background work.</li><li>Apply backpressure and rate limits to protect downstream services.</li></ul></> :
+                activeLearnTopic === "Reliability & availability" ? <><span className="learn-eyebrow">06 · RESILIENCE</span><h3>Keep the system dependable</h3><p>Define service-level indicators and objectives, then design graceful degradation around critical dependencies.</p><ul><li>Set timeouts on every network boundary.</li><li>Retry only transient failures, with jitter and bounded attempts.</li><li>Use circuit breakers and bulkheads to contain faults.</li><li>Back up data and regularly test restoration.</li><li>Monitor latency percentiles, error rates, saturation, and queue age.</li></ul></> :
+                activeLearnTopic === "Security" ? <><span className="learn-eyebrow">07 · TRUST BOUNDARIES</span><h3>Security is an architectural property</h3><ul><li>Authenticate identities and authorize every resource action.</li><li>Encrypt data in transit and at rest; manage keys separately.</li><li>Validate input at trust boundaries and encode output.</li><li>Use least-privilege service identities and network policies.</li><li>Audit sensitive actions without logging secrets or personal data.</li></ul></> :
+                activeLearnTopic === "Data & storage" ? <><span className="learn-eyebrow">08 · DATA DESIGN</span><h3>Choose storage around access patterns</h3><p>Model entities and consistency needs before choosing a database.</p><ul><li>Relational databases: transactions, constraints, and joins.</li><li>Document stores: flexible aggregate-shaped records.</li><li>Key-value stores: predictable lookups and low-latency access.</li><li>Search engines: full-text retrieval and relevance ranking.</li><li>Object storage: durable files, media, and backups.</li></ul></> :
+                <><span className="learn-eyebrow">COMPONENT DEEP DIVE</span><h3>{activeLearnTopic}</h3><p>Explore the building blocks in this system-design category. Select a component to read its role, usage, trade-offs, and example.</p><div className="learn-component-list">{CATALOG.filter((item) => item.category === activeLearnTopic).map((item) => { const knowledge = getComponentKnowledge(item); return <button type="button" key={item.typeKey} className={learnSelectedComponent === item.typeKey ? "is-active" : ""} onClick={() => setLearnSelectedComponent(item.typeKey)}><CategoryIcon category={item.category} size={15} /><span><strong>{item.label}</strong><small>{knowledge.summary}</small></span></button>; })}</div>{learnSelectedComponent && (() => { const item = CATALOG.find((entry) => entry.typeKey === learnSelectedComponent); if (!item) return null; const knowledge = getComponentKnowledge(item); return <article className="learn-component-detail"><h4>{item.label}</h4><p>{knowledge.whatItIs}</p><h5>When to use</h5><p>{knowledge.whenToUse}</p><h5>Trade-offs</h5><p>{knowledge.tradeoffs}</p><h5>Example</h5><p>{knowledge.example}</p><button type="button" onClick={() => { addCatalogNode(item); setActiveWorkspaceSection("requirements"); }}>Add to canvas <PlusCircle size={13} /></button></article>; })()}</>}
               </div>
             </div>
-            <div className="field">
-              <label htmlFor="application-name">APPLICATION NAME</label>
-              <input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" />
-            </div>
-          </section>
-
-
-          <section className="brief-card" aria-labelledby="inferred-requirements-title">
-            <div className="brief-card-heading">
-              <span className="brief-step">02</span>
-              <div>
-                <h2 id="inferred-requirements-title">Architecture requirements</h2>
-                <p>Agent-inferred from the current components and connections.</p>
-              </div>
-            </div>
-            <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}>
-              <Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}
-            </button>
-            {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
-            {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
-            {inferredRequirements && <>
-              <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
-              <div style={{ marginTop: 14 }}>
-                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>
-                {inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}
-              </div>
-              <div style={{ marginTop: 14 }}>
-                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>
-                {inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}
-              </div>
-              {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
-              <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
-            </>}
-          </section>
-
-          <div className="requirements-status" role="status">
-            <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
-            <div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div>
-            <small className={saveStatus === "error" ? "requirements-save-error" : ""}>
-              <span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />
-              {saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}
-            </small>
+          </>}
+          {activeWorkspaceSection === "guide" && <div className="workspace-info-panel"><div className="section-kicker">WORKSPACE GUIDE</div><h2>From brief to architecture</h2><ol><li>Write the product goal and core user journeys in Requirements.</li><li>Open the component library and choose a category.</li><li>Select a component to inspect its purpose and trade-offs.</li><li>Double-click a component or drag it onto the canvas.</li><li>Connect components to represent request and event flows.</li><li>Run a request trace, review findings, and save your design.</li></ol><button type="button" className="primary-btn compact" onClick={() => { setActiveWorkspaceSection("requirements"); setComponentLibraryOpen(true); }}>Open component library <Layers size={13} /></button></div>}
+          {activeWorkspaceSection === "share" && <div className="workspace-info-panel"><div className="section-kicker">SHARE ARCHITECTURE</div><h2>Make your design reviewable</h2><p>Save your draft first. Export a PDF from the workspace toolbar to share a snapshot of the current architecture.</p><p className="github-muted">A live public share link is not enabled yet. Your project remains private to your signed-in workspace.</p><button type="button" className="primary-btn compact" onClick={() => exportArchitecturePdf({ applicationName, nodes, edges })}>Export architecture PDF <FileDown size={13} /></button></div>}
+          {activeWorkspaceSection === "settings" && <div className="workspace-info-panel"><div className="section-kicker">WORKSPACE SETTINGS</div><h2>Canvas preferences</h2><p>Current project: <strong>{applicationName || "Untitled architecture"}</strong></p><p>{nodes.length} components · {edges.length} connections</p><p className="github-muted">Workspace preferences are currently managed per project. Additional editor preferences can be added here later.</p></div>}
           </div>
-        </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-left"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(true)} aria-label="Open requirements sidebar" title="Open requirements sidebar"><PanelLeftOpen size={16} /></button><span>BRIEF</span></div>}
+        </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-left"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(true)} aria-label="Open workspace navigation" title="Open workspace navigation"><PanelLeftOpen size={16} /></button><span>WORKSPACE</span></div>}
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
