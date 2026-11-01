@@ -14,8 +14,8 @@ const TUTORIALS: Record<string, { title: string; steps: TutorialStep[] }> = {
     title: "Project workspace tour",
     steps: [
       { selector: "[data-tutorial='new-project']", title: "Create a project", description: "Start a separate architecture for each application. ANCHON opens the editor after creating it.", action: "Use New Project when you are ready to start." },
-      { selector: "[data-tutorial='project-grid']", title: "Your saved architectures", description: "Each card keeps the project name and its last-opened time. Select the play icon to return to the architecture." },
-      { selector: ".project-card", title: "Project actions", description: "Right-click any project card to rename, duplicate, or delete it. Deletion asks for confirmation before removing the architecture." },
+      { selector: "[data-tutorial='project-grid']", title: "Your saved architectures", description: "Projects appear here with their component and connection counts. Open a project to continue editing it." },
+      { selector: "[data-tutorial='project-actions']", title: "Manage a project", description: "Open a project, rename it, duplicate it, or delete it. Deletion asks for confirmation first." },
     ],
   },
   workspace: {

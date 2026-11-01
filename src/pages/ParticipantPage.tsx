@@ -24,13 +24,12 @@ import { ArrowLeft, FileText, Layers, Save, Trash2, FileDown, BookOpen, PlusCirc
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { supabase } from "../lib/supabase";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
-import { CategoryIcon, getCategoryVisual } from "../components/CategoryIcon";
+import { CategoryIcon, getCategoryAccent, getCategoryVisual } from "../components/CategoryIcon";
 import { CATALOG, type CatalogItem } from "../lib/catalog";
 import { getComponentKnowledge } from "../lib/componentKnowledge";
 import { readSubmission, writeSubmission, logActivity, type DesignSubmission } from "../lib/storage";
 import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
-import { AnchonLogo } from "../components/AnchonLogo";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 import { LearnPracticeCanvas } from "../components/LearnPracticeCanvas";
 import { WorkspaceGuide, WorkspaceShare, WorkspaceSettings } from "../components/WorkspacePanels";
@@ -67,7 +66,7 @@ function readInferredRequirements(notes: string): InferredRequirements | null {
 
 function CurvedArchitectureEdge(props: EdgeProps) {
   const [path, labelX, labelY] = getBezierPath({ ...props, curvature: 0.42 });
-  const accent = String(props.style?.stroke ?? "#cbd2cc");
+  const accent = String(props.style?.stroke ?? "#38bdf8");
   return (
     <g>
       <BaseEdge {...props} path={path} style={{ ...props.style, stroke: accent, strokeWidth: props.selected ? 2.8 : 2.1 }} markerEnd={props.markerEnd} />
@@ -141,12 +140,10 @@ export function ParticipantPage({
   onBack,
   onSubmitted,
   projectId,
-  initialSection = "canvas",
 }: {
   onBack: () => void;
   onSubmitted: () => void;
   projectId: string;
-  initialSection?: "canvas" | "learn" | "guide" | "settings";
 }) {
   const saved = readSubmission(projectId);
   return (
@@ -157,7 +154,6 @@ export function ParticipantPage({
         onBack={onBack}
         onSubmitted={onSubmitted}
         startingSubmission={saved}
-        initialSection={initialSection}
       />
     </ReactFlowProvider>
   );
@@ -168,13 +164,11 @@ function ParticipantEditor({
   onSubmitted,
   projectId,
   startingSubmission,
-  initialSection,
 }: {
   onBack: () => void;
   onSubmitted: () => void;
   projectId: string;
   startingSubmission: DesignSubmission | null;
-  initialSection: "canvas" | "learn" | "guide" | "settings";
 }) {
   const { screenToFlowPosition, getViewport, fitView } = useReactFlow();
   const saved = startingSubmission;
@@ -219,14 +213,14 @@ function ParticipantEditor({
   }), [applicationName, applicationDescription, notes, inferredRequirements, nodes, edges]);
   const activeEvaluationResult = evaluationFingerprint === currentEvaluationFingerprint ? evaluationResult : null;
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
-  const [pendingInsertPosition, setPendingInsertPosition] = useState<{ x: number; y: number } | null>(null);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [libraryActiveCategory, setLibraryActiveCategory] = useState("AI / ML");
-  const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<"canvas" | "requirements" | "learn" | "guide" | "share" | "settings">(initialSection);
+  const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<"canvas" | "requirements" | "learn" | "guide" | "share" | "settings">("canvas");
   const [activeLearnTopic, setActiveLearnTopic] = useState("Introduction");
   const [learnSelectedComponent, setLearnSelectedComponent] = useState<string | null>(null);
   const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
+  const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
+  const chatDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(260);
   const [rightPanelWidth, setRightPanelWidth] = useState(300);
   const [componentDockHeight, setComponentDockHeight] = useState(285);
@@ -310,13 +304,9 @@ function ParticipantEditor({
 
   useEffect(() => {
     if (requestTraceStep < 0 || requestTraceStep >= requestTraceEdges.length) return;
-    const activeEdge = requestTraceEdges[requestTraceStep];
-    if (activeEdge?.target) {
-      void fitView({ nodes: [{ id: activeEdge.target }], padding: 0.58, duration: 680, maxZoom: 1.75 });
-    }
-    const timeout = window.setTimeout(() => setRequestTraceStep((step) => step + 1), 1550);
+    const timeout = window.setTimeout(() => setRequestTraceStep((step) => step + 1), 900);
     return () => window.clearTimeout(timeout);
-  }, [requestTraceStep, requestTraceEdges, fitView]);
+  }, [requestTraceStep, requestTraceEdges.length]);
 
   const runRequestTrace = useCallback(() => {
     const result = evaluateSystemDesign({
@@ -427,7 +417,8 @@ function ParticipantEditor({
   const nodeTypes = useMemo(() => ({ blueprintNode: BlueprintNode }), []);
   const edgeTypes = useMemo(() => ({ curvedArchitectureEdge: CurvedArchitectureEdge }), []);
   const renderedEdges = useMemo(() => edges.map((edge) => {
-    const accent = "#cbd2cc";
+    const source = nodes.find((item) => item.id === edge.source);
+    const accent = getCategoryAccent(String(source?.data?.category ?? ""));
     const traceIndex = requestTraceEdges.findIndex((traceEdge) => traceEdge.id === edge.id);
     const isTraceActive = traceIndex === requestTraceStep;
     const isTraceComplete = requestTraceStep > 0 && traceIndex >= 0 && traceIndex < requestTraceStep;
@@ -435,8 +426,8 @@ function ParticipantEditor({
     return {
       ...edge, type: "curvedArchitectureEdge", animated: true,
       className: ["request-trace-edge", isTraceActive ? "is-active" : "", isTraceComplete ? "is-complete" : "", hasFinding ? "architecture-edge-issue" : ""].filter(Boolean).join(" "),
-      style: { ...edge.style, stroke: hasFinding ? "#e2a0a0" : accent, strokeWidth: hasFinding ? 3.4 : isTraceActive ? 4.2 : isTraceComplete ? 3 : 2.7, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.42 : 1, filter: isTraceActive ? "drop-shadow(0 0 7px rgba(235,241,245,.88))" : "drop-shadow(0 0 3px rgba(210,220,228,.42))" },
-      markerEnd: { type: MarkerType.ArrowClosed, color: hasFinding ? "#e2a0a0" : "#dce3e8", width: 22, height: 22 },
+      style: { ...edge.style, stroke: hasFinding ? "#fb7185" : accent, strokeWidth: hasFinding ? 3.4 : isTraceActive ? 4 : isTraceComplete ? 3 : 2.1, opacity: requestTraceStep >= 0 && !isTraceActive && !isTraceComplete ? 0.28 : 1 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: hasFinding ? "#fb7185" : accent, width: 22, height: 22 },
       label: typeof edge.label === "string" ? edge.label : "",
       labelStyle: { ...edge.labelStyle, fill: hasFinding ? "#fda4af" : accent }, interactionWidth: 20,
     };
@@ -444,11 +435,10 @@ function ParticipantEditor({
   const tracedNodes = useMemo(() => nodes.map((node) => {
     const activeEdge = requestTraceEdges[requestTraceStep];
     const active = requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length && (activeEdge?.source === node.id || activeEdge?.target === node.id);
-    const traceTarget = activeEdge?.target === node.id;
     const complete = requestTraceStep > 0 && requestTraceEdges.slice(0, Math.min(requestTraceStep, requestTraceEdges.length)).some((edge) => edge.source === node.id || edge.target === node.id);
     const nodeFindings = activeEvaluationResult?.findings.filter((finding) => finding.nodeIds?.includes(node.id)) ?? [];
     const highestSeverity = (["critical", "high", "medium", "low"] as const).find((severity) => nodeFindings.some((finding) => finding.severity === severity));
-    return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length, traceActive: traceTarget, traceStep: requestTraceStep + 1, traceFrom: activeEdge?.source ? nodes.find((item) => item.id === activeEdge.source)?.data.label ?? activeEdge.source : "", traceTo: activeEdge?.target ? nodes.find((item) => item.id === activeEdge.target)?.data.label ?? activeEdge.target : "" }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
+    return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
   }), [nodes, requestTraceEdges, requestTraceStep, activeEvaluationResult]);
   useEffect(() => { if (!selectedId) setRightPanelOpen(false); }, [selectedId]);
   const selected = nodes.find((node) => node.id === selectedId);
@@ -477,7 +467,7 @@ function ParticipantEditor({
         id,
         type: "blueprintNode",
         position:
-          position ?? pendingInsertPosition ?? { x: 120 + Math.random() * 420, y: 90 + Math.random() * 320 },
+          position ?? { x: 120 + Math.random() * 420, y: 90 + Math.random() * 320 },
         data: {
           label: item.label,
           typeKey: item.typeKey,
@@ -489,8 +479,6 @@ function ParticipantEditor({
     setSelectedId(id);
     setSelectedEdgeId(null);
     setSelectedCatalogTypeKey(null);
-    setRightPanelOpen(true);
-    setPendingInsertPosition(null);
     setCatalogNotes("");
     setShowFullExplanation(false);
     logActivity("NODE_ADDED", { typeKey: item.typeKey });
@@ -695,21 +683,6 @@ function ParticipantEditor({
     );
   };
 
-  const duplicateSelected = useCallback(() => {
-    const selectedNodes = nodesRef.current.filter((node) => node.selected || node.id === selectedId);
-    if (!selectedNodes.length) return;
-    pushHistory();
-    const idMap = new Map(selectedNodes.map((node) => [node.id, crypto.randomUUID()]));
-    const duplicates = selectedNodes.map((node) => ({ ...structuredClone(node), id: idMap.get(node.id)!, selected: true, position: { x: node.position.x + 48, y: node.position.y + 48 } }));
-    const duplicatedEdges = edgesRef.current.filter((edge) => idMap.has(edge.source) && idMap.has(edge.target)).map((edge) => ({ ...structuredClone(edge), id: crypto.randomUUID(), source: idMap.get(edge.source)!, target: idMap.get(edge.target)!, selected: false }));
-    setNodes((current) => [...current.map((node) => ({ ...node, selected: false })), ...duplicates]);
-    setEdges((current) => [...current, ...duplicatedEdges]);
-    setSelectedId(duplicates[0].id);
-    setSelectedEdgeId(null);
-    setSelectedCatalogTypeKey(null);
-    setRightPanelOpen(true);
-  }, [selectedId, pushHistory, setNodes, setEdges]);
-
   const removeSelected = useCallback(() => {
 
     const selectedNodeIds = new Set(nodesRef.current.filter((node) => node.selected || node.id === selectedId).map((node) => node.id));
@@ -763,18 +736,6 @@ function ParticipantEditor({
         setSelectedCatalogTypeKey(null);
         return;
       }
-      if (modifier && event.key.toLowerCase() === "k") {
-        event.preventDefault(); setComponentLibraryOpen(true); setRightPanelOpen(false);
-        window.setTimeout(() => document.querySelector<HTMLInputElement>(".component-library-search input")?.focus(), 0); return;
-      }
-      if (modifier && event.key.toLowerCase() === "d" && hasGraphSelection) { event.preventDefault(); duplicateSelected(); return; }
-      if (!modifier && event.key.toLowerCase() === "f") { event.preventDefault(); void fitView({ padding: 0.2, duration: 350 }); return; }
-      if (!modifier && event.key.toLowerCase() === "l") {
-        event.preventDefault(); pushHistory();
-        setNodes((current) => layoutArchitecture(current, edgesRef.current).map((node) => ({ ...node, selected: false })));
-        setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(false); void fitView({ padding: 0.2, duration: 400 }); return;
-      }
-      if (event.key === "?" || (event.shiftKey && event.key === "/")) { event.preventDefault(); setShortcutsOpen(true); return; }
       if ((event.key === "Delete" || event.key === "Backspace") && hasGraphSelection) {
         event.preventDefault();
         removeSelected();
@@ -782,7 +743,7 @@ function ParticipantEditor({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, duplicateSelected, fitView, pushHistory, setNodes, setEdges]);
+  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, setNodes, setEdges]);
 
   return (
     <div className="app-shell">
@@ -797,6 +758,7 @@ function ParticipantEditor({
         <div className="topbar-right"><div className="topbar-actions"><div className="toolbar-actions topbar-toolbar-actions">
               <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); setRightPanelOpen(false); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
               <label className="component-search-inline"><BookOpen size={13} /><input aria-label="Search architecture components" placeholder="Search components…" value={componentSearch} onChange={(event) => { setComponentSearch(event.target.value); setComponentLibraryOpen(true); }} onFocus={() => { setComponentLibraryOpen(true); setRightPanelOpen(true); }} /></label>
+              <button type="button" className="topbar-add-component-button" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={"Add " + (selectedCatalogItem?.label ?? CATALOG[0].label) + " to the canvas"}><PlusCircle size={13} /> ADD COMPONENT</button>
               <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
               <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
               <button data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
@@ -820,11 +782,11 @@ function ParticipantEditor({
         </span></div>
       </header>
 
-      <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "0px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "0px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
+      <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         
         <aside className={`sidebar left-panel requirements-panel workspace-navigation ${leftPanelOpen ? "is-open" : "is-collapsed"}`} aria-label="Workspace navigation">
           <div className="workspace-nav-brand">
-            <div className="requirements-mark"><AnchonLogo size={24} /></div>
+            <div className="requirements-mark"><Layers size={16} /></div>
             <div><div className="section-kicker">DESIGN WORKSPACE</div><p>Build · Learn · Validate</p></div>
             <button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse workspace navigation"><PanelLeftClose size={15} /></button>
           </div>
@@ -840,10 +802,8 @@ function ParticipantEditor({
               <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
             </button>)}
           </nav>
-        </aside>
-          {activeWorkspaceSection !== "canvas" && <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
-            <div className="workspace-nav-content">
-              {activeWorkspaceSection === "requirements" && <>
+          {activeWorkspaceSection === "canvas" && <div className="workspace-nav-content workspace-canvas-brief">
+          {(activeWorkspaceSection === "canvas" || activeWorkspaceSection === "requirements") && <>
             <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
             <section className="brief-card" aria-labelledby="brief-identity-title">
               <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
@@ -852,7 +812,33 @@ function ParticipantEditor({
             </section>
             <section className="brief-card" aria-labelledby="inferred-requirements-title">
               <div className="brief-card-heading"><span className="brief-step">02</span><div><h2 id="inferred-requirements-title">Architecture requirements</h2><p>Agent-inferred from the current components and connections.</p></div></div>
-              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginTop: 12, marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
+              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
+              {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
+              {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
+              {inferredRequirements && <>
+                <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
+                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}</div>
+                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}</div>
+                {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
+                <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
+              </>}
+            </section>
+            <div className="requirements-status" role="status"><div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div><div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div><small className={saveStatus === "error" ? "requirements-save-error" : ""}><span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />{saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}</small></div>
+          </>}
+          </div>}
+        </aside>
+        {activeWorkspaceSection !== "canvas" && <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
+          <div className="workspace-nav-content">
+          {activeWorkspaceSection === "requirements" && <>
+            <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
+            <section className="brief-card" aria-labelledby="brief-identity-title">
+              <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
+              <div className="field"><label htmlFor="application-name">APPLICATION NAME</label><input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" /></div>
+              <div className="field"><label htmlFor="application-description">PRODUCT BRIEF & CORE USER JOURNEYS</label><textarea id="application-description" value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} rows={5} placeholder="Who uses this product? What are the main journeys? Include expected users, peak traffic, data sensitivity, latency and availability targets, and constraints." /></div>
+            </section>
+            <section className="brief-card" aria-labelledby="inferred-requirements-title">
+              <div className="brief-card-heading"><span className="brief-step">02</span><div><h2 id="inferred-requirements-title">Architecture requirements</h2><p>Agent-inferred from the current components and connections.</p></div></div>
+              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
               {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
               {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
               {inferredRequirements && <>
@@ -893,12 +879,10 @@ function ParticipantEditor({
           </>}
           {activeWorkspaceSection === "guide" && <WorkspaceGuide onOpenLibrary={() => { setActiveWorkspaceSection("canvas"); setComponentLibraryOpen(true); }} onOpenLearn={() => { setActiveWorkspaceSection("learn"); setActiveLearnTopic("Introduction"); }} />}
           {activeWorkspaceSection === "share" && <WorkspaceShare applicationName={applicationName} applicationDescription={applicationDescription} notes={notes} nodes={nodes} edges={edges} onExport={() => exportArchitecturePdf(applicationName, applicationDescription, notes, nodes, edges)} />}
-              {activeWorkspaceSection === "settings" && <WorkspaceSettings />}
-            </div>
-          </main>}
-
+          {activeWorkspaceSection === "settings" && <WorkspaceSettings />}
+          </div>
+        </main>}
         {!leftPanelOpen && <button type="button" className="workspace-sidebar-reopen" onClick={() => setLeftPanelOpen(true)} aria-label="Open workspace navigation" title="Open navigation"><PanelLeftOpen size={16} /></button>}
-        {!rightPanelOpen && <button type="button" className="workspace-inspector-reopen" onClick={() => { setRightPanelOpen(true); if (!selectedId && nodes[0]) setSelectedId(nodes[0].id); }} aria-label="Open inspector" title="Open inspector"><PanelRightOpen size={16} /></button>}
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
@@ -921,7 +905,7 @@ function ParticipantEditor({
               <div className="component-library-results">
                 <div className="component-library-results-heading"><div><span className="section-kicker">{componentSearch.trim() ? "SEARCH RESULTS" : "COMPONENT CATEGORY"}</span><h3>{componentSearch.trim() ? "Matching components" : libraryActiveCategory}</h3><p>{componentSearch.trim() ? "Results across every category" : "Select a component to inspect it. Double-click to add it to the canvas."}</p></div><span className="component-results-count">{CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length} ITEMS</span></div>
                 <div className="component-library-node-grid">
-                  {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : 0).map((item) => <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(true); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} onDoubleClick={() => { addCatalogNode(item, pendingInsertPosition ?? undefined); setPendingInsertPosition(null); setComponentLibraryOpen(false); setRightPanelOpen(true); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
+                  {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : 0).map((item) => <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(true); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} onDoubleClick={() => { addCatalogNode(item); setComponentLibraryOpen(false); setRightPanelOpen(true); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
                     <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={15} /></span><span>{item.label}</span></span><small>{item.category}</small>
                   </button>)}
                   {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length === 0 && <div className="component-library-empty"><BookOpen size={22} /><strong>No components found</strong><span>Try another search term or category.</span></div>}
@@ -930,7 +914,7 @@ function ParticipantEditor({
             </div>
           </section></>}
 
-        <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true" onDoubleClick={(event) => { if (!(event.target instanceof HTMLElement) || !event.target.closest(".react-flow__pane")) return; setPendingInsertPosition(screenToFlowPosition({ x: event.clientX, y: event.clientY })); setComponentSearch(""); setComponentLibraryOpen(true); setRightPanelOpen(false); }}>
+        <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
           <div className="canvas-toolbar">
             <div>
               <div className="section-kicker">
@@ -939,7 +923,7 @@ function ParticipantEditor({
               <span className="counter">
                 {nodes.length} components · {edges.length} connections
               </span>
-              <span className="editor-shortcuts">Double-click canvas to add · Ctrl/Cmd K library · Ctrl/Cmd D duplicate · F fit · L layout · ? shortcuts</span>
+              <span className="editor-shortcuts">Delete remove · Esc clear · Ctrl/Cmd+Z undo</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
             <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!nodes.length}>
@@ -987,7 +971,6 @@ function ParticipantEditor({
             onConnect={onConnect}
             onReconnect={onReconnect}
             onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
-            onNodeDoubleClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); window.setTimeout(() => document.querySelector<HTMLInputElement>(".right-panel input")?.focus(), 0); }}
             onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
             onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); }}
             onDragOver={(event) => {
@@ -1069,7 +1052,14 @@ function ParticipantEditor({
                   
                 />
               </div>
-              <div className="catalog-hint">Double-click this component in the library to add it to the canvas, or drag it directly onto the canvas.</div>
+              <button
+                className="primary-btn catalog-add-btn"
+                
+                onClick={() => addCatalogNode(selectedCatalogItem, undefined, catalogNotes)}
+              >
+                <PlusCircle size={14} /> ADD COMPONENT TO CANVAS
+              </button>
+              <div className="catalog-hint">You can also drag this item from the palette directly onto the canvas.</div>
             </div>
           ) : selected ? (
             <>
@@ -1112,7 +1102,7 @@ function ParticipantEditor({
             <div className="empty-inspector">
               <BookOpen size={18} />
               <p>Select a component from the palette to learn about it, or select a canvas component to edit it.</p>
-              <p className="catalog-hint">Double-click a component in the library to add it, or drag it onto the canvas.</p>
+              <p className="catalog-hint">Clicking a palette item only opens its details. Use ADD COMPONENT or drag it onto the canvas to place it.</p>
             </div>
           )}
 
@@ -1127,8 +1117,8 @@ function ParticipantEditor({
           </div>
         </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
       </div>
-      {activeWorkspaceSection === "canvas" && !chatOpen && <button type="button" className="floating-ai-chat-trigger" onClick={() => setChatOpen(true)} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Open ANCHON assistant" title="Open ANCHON assistant">
-        <span className="anchon-bubble-mark" aria-hidden="true"><AnchonLogo size={25} /></span>
+      {activeWorkspaceSection === "canvas" && !chatOpen && <button type="button" className="floating-ai-chat-trigger" style={{ left: `calc(50% + ${chatOffset.x}px)`, bottom: `calc(18vh - ${chatOffset.y}px)` }} onPointerDown={(event) => { chatDragRef.current = { pointerX: event.clientX, pointerY: event.clientY, originX: chatOffset.x, originY: chatOffset.y, moved: false }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { const drag = chatDragRef.current; if (!drag) return; const dx = event.clientX - drag.pointerX, dy = event.clientY - drag.pointerY; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) { const maxX = Math.max(0, window.innerWidth / 2 - 36); const baseBottom = window.innerHeight * 0.18; const minY = baseBottom - (window.innerHeight - 36); const maxY = baseBottom - 18; setChatOffset({ x: Math.max(-maxX, Math.min(maxX, drag.originX + dx)), y: Math.max(minY, Math.min(maxY, drag.originY + dy)) }); } }} onPointerUp={() => { const moved = chatDragRef.current?.moved ?? false; chatDragRef.current = null; if (!moved) setChatOpen(true); }} onPointerCancel={() => { chatDragRef.current = null; }} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Open ANCHON assistant" title="Drag to move · Click to open">
+        <span className="anchon-bubble-mark" aria-hidden="true"><Layers size={22} /></span>
       </button>}
       {activeWorkspaceSection === "canvas" && <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
         <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" className="anchon-chat-close" onClick={() => setChatOpen(false)} aria-label="Close ANCHON assistant"><X size={16} /></button></div>
@@ -1155,15 +1145,6 @@ function ParticipantEditor({
               logActivity("AI_ARCHITECTURE_UPDATED", { components: nextNodes.length, connections: nextEdges.length });
             }}
           />
-      </div>}
-      {shortcutsOpen && <div className="workspace-shortcuts-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShortcutsOpen(false); }}>
-        <section className="workspace-shortcuts-dialog" role="dialog" aria-modal="true" aria-labelledby="workspace-shortcuts-title">
-          <div className="workspace-shortcuts-heading"><div><span className="section-kicker">EDITOR REFERENCE</span><h2 id="workspace-shortcuts-title">Keyboard shortcuts</h2></div><button type="button" onClick={() => setShortcutsOpen(false)} aria-label="Close shortcuts"><X size={16}/></button></div>
-          <div className="workspace-shortcuts-list">
-            {[["Open component library","Ctrl / ⌘","K"],["Duplicate selected components","Ctrl / ⌘","D"],["Undo","Ctrl / ⌘","Z"],["Redo","Ctrl / ⌘","Shift + Z"],["Select all components","Ctrl / ⌘","A"],["Delete selection","—","Delete"],["Fit architecture to view","—","F"],["Auto-arrange architecture","—","L"],["Clear selection / close","—","Esc"],["Show this reference","—","?"]].map(([label,modifier,key])=><div className="workspace-shortcut-row" key={label}><span>{label}</span><span className="workspace-shortcut-keys">{modifier !== "—" && <kbd>{modifier}</kbd>}<kbd>{key}</kbd></span></div>)}
-          </div>
-          <p>Shortcuts are disabled while typing in an input or editor field.</p>
-        </section>
       </div>}
       <InteractiveTutorial page="workspace" onStepChange={handleTutorialStepChange} />
     </div>
