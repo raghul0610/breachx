@@ -235,3 +235,30 @@
   background: rgba(196, 181, 253, 0.42);
   background-clip: padding-box;
 }
+
+/* Dashboard navigation reveals on left-edge hover, matching the project editor. */
+.project-dashboard .dashboard-sidebar {
+  position:fixed!important;
+  z-index:150!important;
+  top:72px!important;
+  bottom:16px!important;
+  left:0!important;
+  height:auto!important;
+  max-height:calc(100dvh - 88px)!important;
+  overflow-y:auto!important;
+  border:1px solid #343d44!important;
+  border-left:0!important;
+  border-radius:0 14px 14px 0!important;
+  transform:translateX(calc(-100% + 12px))!important;
+  transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s ease!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.32)!important;
+}
+.project-dashboard .dashboard-sidebar.is-revealed,
+.project-dashboard .dashboard-sidebar:hover {
+  transform:translateX(0)!important;
+  box-shadow:0 16px 42px rgba(0,0,0,.48)!important;
+}
+.project-dashboard .dashboard-main { min-width:0!important; }
+@media(max-width:760px) {
+  .project-dashboard .dashboard-sidebar { top:64px!important;bottom:10px!important;max-height:calc(100dvh - 74px)!important;width:min(280px,86vw)!important; }
+}
