@@ -82,3 +82,26 @@
 @media(max-width:760px){.iad-spiral-section{grid-template-columns:1fr;padding:50px 6px 40px;gap:20px}.iad-spiral-visual{min-height:350px}.iad-spiral-ring-outer{width:290px;height:290px}.iad-spiral-ring-middle{width:220px;height:220px}.iad-spiral-ring-inner{width:145px;height:145px}.iad-spiral-node{font-size:7px;padding:7px 8px}}
 @media(max-width:640px){.iad-root{padding-top:18px}.iad-hero{min-height:340px}.iad-headline-wrap{margin:36px auto 24px}.iad-headline-wrap h1.iad-brand-title{font-size:clamp(66px,18vw,108px)}.iad-hero-tagline{font-size:17px}.iad-spiral-visual{min-height:310px}.iad-spiral-ring-outer{width:250px;height:250px}.iad-spiral-ring-middle{width:190px;height:190px}.iad-spiral-ring-inner{width:125px;height:125px}.iad-spiral-node-api,.iad-spiral-node-service,.iad-spiral-node-db{font-size:6px}}
 @media(prefers-reduced-motion:reduce){.iad-spiral-ring,.iad-spiral-ring .iad-spiral-node,.iad-spiral-orbit-dot{animation:none!important}.iad-hero-cta,.iad-node,.iad-trace-btn,.iad-open-btn{transition:none!important}}
+
+
+/* Liquid chrome hero backdrop: isolated behind landing content. */
+.iad-root { position:relative;isolation:isolate; }
+.iad-liquid-background {
+  position:absolute;
+  z-index:-2;
+  top:0;
+  left:0;
+  right:0;
+  height:min(900px,100svh);
+  overflow:hidden;
+  pointer-events:none;
+  opacity:.82;
+}
+.iad-liquid-background .liquid-chrome { width:100%;height:100%; }
+.iad-atmosphere { z-index:-1; }
+@media(max-width:640px) {
+  .iad-liquid-background { height:min(720px,100svh);opacity:.68; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .iad-liquid-background { opacity:.55; }
+}
