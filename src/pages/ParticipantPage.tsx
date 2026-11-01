@@ -836,6 +836,7 @@ function ParticipantEditor({
               <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
             </button>)}
           </nav>
+        </aside>
           {activeWorkspaceSection !== "canvas" && <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
             <div className="workspace-nav-content">
               {activeWorkspaceSection === "requirements" && <>
@@ -891,7 +892,7 @@ function ParticipantEditor({
               {activeWorkspaceSection === "settings" && <WorkspaceSettings />}
             </div>
           </main>}
-        </aside>
+
         {!leftPanelOpen && <button type="button" className="workspace-sidebar-reopen" onClick={() => setLeftPanelOpen(true)} aria-label="Open workspace navigation" title="Open navigation"><PanelLeftOpen size={16} /></button>}
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
