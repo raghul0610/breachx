@@ -5,7 +5,6 @@ import {
   Layers3, LockKeyhole, Play, RotateCcw, Server, ShieldCheck, Sparkles,
   Workflow, Zap,
 } from "lucide-react";
-import SwarmCursor from "./SwarmCursor";
 import "./InteractiveArchitectureLanding.css";
 
 type FlowNode = {
@@ -21,11 +20,11 @@ type FlowNode = {
 };
 
 const NODES: FlowNode[] = [
-  { id: "client", title: "CLIENT", kind: "ENTRY POINT", detail: "A person opens ANCHON and describes the application they want to design.", role: "The request begins at the user interface.", icon: CircleDot, x: 7, y: 43, color: "#c4b5fd" },
-  { id: "gateway", title: "API GATEWAY", kind: "ROUTING", detail: "The gateway receives the request, checks its shape, and routes it to the right capability.", role: "One entry point. Clear routing and boundaries.", icon: GitBranch, x: 28, y: 43, color: "#93c5fd" },
-  { id: "service", title: "APP SERVICE", kind: "COMPUTE", detail: "Application logic validates the request and coordinates the work needed to produce a result.", role: "Business logic belongs in a service, not the database.", icon: Server, x: 50, y: 43, color: "#6ee7b7" },
-  { id: "database", title: "DATA STORE", kind: "PERSISTENCE", detail: "The service reads or writes durable data through an explicit persistence boundary.", role: "Store state where it can be queried and protected.", icon: Database, x: 72, y: 25, color: "#fcd34d" },
-  { id: "response", title: "RESPONSE", kind: "OUTPUT", detail: "The service returns a result to the client. The connection direction makes the request path legible.", role: "Trace the path from input to outcome.", icon: ShieldCheck, x: 91, y: 43, color: "#f0abfc" },
+  { id: "client", title: "CLIENT", kind: "ENTRY POINT", detail: "A person opens ANCHON and describes the application they want to design.", role: "The request begins at the user interface.", icon: CircleDot, x: 7, y: 43, color: "#55d6c2" },
+  { id: "gateway", title: "API GATEWAY", kind: "ROUTING", detail: "The gateway receives the request, checks its shape, and routes it to the right capability.", role: "One entry point. Clear routing and boundaries.", icon: GitBranch, x: 28, y: 43, color: "#6bb8e8" },
+  { id: "service", title: "APP SERVICE", kind: "COMPUTE", detail: "Application logic validates the request and coordinates the work needed to produce a result.", role: "Business logic belongs in a service, not the database.", icon: Server, x: 50, y: 43, color: "#75c9a5" },
+  { id: "database", title: "DATA STORE", kind: "PERSISTENCE", detail: "The service reads or writes durable data through an explicit persistence boundary.", role: "Store state where it can be queried and protected.", icon: Database, x: 72, y: 25, color: "#d9ad70" },
+  { id: "response", title: "RESPONSE", kind: "OUTPUT", detail: "The service returns a result to the client. The connection direction makes the request path legible.", role: "Trace the path from input to outcome.", icon: ShieldCheck, x: 91, y: 43, color: "#8bb7d9" },
 ];
 
 const CONNECTIONS = [
@@ -99,8 +98,8 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
           <div className="iad-canvas-meta"><span>REFERENCE ARCHITECTURE <b>·</b> WEB APPLICATION</span><span>SELECT A NODE TO INSPECT <ArrowDownRight size={12} /></span></div>
           <svg className="iad-wires" viewBox="0 0 1000 380" preserveAspectRatio="none" aria-hidden="true">
             <defs>
-              <linearGradient id="iad-wire-gradient"><stop offset="0%" stopColor="#c4b5fd" stopOpacity=".25" /><stop offset="50%" stopColor="#93c5fd" stopOpacity=".8" /><stop offset="100%" stopColor="#f0abfc" stopOpacity=".35" /></linearGradient>
-              <marker id="iad-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b5a6ff" /></marker>
+              <linearGradient id="iad-wire-gradient"><stop offset="0%" stopColor="#55d6c2" stopOpacity=".25" /><stop offset="50%" stopColor="#6bb8e8" stopOpacity=".8" /><stop offset="100%" stopColor="#8bb7d9" stopOpacity=".35" /></linearGradient>
+              <marker id="iad-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#55d6c2" /></marker>
             </defs>
             <path className="iad-wire-base" d="M125 190 H275" />
             <path className="iad-wire-base" d="M335 190 H490" />
@@ -153,6 +152,31 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         {finished && <div className="iad-success"><Check size={14} /> Request completed. You just traced a client request through routing, compute, persistence, and back.</div>}
       </section>
 
+      <section className="iad-capabilities" aria-labelledby="iad-capabilities-title">
+        <div className="iad-capabilities-heading">
+          <p className="iad-overline"><span className="iad-live-dot" /> 02 / THE ANCHON WORKFLOW</p>
+          <h2 id="iad-capabilities-title">From an idea to an <span>engineered system.</span></h2>
+          <p>ANCHON brings the essential architecture workflow into one focused workspace.</p>
+        </div>
+        <div className="iad-feature-grid">
+          <article className="iad-feature-card">
+            <div className="iad-feature-card-top"><span>01 / GENERATE</span><Sparkles size={17} /></div>
+            <div className="iad-feature-visual iad-prompt-visual" aria-hidden="true"><div className="iad-prompt-window"><div className="iad-window-dots"><i /><i /><i /></div><span className="iad-prompt-label">DESCRIBE YOUR SYSTEM</span><div className="iad-prompt-line long" /><div className="iad-prompt-line medium" /><div className="iad-prompt-submit"><Sparkles size={12} /> Generate architecture <ArrowRight size={12} /></div></div><span className="iad-visual-orbit" /></div>
+            <h3>AI-assisted generation</h3><p>Describe what you are building and get an architecture proposal you can inspect and refine.</p>
+          </article>
+          <article className="iad-feature-card">
+            <div className="iad-feature-card-top"><span>02 / DESIGN</span><Workflow size={17} /></div>
+            <div className="iad-feature-visual iad-mini-canvas" aria-hidden="true"><div className="iad-mini-edge edge-one" /><div className="iad-mini-edge edge-two" /><div className="iad-mini-edge edge-three" /><span className="iad-mini-node node-one"><Server size={14} /> API</span><span className="iad-mini-node node-two"><Workflow size={14} /> SERVICE</span><span className="iad-mini-node node-three"><Database size={14} /> DATA</span><span className="iad-mini-canvas-caption">CONNECTED COMPONENTS</span></div>
+            <h3>Visual architecture canvas</h3><p>Arrange services, connect dependencies, and understand how the parts of your system work together.</p>
+          </article>
+          <article className="iad-feature-card">
+            <div className="iad-feature-card-top"><span>03 / UNDERSTAND</span><Layers3 size={17} /></div>
+            <div className="iad-feature-visual iad-inspector-visual" aria-hidden="true"><div className="iad-inspector-mock"><div className="iad-inspector-mock-head"><span className="iad-mock-icon"><Server size={14} /></span><span><b>API SERVICE</b><small>COMPONENT DETAILS</small></span><Check size={13} /></div><div className="iad-mock-field"><span>RESPONSIBILITY</span><i /></div><div className="iad-mock-field"><span>DEPENDENCIES</span><i /></div><div className="iad-mock-field"><span>DATA FLOW</span><i /></div></div></div>
+            <h3>Inspectable components</h3><p>Select any component to review its role, properties, and relationships instead of treating diagrams as static pictures.</p>
+          </article>
+        </div>
+      </section>
+
       <section className="iad-spiral-section" aria-labelledby="iad-spiral-title">
         <div className="iad-spiral-copy">
           <p className="iad-overline"><span className="iad-live-dot" /> 03 / SYSTEM BLUEPRINTS</p>
@@ -174,7 +198,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         <div className="iad-bottom-copy"><span className="iad-overline">YOUR TURN</span><h2>Now design <span>your own.</span></h2><p>ANCHON turns your application idea into a connected, inspectable architecture. Build it visually or let AI propose a starting point.</p></div>
         <button className="iad-open-btn" onClick={onOpenDesigner}>Open architecture designer <ArrowRight size={16} /></button>
       </section>
-      <div className="iad-cursor-overlay" aria-hidden="true"><SwarmCursor count={360} size={2.1} color="#bcb3d6" accentColor="#c4b5fd" spread={90} speed={0.72} swirl={0.62} tail={0.46} trail={0.48} wander={0.5} depth={0.62} targets="" idle="roam" clickEffect="pulse" intro enabled style={{ width: "100%", height: "100%" }} /></div>
+      <div className="iad-cursor-overlay" aria-hidden="true"><SwarmCursor count={360} size={2.1} color="#bcb3d6" accentColor="#55d6c2" spread={90} speed={0.72} swirl={0.62} tail={0.46} trail={0.48} wander={0.5} depth={0.62} targets="" idle="roam" clickEffect="pulse" intro enabled style={{ width: "100%", height: "100%" }} /></div>
       <div className="iad-footnote"><span><LockKeyhole size={11} /> BUILT FOR CLEARER SYSTEM THINKING</span><span><Layers3 size={11} /> VISUALIZE · CONNECT · REFINE</span><span><Zap size={11} /> INTERACTIVE BY DESIGN</span></div>
     </main>
   );
