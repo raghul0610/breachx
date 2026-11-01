@@ -227,8 +227,6 @@ function ParticipantEditor({
   const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
   const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
   const chatDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
-  const [navigationButtonOffset, setNavigationButtonOffset] = useState({ x: 0, y: 0 });
-  const navigationButtonDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(260);
   const [rightPanelWidth, setRightPanelWidth] = useState(300);
   const [componentDockHeight, setComponentDockHeight] = useState(285);
@@ -782,7 +780,7 @@ function ParticipantEditor({
   }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, duplicateSelected, fitView, pushHistory, setNodes, setEdges]);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" onMouseMove={(event) => { if (event.clientX <= 24) setLeftPanelOpen(true); }}>
       <header className="topbar">
         <button className="nav-btn" onClick={onBack}>
           <ArrowLeft size={14} /> HOME
@@ -817,7 +815,7 @@ function ParticipantEditor({
 
       <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         
-        <aside className={`sidebar left-panel requirements-panel workspace-navigation ${leftPanelOpen ? "is-open" : "is-collapsed"}`} aria-label="Workspace navigation">
+        <aside className={`sidebar left-panel requirements-panel workspace-navigation ${leftPanelOpen ? "is-open" : "is-collapsed"}`} aria-label="Workspace navigation" onMouseLeave={(event) => { if (event.clientX > 24) setLeftPanelOpen(false); }}>
           <div className="workspace-nav-brand">
             <div className="requirements-mark"><AnchonLogo size={24} /></div>
             <div><div className="section-kicker">DESIGN WORKSPACE</div><p>Build · Learn · Validate</p></div>
@@ -876,41 +874,6 @@ function ParticipantEditor({
             </div>
           </main>}
 
-        <button
-          type="button"
-          className="workspace-sidebar-reopen"
-          style={{ transform: `translate3d(${navigationButtonOffset.x}px, ${navigationButtonOffset.y}px, 0)` }}
-          onPointerDown={(event) => {
-            if (event.button !== 0) return;
-            navigationButtonDragRef.current = { pointerX: event.clientX, pointerY: event.clientY, originX: navigationButtonOffset.x, originY: navigationButtonOffset.y, moved: false };
-            event.currentTarget.setPointerCapture(event.pointerId);
-          }}
-          onPointerMove={(event) => {
-            const drag = navigationButtonDragRef.current;
-            if (!drag) return;
-            const dx = event.clientX - drag.pointerX;
-            const dy = event.clientY - drag.pointerY;
-            if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true;
-            if (drag.moved) {
-              const baseLeft = 16;
-              const baseTop = Math.max(100, window.innerHeight / 2 - 21);
-              setNavigationButtonOffset({
-                x: Math.max(0, Math.min(window.innerWidth - 58, drag.originX + dx + baseLeft) - baseLeft),
-                y: Math.max(0, Math.min(window.innerHeight - 58, drag.originY + dy + baseTop) - baseTop),
-              });
-            }
-          }}
-          onPointerUp={() => { if (navigationButtonDragRef.current) navigationButtonDragRef.current.pointerX = -1; }}
-          onPointerCancel={() => { navigationButtonDragRef.current = null; }}
-          onClick={() => {
-            const drag = navigationButtonDragRef.current;
-            if (drag?.moved) { navigationButtonDragRef.current = null; return; }
-            navigationButtonDragRef.current = null;
-            setLeftPanelOpen((open) => !open);
-          }}
-          aria-label={leftPanelOpen ? "Close workspace navigation" : "Open workspace navigation"}
-          title="Drag to move or click to toggle navigation"
-        >{leftPanelOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}</button>
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
