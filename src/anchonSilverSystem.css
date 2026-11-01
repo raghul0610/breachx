@@ -440,7 +440,7 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 .iad-mini-node { box-shadow:0 4px 14px rgba(0,0,0,.25)!important; }
 .iad-spiral-glow { background:radial-gradient(circle,rgba(214,223,229,.18),transparent 68%)!important; }
 .iad-spiral-ring { border-color:rgba(195,205,213,.28)!important; }
-.iad-spiral-core { color:#f1f3f5!important; background:linear-gradient(145deg,#424b53,#1c2227)!important; border-color:#8d98a1!important; box-shadow:0 0 34px rgba(216,225,231,.16)!important; }
+.iad-spiral-core { color:#f1f3f5!important; background:transparent!important; border:0!important; box-shadow:none!important; padding:0!important; }
 .iad-legend-purple,.iad-legend-blue,.iad-legend-green { background:linear-gradient(110deg,#f1f3f5,#89949d)!important; }
 
 /* SVG logo uses the same brushed-metal gradient. */
