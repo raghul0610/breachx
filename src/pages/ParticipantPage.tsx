@@ -912,8 +912,8 @@ function ParticipantEditor({
             const dy = event.clientY - drag.pointerY;
             if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true;
             if (drag.moved) {
-              const baseLeft = Math.min(200, Math.max(16, window.innerWidth * 0.12));
-              const baseTop = Math.max(116, window.innerHeight / 2 - 21);
+              const baseLeft = 16;
+              const baseTop = Math.max(100, window.innerHeight / 2 - 21);
               setNavigationButtonOffset({
                 x: Math.max(0, Math.min(window.innerWidth - 58, drag.originX + dx + baseLeft) - baseLeft),
                 y: Math.max(0, Math.min(window.innerHeight - 58, drag.originY + dy + baseTop) - baseTop),
