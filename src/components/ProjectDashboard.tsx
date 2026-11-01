@@ -14,6 +14,7 @@ import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
 import { ShapeGridBackground } from "./ShapeGridBackground";
 import { AnchonLogo } from "./AnchonLogo";
+import { EdgeRevealSidebar } from "./EdgeRevealSidebar";
 
 export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection }: { onBack: () => void; onOpenProject: (projectId: string) => void; onOpenWorkspaceSection: (section: "learn" | "guide" | "settings") => void }) {
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
@@ -122,7 +123,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
   return (
     <div className="app-shell project-dashboard" onMouseMove={(event) => { if (event.clientX <= 24) setDashboardSidebarOpen(true); }}>
       <ShapeGridBackground />
-      <aside className={`dashboard-sidebar ${dashboardSidebarOpen ? "is-revealed" : ""}`} aria-label="Main navigation" onMouseLeave={(event) => { if (event.clientX > 24) setDashboardSidebarOpen(false); }}>
+      <EdgeRevealSidebar className="dashboard-sidebar" isOpen={dashboardSidebarOpen} label="Main navigation" onMouseLeave={(event) => { if (event.clientX > 24) setDashboardSidebarOpen(false); }}>
         <a className="dashboard-brand" href="#" onClick={(event) => { event.preventDefault(); onBack(); }} aria-label="ANCHON home"><span className="dashboard-brand-mark"><AnchonLogo size={25} /></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></a>
         <div className="dashboard-nav-label">WORKSPACE</div>
         <nav className="dashboard-nav">
@@ -133,7 +134,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
         <div className="dashboard-sidebar-spacer" />
         <div className="dashboard-nav dashboard-nav-bottom"><button type="button" onClick={() => openWorkspaceSection("settings")}><Settings size={17} /><span>Settings</span></button></div>
         <div className="dashboard-sidebar-footer"><span className="dashboard-status-dot" /> Private workspace</div>
-      </aside>
+      </EdgeRevealSidebar>
       <div className="dashboard-main">
       <header className="topbar">
         <button className="nav-btn" onClick={onBack}><ArrowLeft size={14} /> HOME</button>
