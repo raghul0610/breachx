@@ -2730,7 +2730,8 @@ body, .app-shell, .home, .lp-root {
 
 
 /* Dedicated workspace page surface: navigation and section content are siblings. */
-.workspace{position:relative!important;display:block!important;isolation:isolate}
+.workspace{position:relative!important;isolation:isolate}
+.workspace:not(.workspace-section-canvas){display:block!important}
 .workspace-navigation{z-index:45!important}
 .workspace-page-content{
   position:absolute!important;z-index:2!important;top:0!important;right:0!important;bottom:0!important;
@@ -2751,3 +2752,9 @@ body, .app-shell, .home, .lp-root {
  .workspace-page-content{left:0!important;padding:22px 16px 36px!important}
  .workspace-navigation{z-index:45!important}
 }
+
+.workspace-canvas-brief{display:block!important;flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;padding:12px 3px 8px 1px!important}
+.workspace-canvas-brief .requirements-panel-header{margin:4px 2px 13px!important}
+.workspace-canvas-brief .brief-card{margin:0 0 12px!important}
+.workspace-canvas-brief .requirements-status{margin-top:12px!important}
+@media(max-width:700px){.workspace-canvas-brief{max-height:calc(100dvh - 210px)!important}}
