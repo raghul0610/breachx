@@ -240,11 +240,11 @@
 .project-dashboard .dashboard-sidebar {
   position:fixed!important;
   z-index:150!important;
-  top:72px!important;
+  top:116px!important;
   bottom:16px!important;
   left:0!important;
   height:auto!important;
-  max-height:calc(100dvh - 88px)!important;
+  max-height:calc(100dvh - 132px)!important;
   overflow-y:auto!important;
   border:1px solid #343d44!important;
   border-left:0!important;
@@ -260,5 +260,5 @@
 }
 .project-dashboard .dashboard-main { min-width:0!important; }
 @media(max-width:760px) {
-  .project-dashboard .dashboard-sidebar { top:64px!important;bottom:10px!important;max-height:calc(100dvh - 74px)!important;width:min(280px,86vw)!important; }
+  .project-dashboard .dashboard-sidebar { top:116px!important;bottom:10px!important;max-height:calc(100dvh - 126px)!important;width:min(280px,86vw)!important; }
 }
