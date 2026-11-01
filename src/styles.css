@@ -2454,7 +2454,7 @@ body, .app-shell, .home, .lp-root {
 
 /* Draggable launcher: do not override its inline position with a forced transform. */
 .app-shell:not(.lp-root) .floating-ai-chat-trigger {
-  left:50%!important;right:auto!important;top:auto!important;
+  right:auto!important;top:auto!important;
   transform:translateX(-50%)!important;translate:none!important;
   touch-action:none!important;cursor:grab!important;z-index:120!important;
 }
@@ -2555,5 +2555,3 @@ body, .app-shell, .home, .lp-root {
 }
 @media(prefers-reduced-motion:reduce){.workspace-nav-item{transition:none!important}.workspace-nav-item:hover{transform:none!important}}
 
-/* Default ANCHON launcher sits in the lower-middle of the workspace; inline bottom/left offsets support dragging. */
-.app-shell:not(.lp-root) .floating-ai-chat-trigger { position:fixed!important;bottom:18vh!important;left:50%!important; }
