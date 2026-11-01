@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, BookOpen, Copy, FolderPlus, Github, Layers3, Pencil, Plus, Settings, Sparkles, Trash2, Workflow } from "lucide-react";
 import {
   createProject,
@@ -30,6 +30,15 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
+
+  useEffect(() => {
+    if (!dialog) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !busy) setDialog(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [dialog, busy]);
 
   const create = () => {
     try {
@@ -69,7 +78,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
     setDialog({ type: "rename", project, name: project.applicationName });
   };
 
-  const submitRename = (event: React.FormEvent<HTMLFormElement>) => {
+  const submitRename = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (dialog?.type !== "rename") return;
     try {
