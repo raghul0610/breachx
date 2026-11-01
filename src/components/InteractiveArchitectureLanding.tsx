@@ -190,7 +190,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
           <div className="iad-spiral-ring iad-spiral-ring-outer"><span className="iad-spiral-node iad-spiral-node-api"><Server size={15} /> API</span><span className="iad-spiral-node iad-spiral-node-cache"><Zap size={14} /> CACHE</span></div>
           <div className="iad-spiral-ring iad-spiral-ring-middle"><span className="iad-spiral-node iad-spiral-node-service"><Workflow size={15} /> SERVICES</span><span className="iad-spiral-node iad-spiral-node-queue"><GitBranch size={14} /> QUEUE</span></div>
           <div className="iad-spiral-ring iad-spiral-ring-inner"><span className="iad-spiral-node iad-spiral-node-db"><Database size={15} /> DATA</span><span className="iad-spiral-node iad-spiral-node-auth"><LockKeyhole size={14} /> AUTH</span></div>
-          <div className="iad-spiral-core"><Workflow size={27} /><strong>ANCHON</strong><span>SYSTEM CORE</span></div>
+          <div className="iad-spiral-core"><strong>ANCHON</strong></div>
           <span className="iad-spiral-orbit-dot iad-spiral-dot-one" /><span className="iad-spiral-orbit-dot iad-spiral-dot-two" /><span className="iad-spiral-orbit-dot iad-spiral-dot-three" />
         </div>
       </section>
