@@ -836,7 +836,9 @@ function ParticipantEditor({
               <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
             </button>)}
           </nav>
-                    {activeWorkspaceSection === "requirements" && <>
+          {activeWorkspaceSection !== "canvas" && <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
+            <div className="workspace-nav-content">
+              {activeWorkspaceSection === "requirements" && <>
             <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
             <section className="brief-card" aria-labelledby="brief-identity-title">
               <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
@@ -886,9 +888,10 @@ function ParticipantEditor({
           </>}
           {activeWorkspaceSection === "guide" && <WorkspaceGuide onOpenLibrary={() => { setActiveWorkspaceSection("canvas"); setComponentLibraryOpen(true); }} onOpenLearn={() => { setActiveWorkspaceSection("learn"); setActiveLearnTopic("Introduction"); }} />}
           {activeWorkspaceSection === "share" && <WorkspaceShare applicationName={applicationName} applicationDescription={applicationDescription} notes={notes} nodes={nodes} edges={edges} onExport={() => exportArchitecturePdf(applicationName, applicationDescription, notes, nodes, edges)} />}
-          {activeWorkspaceSection === "settings" && <WorkspaceSettings />}
-          </div>
-        </main>}
+              {activeWorkspaceSection === "settings" && <WorkspaceSettings />}
+            </div>
+          </main>}
+        </aside>
         {!leftPanelOpen && <button type="button" className="workspace-sidebar-reopen" onClick={() => setLeftPanelOpen(true)} aria-label="Open workspace navigation" title="Open navigation"><PanelLeftOpen size={16} /></button>}
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
