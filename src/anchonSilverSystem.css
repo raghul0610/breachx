@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;750;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 
 /* ANCHON Silver System
    Neutral graphite surfaces, restrained silver typography, and metallic gradient accents.
@@ -89,7 +89,7 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 .app-shell:not(.project-dashboard) .run-request-canvas {
   color:#111519!important; background:linear-gradient(110deg,#f5f7f8 0%,#c4cbd0 48%,#eef1f3 100%)!important;
   border:1px solid #e0e5e8!important; border-radius:7px!important;
-  font-family:var(--anchon-font-ui)!important; font-weight:650!important;
+  font-family:var(--anchon-font-ui)!important; font-weight:600!important;
   box-shadow:0 4px 16px rgba(220,226,231,.08)!important;
 }
 .app-shell:not(.project-dashboard) .primary-btn:hover,
@@ -161,7 +161,7 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
   box-shadow:0 0 0 2px rgba(226,233,238,.15),0 12px 28px rgba(0,0,0,.35)!important;
 }
 .app-shell:not(.project-dashboard) .node-category { color:#d2d8dd!important; }
-.app-shell:not(.project-dashboard) .node-label { color:#f2f4f6!important; font:650 13px var(--anchon-font-ui)!important; }
+.app-shell:not(.project-dashboard) .node-label { color:#f2f4f6!important; font:600 13px var(--anchon-font-ui)!important; }
 .app-shell:not(.project-dashboard) .node-notes { color:#adb6bd!important; }
 .app-shell:not(.project-dashboard) .handle,
 .app-shell:not(.project-dashboard) .node-category-icon {
@@ -236,7 +236,7 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
   color:#e4e9ec!important; background:linear-gradient(145deg,#343c43,#1d2328)!important;
   border-color:#626d76!important;
 }
-.project-dashboard .dashboard-brand strong { font-size:11px!important; font-weight:650!important; letter-spacing:.08em!important; }
+.project-dashboard .dashboard-brand strong { font-size:11px!important; font-weight:600!important; letter-spacing:.08em!important; }
 .project-dashboard .dashboard-brand small { color:#87929a!important; font-size:8px!important; }
 .project-dashboard .dashboard-nav-label { color:#87929a!important; font-size:8px!important; }
 .project-dashboard .dashboard-nav { gap:3px!important; }
@@ -279,7 +279,7 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 .project-dashboard .dashboard-dialog-primary {
   color:#111518!important; background:linear-gradient(110deg,#f2f4f5,#c2cbd1 52%,#e8ecef)!important;
   border:1px solid #d5dce1!important; border-radius:6px!important;
-  font-size:9px!important; font-weight:650!important; box-shadow:0 4px 14px rgba(220,226,231,.08)!important;
+  font-size:9px!important; font-weight:600!important; box-shadow:0 4px 14px rgba(220,226,231,.08)!important;
 }
 .project-dashboard .primary-btn:hover,
 .project-dashboard .dashboard-dialog-primary:hover {
