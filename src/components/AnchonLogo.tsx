@@ -1,24 +1,15 @@
 import type { CSSProperties } from "react";
-
+import { useId } from "react";
 export function AnchonLogo({ className, size = 36, style }: { className?: string; size?: number; style?: CSSProperties }) {
-  return (
-    <svg className={className} width={size} height={size} viewBox="0 0 64 64" role="img" aria-label="ANCHON logo" style={style}>
-      <defs>
-        <linearGradient className="anchon-logo-metal" id="anchon-logo-stroke" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#89949d" />
-          <stop offset="1" stopColor="#ffffff" />
-        </linearGradient>
-        <filter id="anchon-logo-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="1.4" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-      <g fill="none" stroke="url(#anchon-logo-stroke)" strokeLinecap="round" strokeLinejoin="round" filter="url(#anchon-logo-glow)">
-        <path d="M3 24 L21 29 Q23 30 23 33 L23 51 Q23 54 20 55 L12 59" strokeWidth="1.7" opacity=".8" />
-        <path d="M3 34 L21 29" strokeWidth="1.2" opacity=".5" />
-        <path d="M22 39 C27 44 32 38 37 32 S48 28 53 17" strokeWidth="2.8" strokeDasharray="3.3 3.3" />
-        <path d="M49 13 L60 9 L56 22 L53 16 Z" fill="#eef1f3" strokeWidth="1.2" />
-      </g>
-    </svg>
-  );
+  const gradientId = useId().replace(/:/g, "");
+  const glowId = useId().replace(/:/g, "");
+  return <svg className={className} width={size} height={size} viewBox="0 0 64 64" role="img" aria-label="ANCHON" style={style}>
+    <defs>
+      <linearGradient id={gradientId} x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#737f89"/><stop offset=".28" stopColor="#c4cdd3"/><stop offset=".55" stopColor="#fff"/><stop offset=".78" stopColor="#aeb8c0"/><stop offset="1" stopColor="#f8fafb"/></linearGradient>
+      <filter id={glowId} x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.1" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <path d="M9 55 27 10Q29 5 32 5t5 5l18 45h-11L32 23 20 55H9Z" fill={`url(#${gradientId})`} filter={`url(#${glowId})`}/>
+    <path d="M24 39h16" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity=".9"/>
+    <path d="m20 52 8-20" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" opacity=".55"/>
+  </svg>;
 }
