@@ -31,6 +31,8 @@ import { readSubmission, writeSubmission, logActivity, type DesignSubmission } f
 import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
+import { LearnPracticeCanvas } from "../components/LearnPracticeCanvas";
+import { WorkspaceGuide, WorkspaceShare, WorkspaceSettings } from "../components/WorkspacePanels";
 import { evaluateSystemDesign, type EvaluationResult } from "../lib/evaluationEngine";
 
 
@@ -194,7 +196,7 @@ function ParticipantEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
-  const [leftPanelOpen, setLeftPanelOpen] = useState(false);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [requestTraceStep, setRequestTraceStep] = useState(-1);
@@ -212,8 +214,10 @@ function ParticipantEditor({
   const activeEvaluationResult = evaluationFingerprint === currentEvaluationFingerprint ? evaluationResult : null;
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
-  const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
-  const [componentGroupBy, setComponentGroupBy] = useState<"layer" | "category">("category");
+  const [libraryActiveCategory, setLibraryActiveCategory] = useState("AI / ML");
+  const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<"canvas" | "requirements" | "learn" | "guide" | "share" | "settings">("canvas");
+  const [activeLearnTopic, setActiveLearnTopic] = useState("Introduction");
+  const [learnSelectedComponent, setLearnSelectedComponent] = useState<string | null>(null);
   const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
   const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
   const chatDragRef = useRef<{ pointerX: number; pointerY: number; originX: number; originY: number; moved: boolean } | null>(null);
@@ -436,6 +440,7 @@ function ParticipantEditor({
     const highestSeverity = (["critical", "high", "medium", "low"] as const).find((severity) => nodeFindings.some((finding) => finding.severity === severity));
     return { ...node, data: { ...node.data, evaluationSeverity: highestSeverity, evaluationCount: nodeFindings.length }, className: [node.className, active ? "request-trace-node is-active" : "", complete ? "request-trace-node is-complete" : "", highestSeverity ? "has-evaluation-issue" : ""].filter(Boolean).join(" ") };
   }), [nodes, requestTraceEdges, requestTraceStep, activeEvaluationResult]);
+  useEffect(() => { if (!selectedId) setRightPanelOpen(false); }, [selectedId]);
   const selected = nodes.find((node) => node.id === selectedId);
   const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
   const hasGraphSelection = nodes.some((node) => node.selected) || edges.some((edge) => edge.selected) || Boolean(selectedId) || Boolean(selectedEdgeId);
@@ -751,8 +756,8 @@ function ParticipantEditor({
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
         <div className="topbar-right"><div className="topbar-actions"><div className="toolbar-actions topbar-toolbar-actions">
-              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); setRightPanelOpen(nextOpen); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
-              <label className="component-search-inline"><BookOpen size={13} /><input aria-label="Search architecture components" placeholder="Search components…" value={componentSearch} onChange={(event) => { setComponentSearch(event.target.value); setComponentLibraryOpen(true); setRightPanelOpen(true); }} onFocus={() => { setComponentLibraryOpen(true); setRightPanelOpen(true); }} /></label>
+              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); setRightPanelOpen(false); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
+              <label className="component-search-inline"><BookOpen size={13} /><input aria-label="Search architecture components" placeholder="Search components…" value={componentSearch} onChange={(event) => { setComponentSearch(event.target.value); setComponentLibraryOpen(true); }} onFocus={() => { setComponentLibraryOpen(true); setRightPanelOpen(true); }} /></label>
               <button type="button" className="topbar-add-component-button" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={"Add " + (selectedCatalogItem?.label ?? CATALOG[0].label) + " to the canvas"}><PlusCircle size={13} /> ADD COMPONENT</button>
               <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
               <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
@@ -777,114 +782,138 @@ function ParticipantEditor({
         </span></div>
       </header>
 
-      <div className={`workspace ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen || componentLibraryOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen || componentLibraryOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen || componentLibraryOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
+      <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         
-        {leftPanelOpen ? <aside className="sidebar left-panel requirements-panel" aria-label="Application requirements" data-tutorial="requirements">
-          <div className="requirements-panel-header"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse requirements sidebar" title="Collapse sidebar"><PanelLeftClose size={15} /></button>
-            <div className="requirements-mark"><FileText size={16} /></div>
-            <div>
-              <div className="section-kicker">PROJECT BRIEF</div>
-              <p>Start with the problem. Shape the system around it.</p>
-            </div>
+        <aside className={`sidebar left-panel requirements-panel workspace-navigation ${leftPanelOpen ? "is-open" : "is-collapsed"}`} aria-label="Workspace navigation">
+          <div className="workspace-nav-brand">
+            <div className="requirements-mark"><Layers size={16} /></div>
+            <div><div className="section-kicker">DESIGN WORKSPACE</div><p>Build · Learn · Validate</p></div>
+            <button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse workspace navigation"><PanelLeftClose size={15} /></button>
           </div>
-
-          <section className="brief-card" aria-labelledby="brief-identity-title">
-            <div className="brief-card-heading">
-              <span className="brief-step">01</span>
-              <div>
-                <h2 id="brief-identity-title">Project identity</h2>
-                <p>Give this architecture a clear name.</p>
+          <nav className="workspace-primary-nav" aria-label="Workspace sections">
+            <button type="button" className={`workspace-nav-item workspace-nav-canvas ${activeWorkspaceSection === "canvas" ? "is-active" : ""}`} onClick={() => { setChatOpen(false); setActiveWorkspaceSection("canvas"); }} aria-current={activeWorkspaceSection === "canvas" ? "page" : undefined}><Layers size={16} /><span><strong>Architecture canvas</strong><small>Return to your design</small></span></button>
+            {([
+              { id: "requirements", label: "Requirements", icon: FileText, hint: "Define the problem" },
+              { id: "learn", label: "Learn", icon: BookOpen, hint: "System design academy" },
+              { id: "guide", label: "Guide", icon: Sparkles, hint: "How to use ANCHON" },
+              { id: "share", label: "Share", icon: Link2, hint: "Share your architecture" },
+              { id: "settings", label: "Settings", icon: Layers, hint: "Workspace preferences" },
+            ] as const).map((item) => <button key={item.id} type="button" className={`workspace-nav-item ${activeWorkspaceSection === item.id ? "is-active" : ""}`} onClick={() => { setChatOpen(false); setActiveWorkspaceSection(item.id); }} aria-current={activeWorkspaceSection === item.id ? "page" : undefined}>
+              <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
+            </button>)}
+          </nav>
+          {activeWorkspaceSection === "canvas" && <div className="workspace-nav-content workspace-canvas-brief">
+          {(activeWorkspaceSection === "canvas" || activeWorkspaceSection === "requirements") && <>
+            <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
+            <section className="brief-card" aria-labelledby="brief-identity-title">
+              <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
+              <div className="field"><label htmlFor="application-name">APPLICATION NAME</label><input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" /></div>
+              <div className="field"><label htmlFor="application-description">PRODUCT BRIEF & CORE USER JOURNEYS</label><textarea id="application-description" value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} rows={5} placeholder="Who uses this product? What are the main journeys? Include expected users, peak traffic, data sensitivity, latency and availability targets, and constraints." /></div>
+            </section>
+            <section className="brief-card" aria-labelledby="inferred-requirements-title">
+              <div className="brief-card-heading"><span className="brief-step">02</span><div><h2 id="inferred-requirements-title">Architecture requirements</h2><p>Agent-inferred from the current components and connections.</p></div></div>
+              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
+              {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
+              {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
+              {inferredRequirements && <>
+                <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
+                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}</div>
+                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}</div>
+                {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
+                <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
+              </>}
+            </section>
+            <div className="requirements-status" role="status"><div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div><div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div><small className={saveStatus === "error" ? "requirements-save-error" : ""}><span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />{saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}</small></div>
+          </>}
+          </div>}
+        </aside>
+        {activeWorkspaceSection !== "canvas" && <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
+          <div className="workspace-nav-content">
+          {activeWorkspaceSection === "requirements" && <>
+            <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
+            <section className="brief-card" aria-labelledby="brief-identity-title">
+              <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
+              <div className="field"><label htmlFor="application-name">APPLICATION NAME</label><input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" /></div>
+              <div className="field"><label htmlFor="application-description">PRODUCT BRIEF & CORE USER JOURNEYS</label><textarea id="application-description" value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} rows={5} placeholder="Who uses this product? What are the main journeys? Include expected users, peak traffic, data sensitivity, latency and availability targets, and constraints." /></div>
+            </section>
+            <section className="brief-card" aria-labelledby="inferred-requirements-title">
+              <div className="brief-card-heading"><span className="brief-step">02</span><div><h2 id="inferred-requirements-title">Architecture requirements</h2><p>Agent-inferred from the current components and connections.</p></div></div>
+              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
+              {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
+              {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
+              {inferredRequirements && <>
+                <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
+                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}</div>
+                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}</div>
+                {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
+                <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
+              </>}
+            </section>
+            <div className="requirements-status" role="status"><div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div><div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div><small className={saveStatus === "error" ? "requirements-save-error" : ""}><span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />{saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}</small></div>
+          </>}
+          {activeWorkspaceSection === "learn" && <>
+            <div className="learn-panel-intro"><div className="section-kicker">SYSTEM DESIGN ACADEMY</div><h2>Learn by building.</h2><p>Understand the concepts, explore real-world architectures, then practice by adding components to your canvas.</p></div>
+            <div className="learn-layout">
+              <nav className="learn-topic-nav" aria-label="System design learning topics">
+                {["Introduction","Architecture patterns","Use cases","Edge cases","Scalability","Reliability & availability","Security","Data & storage","Performance & cost","Operations & observability","Networking & deployment","Distributed systems","Design patterns","AI / ML", ...[...new Set(CATALOG.map((item) => item.category))].sort()].map((topic) => <button key={topic} type="button" className={activeLearnTopic === topic ? "is-active" : ""} onClick={() => { setActiveLearnTopic(topic); setLearnSelectedComponent(null); }}>{topic}</button>)}
+              </nav>
+              <div className="learn-topic-content">
+                {activeLearnTopic === "Introduction" ? <><span className="learn-eyebrow">01 · FOUNDATIONS</span><h3>What is system design?</h3><p>System design is the process of defining a system's components, their responsibilities, interfaces, data flows, and operational constraints so the product can meet its requirements at a given scale.</p><h4>A practical design sequence</h4><ol><li>Clarify users, core use cases, and business constraints.</li><li>Estimate traffic, storage, latency, and availability needs.</li><li>Define APIs, data ownership, and core entities.</li><li>Draw the high-level architecture and request flows.</li><li>Identify bottlenecks, failure modes, and trade-offs.</li><li>Validate the design against measurable quality attributes.</li></ol><div className="learn-callout"><strong>Practice:</strong> Start with a simple client → API → database flow on the canvas. Add a cache only when you can explain which read path it accelerates.</div></> :
+                activeLearnTopic === "Architecture patterns" ? <><span className="learn-eyebrow">02 · STRUCTURE</span><h3>Common architecture patterns</h3>{[{name:"Monolith",body:"One deployable application with clear internal modules. Simple to operate initially; enforce module boundaries as the codebase grows."},{name:"Microservices",body:"Independently deployable services around business capabilities. Gains independent scaling and ownership at the cost of network, data, and operational complexity."},{name:"Event-driven",body:"Producers publish events and consumers react asynchronously. Useful for decoupling workflows; requires idempotency, retries, and observability."},{name:"CQRS",body:"Separate write models from read models when query and update needs differ substantially. Adds projection lag and consistency complexity."}].map((item) => <article className="learn-concept-card" key={item.name}><h4>{item.name}</h4><p>{item.body}</p></article>)}</> :
+                activeLearnTopic === "Use cases" ? <><span className="learn-eyebrow">03 · REAL-WORLD PRACTICE</span><h3>Explore system design use cases</h3><p>Choose a product, identify its critical path, and model the system on the canvas.</p>{[{name:"URL shortener",flow:"Client → API → key generator → database → cache",focus:"Unique IDs, redirect latency, hot keys, expiration, abuse prevention."},{name:"Real-time chat",flow:"Client → WebSocket gateway → message service → event broker → message store",focus:"Presence, ordering, delivery acknowledgements, offline sync, fan-out."},{name:"Video streaming",flow:"Upload → transcoding workers → object storage → CDN → playback client",focus:"Adaptive bitrate, transcoding queues, regional delivery, DRM, origin failures."},{name:"Ride-hailing",flow:"Rider app → API gateway → dispatch service ↔ location stream → driver app",focus:"Geospatial indexing, matching latency, stale GPS, surge, idempotent booking."},{name:"E-commerce",flow:"Web app → catalog/search → cart → order service → payment → inventory",focus:"Inventory races, payment retries, order state machines, cache invalidation."},{name:"Social feed",flow:"Client → feed API → ranking → fan-out workers → cache/store",focus:"Fan-out on write vs read, celebrity users, ranking freshness, moderation."}].map((item) => <article className="learn-usecase-card" key={item.name}><h4>{item.name}</h4><code>{item.flow}</code><p>{item.focus}</p><button type="button" onClick={() => { setApplicationName(item.name + " architecture"); setActiveWorkspaceSection("canvas"); setComponentLibraryOpen(false); }}>Use as project brief <ArrowLeft size={12} /></button></article>)}</> :
+                activeLearnTopic === "Edge cases" ? <><span className="learn-eyebrow">04 · FAILURE THINKING</span><h3>Design for edge cases</h3><p>For every happy path, ask what happens when dependencies are slow, duplicated, unavailable, or return unexpected data.</p>{[{name:"Network & retries",items:"Timeouts, partial responses, retry storms, exponential backoff, circuit breakers."},{name:"Data consistency",items:"Duplicate writes, concurrent updates, stale reads, out-of-order events, schema changes."},{name:"Capacity",items:"Traffic spikes, hot partitions, queue backlog, connection exhaustion, large payloads."},{name:"Security",items:"Broken authorization, replay attacks, credential leakage, rate-limit bypass, tenant isolation."},{name:"Operations",items:"Bad deployments, failed migrations, unavailable regions, missing metrics, noisy alerts."}].map((item) => <article className="learn-concept-card" key={item.name}><h4>{item.name}</h4><p>{item.items}</p></article>)}</> :
+                activeLearnTopic === "Scalability" ? <><span className="learn-eyebrow">05 · CAPACITY</span><h3>Scale with evidence</h3><p>Estimate requests per second, concurrent users, data growth, and read/write ratios before choosing infrastructure.</p><ul><li>Scale vertically to buy time; scale horizontally when workload and architecture support it.</li><li>Use caching for repeated reads with a defined freshness policy.</li><li>Partition data when one database node becomes a measured bottleneck.</li><li>Use queues to absorb bursts and isolate slow background work.</li><li>Apply backpressure and rate limits to protect downstream services.</li></ul></> :
+                activeLearnTopic === "Reliability & availability" ? <><span className="learn-eyebrow">06 · RESILIENCE</span><h3>Keep the system dependable</h3><p>Define service-level indicators and objectives, then design graceful degradation around critical dependencies.</p><ul><li>Set timeouts on every network boundary.</li><li>Retry only transient failures, with jitter and bounded attempts.</li><li>Use circuit breakers and bulkheads to contain faults.</li><li>Back up data and regularly test restoration.</li><li>Monitor latency percentiles, error rates, saturation, and queue age.</li></ul></> :
+                activeLearnTopic === "Security" ? <><span className="learn-eyebrow">07 · TRUST BOUNDARIES</span><h3>Security is an architectural property</h3><ul><li>Authenticate identities and authorize every resource action.</li><li>Encrypt data in transit and at rest; manage keys separately.</li><li>Validate input at trust boundaries and encode output.</li><li>Use least-privilege service identities and network policies.</li><li>Audit sensitive actions without logging secrets or personal data.</li></ul></> :
+                activeLearnTopic === "Data & storage" ? <><span className="learn-eyebrow">08 · DATA DESIGN</span><h3>Choose storage around access patterns</h3><p>Model entities and consistency needs before choosing a database.</p><ul><li>Relational databases: transactions, constraints, and joins.</li><li>Document stores: flexible aggregate-shaped records.</li><li>Key-value stores: predictable lookups and low-latency access.</li><li>Search engines: full-text retrieval and relevance ranking.</li><li>Object storage: durable files, media, and backups.</li></ul></> :
+                activeLearnTopic === "Performance & cost" ? <><span className="learn-eyebrow">09 · EFFICIENCY</span><h3>Optimize the bottleneck, not the diagram</h3><p>Measure latency, throughput, utilization and spend before adding infrastructure.</p><ul><li>Set latency budgets across client, network, application and storage.</li><li>Use caching for repeatable reads and define TTL, invalidation and stale-read behavior.</li><li>Apply pagination, batching, compression and connection pooling where measurements justify them.</li><li>Estimate cost per request, stored GB, message and active user.</li><li>Load-test realistic traffic distributions and watch p95/p99 latency.</li></ul></> :
+                activeLearnTopic === "Operations & observability" ? <><span className="learn-eyebrow">10 · OPERATIONS</span><h3>Operate the system after launch</h3><ul><li>Emit structured logs with request and trace identifiers; never log secrets.</li><li>Use metrics for traffic, errors, latency and saturation.</li><li>Trace requests across service boundaries to find slow dependencies.</li><li>Define service-level indicators, objectives and actionable alerts.</li><li>Automate deployment, rollback, backups and recovery drills.</li></ul></> :
+                activeLearnTopic === "Networking & deployment" ? <><span className="learn-eyebrow">11 · DELIVERY</span><h3>Understand the path from user to service</h3><ul><li>DNS resolves names; TLS protects transport; load balancers distribute traffic.</li><li>Gateways enforce routing, authentication, quotas and request policies.</li><li>Separate public entry points from private service and data networks.</li><li>Use health checks, rolling or canary releases, and tested rollback paths.</li><li>Choose zonal, regional or multi-region deployment from recovery targets and latency needs.</li></ul></> :
+                activeLearnTopic === "Distributed systems" ? <><span className="learn-eyebrow">12 · DISTRIBUTION</span><h3>Reason about independent machines</h3><ul><li>Networks can delay, duplicate, reorder or drop messages.</li><li>Design idempotent operations for retries and at-least-once delivery.</li><li>Choose consistency guarantees deliberately; replicas can lag.</li><li>Use queues and event streams to decouple producers and consumers.</li><li>Plan for partial failure, clock skew, leader failover and poison messages.</li></ul></> :
+                activeLearnTopic === "Design patterns" ? <><span className="learn-eyebrow">13 · REUSABLE SOLUTIONS</span><h3>Use patterns to solve known trade-offs</h3>{[{name:"Circuit breaker",body:"Stops repeated calls to an unhealthy dependency and gives it time to recover."},{name:"Bulkhead",body:"Isolates resource pools so one overloaded feature cannot exhaust the whole service."},{name:"Queue-based load leveling",body:"Buffers bursts and lets workers process at a controlled rate."},{name:"Cache-aside",body:"Reads from cache first and populates it from the source of truth on a miss."},{name:"Saga",body:"Coordinates a multi-service business transaction through local steps and compensating actions."}].map(item=><article className="learn-concept-card" key={item.name}><h4>{item.name}</h4><p>{item.body}</p></article>)}</> :
+                <><span className="learn-eyebrow">COMPONENT DEEP DIVE</span><h3>{activeLearnTopic}</h3><p>Explore the building blocks in this system-design category. Select a component to read its role, usage, trade-offs, and example.</p><div className="learn-component-list">{CATALOG.filter((item) => item.category === activeLearnTopic).map((item) => { const knowledge = getComponentKnowledge(item); return <button type="button" key={item.typeKey} className={learnSelectedComponent === item.typeKey ? "is-active" : ""} onClick={() => setLearnSelectedComponent(item.typeKey)}><CategoryIcon category={item.category} size={15} /><span><strong>{item.label}</strong><small>{knowledge.summary}</small></span></button>; })}</div>{learnSelectedComponent && (() => { const item = CATALOG.find((entry) => entry.typeKey === learnSelectedComponent); if (!item) return null; const knowledge = getComponentKnowledge(item); return <article className="learn-component-detail"><h4>{item.label}</h4><p>{knowledge.whatItIs}</p><h5>When to use</h5><p>{knowledge.whenToUse}</p><h5>Trade-offs</h5><p>{knowledge.tradeoffs}</p><h5>Example</h5><p>{knowledge.example}</p><button type="button" onClick={() => { addCatalogNode(item); setActiveWorkspaceSection("canvas"); }}>Add to canvas <PlusCircle size={13} /></button></article>; })()}</>}
               </div>
+              <LearnPracticeCanvas />
+              <section className="learn-reference-card"><span className="learn-eyebrow">CONTINUE LEARNING · OFFICIAL ENGINEERING GUIDES</span><h3>Go deeper with industry architecture references</h3><p>These references inform the curriculum. ANCHON's lessons are original summaries and exercises, not copied documentation.</p><a href="https://learn.microsoft.com/en-us/azure/architecture/guide/" target="_blank" rel="noreferrer">Microsoft Azure Architecture Fundamentals ↗</a><a href="https://learn.microsoft.com/en-us/azure/architecture/framework/" target="_blank" rel="noreferrer">Microsoft Well-Architected Framework ↗</a><a href="https://docs.cloud.google.com/architecture/fundamentals" target="_blank" rel="noreferrer">Google Cloud Architecture Fundamentals ↗</a><a href="https://docs.cloud.google.com/architecture/framework" target="_blank" rel="noreferrer">Google Cloud Well-Architected Framework ↗</a></section>
             </div>
-            <div className="field">
-              <label htmlFor="application-name">APPLICATION NAME</label>
-              <input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" />
-            </div>
-          </section>
-
-
-          <section className="brief-card" aria-labelledby="inferred-requirements-title">
-            <div className="brief-card-heading">
-              <span className="brief-step">02</span>
-              <div>
-                <h2 id="inferred-requirements-title">Architecture requirements</h2>
-                <p>Agent-inferred from the current components and connections.</p>
-              </div>
-            </div>
-            <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}>
-              <Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}
-            </button>
-            {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
-            {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
-            {inferredRequirements && <>
-              <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
-              <div style={{ marginTop: 14 }}>
-                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>
-                {inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}
-              </div>
-              <div style={{ marginTop: 14 }}>
-                <h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>
-                {inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}
-              </div>
-              {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
-              <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
-            </>}
-          </section>
-
-          <div className="requirements-status" role="status">
-            <div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div>
-            <div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div>
-            <small className={saveStatus === "error" ? "requirements-save-error" : ""}>
-              <span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />
-              {saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}
-            </small>
+          </>}
+          {activeWorkspaceSection === "guide" && <WorkspaceGuide onOpenLibrary={() => { setActiveWorkspaceSection("canvas"); setComponentLibraryOpen(true); }} onOpenLearn={() => { setActiveWorkspaceSection("learn"); setActiveLearnTopic("Introduction"); }} />}
+          {activeWorkspaceSection === "share" && <WorkspaceShare applicationName={applicationName} applicationDescription={applicationDescription} notes={notes} nodes={nodes} edges={edges} onExport={() => exportArchitecturePdf(applicationName, applicationDescription, notes, nodes, edges)} />}
+          {activeWorkspaceSection === "settings" && <WorkspaceSettings />}
           </div>
-        </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-left"><button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(true)} aria-label="Open requirements sidebar" title="Open requirements sidebar"><PanelLeftOpen size={16} /></button><span>BRIEF</span></div>}
+        </main>}
+        {!leftPanelOpen && <button type="button" className="workspace-sidebar-reopen" onClick={() => setLeftPanelOpen(true)} aria-label="Open workspace navigation" title="Open navigation"><PanelLeftOpen size={16} /></button>}
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
         <div className="canvas-column">
           {componentLibraryOpen && <><button type="button" className="component-library-scrim" aria-label="Close component library" onClick={() => setComponentLibraryOpen(false)} />
-          <section id="component-library-popup" className="component-dock component-dock-open" role="dialog" aria-modal="false" aria-label="Architecture component library" data-tutorial="component-library">
+          <section id="component-library-popup" className="component-dock component-dock-open" role="dialog" aria-modal="true" aria-label="Architecture component library" data-tutorial="component-library">
             <div className="component-dock-heading"><div><div className="section-kicker"><Layers size={13} /> COMPONENT LIBRARY <span className="niche-library-tag">NICHE INFRASTRUCTURE INCLUDED</span></div><p>Search by component, category, or product pattern (WhatsApp, Netflix, Amazon, VS Code, ChatGPT). Select a component to inspect it before adding it.</p></div><button type="button" className="component-library-close" onClick={() => setComponentLibraryOpen(false)} aria-label="Close component library"><X size={16} /></button></div>
             <div className="component-library-controls">
-              <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="Try WhatsApp, Netflix, Amazon, VS Code, ChatGPT…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
-              <select aria-label="Filter by category" value={componentCategoryFilter} onChange={(event) => setComponentCategoryFilter(event.target.value)}><option value="all">All categories</option>{[...new Set(CATALOG.map((item) => item.category))].sort().map((category) => <option key={category} value={category}>{category}</option>)}</select>
-              <select aria-label="Group components by" value={componentGroupBy} onChange={(event) => setComponentGroupBy(event.target.value as "layer" | "category")}><option value="category">Group by category</option><option value="layer">Group by system layer</option></select>
-              <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Default order</option><option value="name">Name A–Z</option><option value="category">Category A–Z</option></select>
+              <label className="component-library-search"><BookOpen size={14} /><input aria-label="Search component library" placeholder="Search components…" value={componentSearch} onChange={(event) => setComponentSearch(event.target.value)} autoComplete="off" /></label>
+              <select aria-label="Sort components" value={componentSort} onChange={(event) => setComponentSort(event.target.value as "default" | "name" | "category")}><option value="default">Recommended order</option><option value="name">Name A–Z</option></select>
             </div>
-            {(componentGroupBy === "category"
-              ? [...new Set(CATALOG.map((item) => item.category))].sort((a, b) => a.localeCompare(b)).map((category) => ({ title: category.toUpperCase(), description: ({ "AI / ML": "Models, embeddings, retrieval, and AI runtime", "API": "Public and internal API interfaces", "Cache": "Fast, temporary in-memory data", "Database": "Structured, document, graph, time-series, and vector databases", "Compute": "Application runtimes, workers, and containers", "Edge": "Client entry points and edge delivery", "Messaging": "Queues, events, streams, and message delivery", "Media": "Media processing, encoding, and delivery", "Network": "Private networking and traffic distribution", "Observability": "Logs, metrics, traces, and alerts", "Routing": "Request routing and API entry points", "Security": "Identity, access control, and protection", "Storage": "Files, objects, and durable blobs", "Reliability": "Resilience, recovery, and health", "Platform": "Shared configuration and platform services", "External": "Third-party services and integrations" } as Record<string, string>)[category] ?? `Components for ${category.toLowerCase()}`, categories: [category] }))
-              : [
-                { title: "01 · EDGE & TRAFFIC", description: "Entry points, networking and routing", categories: ["Edge", "Network", "Routing"] },
-                { title: "02 · APPLICATION & DATA", description: "Compute, APIs, storage, media and messaging", categories: ["Compute", "API", "Realtime", "Integration", "Data", "Analytics", "Storage", "Messaging", "Orchestration", "Media", "Messaging & Social", "Media & Streaming", "Commerce & Marketplace", "Developer Tools", "AI Assistant Apps", "Search & Discovery", "Collaboration & Productivity", "Maps & Delivery"] },
-                { title: "03 · SECURITY & OPERATIONS", description: "Security, reliability, platform and AI", categories: ["Security", "Reliability", "Observability", "Platform", "External", "Banking", "AI / ML", "Identity & Accounts", "Commerce & Billing", "Integration & Automation", "Cloud & Infrastructure"] },
-              ]
-            ).map((group) => {
-              const query = componentSearch.trim().toLowerCase();
-              const items = CATALOG.filter((item) => group.categories.includes(item.category))
-                .filter((item) => componentCategoryFilter === "all" || item.category === componentCategoryFilter)
-                .filter((item) => !query || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(query))
-                .sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : componentSort === "category" ? a.category.localeCompare(b.category) || a.label.localeCompare(b.label) : 0);
-              if (items.length === 0) return null;
-              return (
-                <div className="component-lane" key={group.title}>
-                  <div className="component-lane-label">
-                    <span>{group.title}</span>
-                    <small>{group.description}</small>
-                    <span className="component-lane-count">{items.length}</span>
-                  </div>
-                  <div className="component-dock-items" aria-label={group.title}>
-                    {items.map((item) => (
-                      <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
-                        <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={14} /></span><span>{item.label}</span></span>
-                        <small>{item.category}</small>
-                      </button>
-                    ))}
-                  </div>
+            <div className="component-library-browser">
+              <nav className="component-library-categories" aria-label="Component categories">
+                {[...new Set(CATALOG.map((item) => item.category))].sort((a, b) => a.localeCompare(b)).map((category) => {
+                  const count = CATALOG.filter((item) => item.category === category).length;
+                  return <button type="button" key={category} className={libraryActiveCategory === category ? "is-active" : ""} onClick={() => { setLibraryActiveCategory(category); }} aria-current={libraryActiveCategory === category ? "true" : undefined}>
+                    <span className="component-category-icon"><CategoryIcon category={category} size={14} /></span><span>{category}</span><small>{count}</small>
+                  </button>;
+                })}
+              </nav>
+              <div className="component-library-results">
+                <div className="component-library-results-heading"><div><span className="section-kicker">{componentSearch.trim() ? "SEARCH RESULTS" : "COMPONENT CATEGORY"}</span><h3>{componentSearch.trim() ? "Matching components" : libraryActiveCategory}</h3><p>{componentSearch.trim() ? "Results across every category" : "Select a component to inspect it. Double-click to add it to the canvas."}</p></div><span className="component-results-count">{CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length} ITEMS</span></div>
+                <div className="component-library-node-grid">
+                  {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : 0).map((item) => <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(true); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} onDoubleClick={() => { addCatalogNode(item); setComponentLibraryOpen(false); setRightPanelOpen(true); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
+                    <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={15} /></span><span>{item.label}</span></span><small>{item.category}</small>
+                  </button>)}
+                  {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length === 0 && <div className="component-library-empty"><BookOpen size={22} /><strong>No components found</strong><span>Try another search term or category.</span></div>}
                 </div>
-              );
-            })}
+              </div>
+            </div>
           </section></>}
+
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true">
           <div className="canvas-toolbar">
             <div>
@@ -942,8 +971,8 @@ function ParticipantEditor({
             onConnect={onConnect}
             onReconnect={onReconnect}
             onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
-            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(true); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
-            onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); }}
+            onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); setComponentLibraryOpen(false); canvasRef.current?.focus({ preventScroll: true }); }}
+            onPaneClick={() => { setSelectedId(null); setSelectedEdgeId(null); setSelectedCatalogTypeKey(null); setRightPanelOpen(false); }}
             onDragOver={(event) => {
               event.preventDefault();
               event.dataTransfer.dropEffect = "move";
@@ -1088,12 +1117,11 @@ function ParticipantEditor({
           </div>
         </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
       </div>
-      <button type="button" className="floating-ai-chat-trigger" onClick={() => setChatOpen((open) => !open)} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Toggle Ask ANCHON chat" title="Toggle Ask ANCHON">
-        <MessageSquare size={19} />
-        <span>ASK ANCHON</span>
-      </button>
-      <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
-        <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong></div>
+      {activeWorkspaceSection === "canvas" && !chatOpen && <button type="button" className="floating-ai-chat-trigger" style={{ left: `calc(50% + ${chatOffset.x}px)`, bottom: `calc(18vh - ${chatOffset.y}px)` }} onPointerDown={(event) => { chatDragRef.current = { pointerX: event.clientX, pointerY: event.clientY, originX: chatOffset.x, originY: chatOffset.y, moved: false }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { const drag = chatDragRef.current; if (!drag) return; const dx = event.clientX - drag.pointerX, dy = event.clientY - drag.pointerY; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) { const maxX = Math.max(0, window.innerWidth / 2 - 36); const baseBottom = window.innerHeight * 0.18; const minY = baseBottom - (window.innerHeight - 36); const maxY = baseBottom - 18; setChatOffset({ x: Math.max(-maxX, Math.min(maxX, drag.originX + dx)), y: Math.max(minY, Math.min(maxY, drag.originY + dy)) }); } }} onPointerUp={() => { const moved = chatDragRef.current?.moved ?? false; chatDragRef.current = null; if (!moved) setChatOpen(true); }} onPointerCancel={() => { chatDragRef.current = null; }} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Open ANCHON assistant" title="Drag to move · Click to open">
+        <span className="anchon-bubble-mark" aria-hidden="true"><Layers size={22} /></span>
+      </button>}
+      {activeWorkspaceSection === "canvas" && <div id="floating-ai-chat-panel" className={`floating-ai-chat-panel ${chatOpen ? "is-open" : ""}`} aria-hidden={!chatOpen}>
+        <div className="floating-ai-chat-panel-heading"><strong>ANCHON AI</strong><button type="button" className="anchon-chat-close" onClick={() => setChatOpen(false)} aria-label="Close ANCHON assistant"><X size={16} /></button></div>
                   <ArchitectureAIChat
             name={applicationName}
             requirements={applicationDescription}
@@ -1117,7 +1145,7 @@ function ParticipantEditor({
               logActivity("AI_ARCHITECTURE_UPDATED", { components: nextNodes.length, connections: nextEdges.length });
             }}
           />
-      </div>
+      </div>}
       <InteractiveTutorial page="workspace" onStepChange={handleTutorialStepChange} />
     </div>
   );

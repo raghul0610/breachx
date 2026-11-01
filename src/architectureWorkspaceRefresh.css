@@ -350,3 +350,138 @@
 .app-shell .bp-node--kind-database_shard .node-category-icon,
 .app-shell .bp-node--kind-vector_database .node-category-icon { color:#fbbf24;border-color:#fbbf2445;background:#fbbf2410; }
 @media(prefers-reduced-motion:reduce){.app-shell .bp-node{transition:none!important}}
+
+
+/* Command-palette component library — centered, focused, keyboard/touch friendly. */
+.app-shell .component-library-scrim {
+  position:fixed!important;inset:0!important;z-index:80!important;
+  display:block!important;width:100vw!important;height:100dvh!important;
+  border:0!important;border-radius:0!important;background:rgba(3,3,7,.68)!important;
+  backdrop-filter:blur(7px) saturate(.78)!important;cursor:default!important;
+  animation:anchon-scrim-in .16s ease-out both;
+}
+.app-shell #component-library-popup.component-dock,
+.app-shell #component-library-popup.component-dock-open {
+  position:fixed!important;z-index:81!important;
+  top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;
+  width:min(680px,calc(100vw - 32px))!important;
+  max-width:680px!important;height:min(570px,calc(100dvh - 40px))!important;
+  max-height:calc(100dvh - 40px)!important;min-height:0!important;
+  display:flex!important;flex-direction:column!important;gap:0!important;
+  overflow:hidden!important;transform:translate(-50%,-50%)!important;
+  padding:0!important;border:1px solid rgba(196,181,253,.2)!important;
+  border-radius:15px!important;
+  background:linear-gradient(160deg,rgba(28,25,36,.99),rgba(17,16,22,.99))!important;
+  box-shadow:0 32px 100px rgba(0,0,0,.62),inset 0 1px rgba(255,255,255,.045)!important;
+  animation:anchon-palette-in .2s cubic-bezier(.2,.8,.2,1) both;
+}
+.app-shell #component-library-popup .component-dock-heading {
+  flex:none!important;min-height:64px!important;margin:0!important;padding:17px 18px 13px!important;
+  border-bottom:1px solid rgba(255,255,255,.07)!important;align-items:flex-start!important;
+}
+.app-shell #component-library-popup .component-dock-heading .section-kicker {
+  display:flex;align-items:center;gap:8px;color:#c4b5fd!important;font-size:10px!important;
+  letter-spacing:.12em!important;
+}
+.app-shell #component-library-popup .component-dock-heading p {
+  max-width:560px!important;margin:7px 0 0!important;color:#9b96a5!important;
+  font-size:11px!important;line-height:1.5!important;
+}
+.app-shell #component-library-popup .component-library-close {
+  flex:none!important;width:30px!important;height:30px!important;padding:0!important;
+  display:grid!important;place-items:center!important;border:1px solid rgba(255,255,255,.09)!important;
+  border-radius:8px!important;background:rgba(255,255,255,.035)!important;color:#aaa4b4!important;
+}
+.app-shell #component-library-popup .component-library-controls {
+  flex:none!important;display:flex!important;gap:8px!important;flex-wrap:wrap!important;
+  margin:0!important;padding:13px 16px!important;border-bottom:1px solid rgba(255,255,255,.06)!important;
+}
+.app-shell #component-library-popup .component-library-search {
+  flex:1 1 100%!important;min-width:0!important;height:43px!important;padding:0 12px!important;
+  border:1px solid rgba(196,181,253,.2)!important;border-radius:9px!important;
+  background:rgba(7,7,11,.62)!important;color:#aaa2bb!important;
+}
+.app-shell #component-library-popup .component-library-search:focus-within {
+  border-color:rgba(196,181,253,.58)!important;box-shadow:0 0 0 3px rgba(196,181,253,.09)!important;
+}
+.app-shell #component-library-popup .component-library-search input {
+  color:#f1edf8!important;font-size:12px!important;outline:none!important;
+}
+.app-shell #component-library-popup .component-library-controls select {
+  flex:1 1 150px!important;max-width:none!important;height:35px!important;
+}
+.app-shell #component-library-popup .component-dock-items,
+.app-shell #component-library-popup .component-library-results {
+  flex:1 1 auto!important;min-height:0!important;overflow:auto!important;
+  overscroll-behavior:contain!important;padding:12px 16px 18px!important;
+}
+.app-shell #component-library-popup .component-dock-items {
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-content:start!important;gap:8px!important;
+}
+.app-shell #component-library-popup .component-dock-item {
+  width:100%!important;min-width:0!important;min-height:72px!important;flex:none!important;
+  padding:11px 12px!important;border:1px solid rgba(255,255,255,.075)!important;
+  border-radius:10px!important;background:rgba(255,255,255,.025)!important;
+  box-shadow:none!important;text-align:left!important;
+}
+.app-shell #component-library-popup .component-dock-item:hover,
+.app-shell #component-library-popup .component-dock-item:focus-visible {
+  transform:translateY(-2px)!important;border-color:rgba(196,181,253,.4)!important;
+  background:rgba(196,181,253,.075)!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.2)!important;outline:none!important;
+}
+.app-shell #component-library-popup .component-dock-item:active {
+  transform:scale(.985)!important;background:rgba(196,181,253,.12)!important;
+}
+.app-shell #component-library-popup .component-dock-item strong { color:#eeeaf5!important;font-size:11px!important; }
+.app-shell #component-library-popup .component-dock-item small,
+.app-shell #component-library-popup .component-dock-item p { color:#9992a4!important; }
+.app-shell .bp-node {
+  border-radius:12px!important;border:1px solid color-mix(in srgb,var(--category-accent,#a78bfa) 32%,transparent)!important;
+  background:linear-gradient(145deg,rgba(31,28,42,.98),rgba(16,15,23,.99))!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.26),inset 0 1px rgba(255,255,255,.045)!important;
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .18s ease,box-shadow .18s ease,filter .18s ease!important;
+  transform-origin:center!important;
+}
+.app-shell .bp-node:hover {
+  transform:translateY(-3px) scale(1.012)!important;
+  border-color:color-mix(in srgb,var(--category-accent,#a78bfa) 72%,white 8%)!important;
+  box-shadow:0 16px 34px rgba(0,0,0,.34),0 0 0 3px color-mix(in srgb,var(--category-accent,#a78bfa) 12%,transparent)!important;
+  filter:brightness(1.08);
+}
+.app-shell .bp-node:active { transform:scale(.985)!important; }
+.app-shell .bp-node.selected {
+  border-color:var(--category-accent,#c4b5fd)!important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--category-accent,#c4b5fd) 22%,transparent),0 16px 36px rgba(0,0,0,.34)!important;
+  animation:anchon-node-select .24s ease-out both;
+}
+.app-shell .bp-node .node-label { font-weight:650!important;letter-spacing:-.01em!important; }
+.app-shell .bp-node .node-notes { color:#a8a2b2!important;font-size:10px!important; }
+.app-shell .bp-node .node-category-icon {
+  border-radius:8px!important;background:color-mix(in srgb,var(--category-accent,#c4b5fd) 10%,transparent)!important;
+  border:1px solid color-mix(in srgb,var(--category-accent,#c4b5fd) 22%,transparent)!important;
+}
+.app-shell .bp-node .handle {
+  width:10px!important;height:10px!important;border:2px solid #17141f!important;
+  background:var(--category-accent,#c4b5fd)!important;
+  transition:transform .16s ease,box-shadow .16s ease!important;
+}
+.app-shell .bp-node:hover .handle {
+  transform:scale(1.25)!important;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--category-accent,#c4b5fd) 16%,transparent)!important;
+}
+@keyframes anchon-scrim-in { from{opacity:0} to{opacity:1} }
+@keyframes anchon-palette-in { from{opacity:0;transform:translate(-50%,-48%) scale(.985)} to{opacity:1;transform:translate(-50%,-50%) scale(1)} }
+@keyframes anchon-node-select { from{filter:brightness(1.2)} to{filter:brightness(1)} }
+@media(max-width:600px) {
+  .app-shell #component-library-popup.component-dock { width:calc(100vw - 20px)!important;height:min(620px,calc(100dvh - 24px))!important; }
+  .app-shell #component-library-popup .component-dock-items { grid-template-columns:1fr!important;padding:10px!important; }
+  .app-shell #component-library-popup .component-dock-heading { padding:13px!important; }
+  .app-shell #component-library-popup .component-library-controls { padding:10px!important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell .component-library-scrim,.app-shell #component-library-popup.component-dock,
+  .app-shell .bp-node,.app-shell .bp-node.selected { animation:none!important;transition:none!important; }
+  .app-shell .bp-node:hover,.app-shell .bp-node:active { transform:none!important; }
+}
