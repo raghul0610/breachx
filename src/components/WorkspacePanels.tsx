@@ -106,6 +106,6 @@ export function WorkspaceSettings() {
       <p className="settings-help">For Google or other OAuth-only accounts, change your password with that identity provider instead.</p>
     </section>
     <section className="settings-card"><div className="settings-card-title"><LockKeyhole size={17}/><div><h3>Sessions & security</h3><p>Account ID: <code>{userId}</code></p></div></div><p className="settings-help">Use a unique password, protect your email account, and sign out of shared devices. Session revocation depends on your Supabase Auth configuration.</p><button type="button" className="danger-btn compact" onClick={signOutAll}><LogOut size={13}/> Sign out all sessions</button></section>
-    {error&&<p className="workspace-form-error" role="alert">{error}</p>}{message&&<p className="workspace-inline-status" role="status><Check size={14}/>{message}</p>}
+    {error&&<p className="workspace-form-error" role="alert">{error}</p>}{message&&<p className="workspace-inline-status" role="status"><Check size={14}/>{message}</p>}
   </div>;
 }
