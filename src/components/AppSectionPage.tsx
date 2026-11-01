@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, FolderKanban, GraduationCap, HelpCircle, Layers3, Settings } from "lucide-react";
+import { BookOpen, FolderKanban, GraduationCap, HelpCircle, Settings } from "lucide-react";
 import { AnchonLogo } from "./AnchonLogo";
 import { LearnPracticeCanvas } from "./LearnPracticeCanvas";
 import { WorkspaceGuide, WorkspaceSettings } from "./WorkspacePanels";
