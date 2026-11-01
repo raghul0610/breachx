@@ -138,11 +138,13 @@ const initialEdges: Edge[] = [
 
 export function ParticipantPage({
   onBack,
+  onOpenSettings,
   onSubmitted,
   projectId,
   initialSection = "canvas",
 }: {
   onBack: () => void;
+  onOpenSettings: () => void;
   onSubmitted: () => void;
   projectId: string;
   initialSection?: "canvas" | "learn" | "guide" | "settings";
@@ -154,6 +156,7 @@ export function ParticipantPage({
         key={projectId}
         projectId={projectId}
         onBack={onBack}
+        onOpenSettings={onOpenSettings}
         onSubmitted={onSubmitted}
         startingSubmission={saved}
         initialSection={initialSection}
@@ -164,12 +167,14 @@ export function ParticipantPage({
 
 function ParticipantEditor({
   onBack,
+  onOpenSettings,
   onSubmitted,
   projectId,
   startingSubmission,
   initialSection,
 }: {
   onBack: () => void;
+  onOpenSettings: () => void;
   onSubmitted: () => void;
   projectId: string;
   startingSubmission: DesignSubmission | null;
@@ -780,7 +785,7 @@ function ParticipantEditor({
   }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, duplicateSelected, fitView, pushHistory, setNodes, setEdges]);
 
   return (
-    <div className="app-shell" onMouseMove={(event) => { if (event.clientX <= 18) setLeftPanelOpen(true); }}>
+    <div className="app-shell" onMouseMove={(event) => { if (event.clientX <= 24) setLeftPanelOpen(true); }}>
       <header className="topbar">
         <button className="nav-btn" onClick={onBack}>
           <ArrowLeft size={14} /> HOME
@@ -835,6 +840,10 @@ function ParticipantEditor({
               }
               if (item.id === "guide") {
                 window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/anchon-user-guide.md", "_blank", "noopener,noreferrer");
+                return;
+              }
+              if (item.id === "settings") {
+                onOpenSettings();
                 return;
               }
               setChatOpen(false);
