@@ -53,6 +53,17 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
     }
   };
 
+  const openWorkspaceSection = (section: "learn" | "guide" | "settings") => {
+    const project = projects[0];
+    if (!project) return;
+    try {
+      setActiveProject(project.id);
+      onOpenWorkspaceSection(project.id, section);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not open this workspace section.");
+    }
+  };
+
   const rename = (project: ArchitectureProject) => {
     const name = window.prompt("New project name", project.applicationName);
     if (name === null) return;
@@ -96,11 +107,11 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
         <div className="dashboard-nav-label">WORKSPACE</div>
         <nav className="dashboard-nav">
           <button type="button" className="is-active" aria-current="page"><Layers3 size={17} /><span>Projects</span><span className="dashboard-nav-count">{projects.length}</span></button>
-          <button type="button" disabled={!projects.length} onClick={() => projects[0] && onOpenWorkspaceSection(projects[0].id, "learn")}><BookOpen size={17} /><span>Learn</span></button>
-          <button type="button" disabled={!projects.length} onClick={() => projects[0] && onOpenWorkspaceSection(projects[0].id, "guide")}><Sparkles size={17} /><span>Guide</span></button>
+          <button type="button" disabled={!projects.length} onClick={() => openWorkspaceSection("learn")}><BookOpen size={17} /><span>Learn</span></button>
+          <button type="button" disabled={!projects.length} onClick={() => openWorkspaceSection("guide")}><Sparkles size={17} /><span>Guide</span></button>
         </nav>
         <div className="dashboard-sidebar-spacer" />
-        <div className="dashboard-nav dashboard-nav-bottom"><button type="button" disabled={!projects.length} onClick={() => projects[0] && onOpenWorkspaceSection(projects[0].id, "settings")}><Settings size={17} /><span>Settings</span></button></div>
+        <div className="dashboard-nav dashboard-nav-bottom"><button type="button" disabled={!projects.length} onClick={() => openWorkspaceSection("settings")}><Settings size={17} /><span>Settings</span></button></div>
         <div className="dashboard-sidebar-footer"><span className="dashboard-status-dot" /> Private workspace</div>
       </aside>
       <div className="dashboard-main">
