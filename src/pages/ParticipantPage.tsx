@@ -794,7 +794,6 @@ function ParticipantEditor({
         <div className="topbar-right"><div className="topbar-actions"><div className="toolbar-actions topbar-toolbar-actions">
               <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); setRightPanelOpen(false); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
               <label className="component-search-inline"><BookOpen size={13} /><input aria-label="Search architecture components" placeholder="Search components…" value={componentSearch} onChange={(event) => { setComponentSearch(event.target.value); setComponentLibraryOpen(true); }} onFocus={() => { setComponentLibraryOpen(true); setRightPanelOpen(true); }} /></label>
-              <button type="button" className="topbar-add-component-button" onClick={() => addCatalogNode(selectedCatalogItem ?? CATALOG[0], undefined, catalogNotes)} title={"Add " + (selectedCatalogItem?.label ?? CATALOG[0].label) + " to the canvas"}><PlusCircle size={13} /> ADD COMPONENT</button>
               <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
               <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
               <button data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
@@ -838,34 +837,7 @@ function ParticipantEditor({
               <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
             </button>)}
           </nav>
-          {activeWorkspaceSection === "canvas" && <div className="workspace-nav-content workspace-canvas-brief">
-          {(activeWorkspaceSection === "canvas" || activeWorkspaceSection === "requirements") && <>
-            <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
-            <section className="brief-card" aria-labelledby="brief-identity-title">
-              <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
-              <div className="field"><label htmlFor="application-name">APPLICATION NAME</label><input id="application-name" value={applicationName} onChange={(event) => setApplicationName(event.target.value)} placeholder="e.g. Real-time chat platform" /></div>
-              <div className="field"><label htmlFor="application-description">PRODUCT BRIEF & CORE USER JOURNEYS</label><textarea id="application-description" value={applicationDescription} onChange={(event) => setApplicationDescription(event.target.value)} rows={5} placeholder="Who uses this product? What are the main journeys? Include expected users, peak traffic, data sensitivity, latency and availability targets, and constraints." /></div>
-            </section>
-            <section className="brief-card" aria-labelledby="inferred-requirements-title">
-              <div className="brief-card-heading"><span className="brief-step">02</span><div><h2 id="inferred-requirements-title">Architecture requirements</h2><p>Agent-inferred from the current components and connections.</p></div></div>
-              <button type="button" className="primary-btn compact" onClick={inferRequirementsFromArchitecture} disabled={inferringRequirements || nodes.length === 0} style={{ width: "100%", justifyContent: "center", marginBottom: 12 }}><Sparkles size={13} /> {inferringRequirements ? "ANALYZING ARCHITECTURE…" : inferredRequirements ? "RE-ANALYZE CURRENT ARCHITECTURE" : "INFER REQUIREMENTS"}</button>
-              {requirementsError && <p role="alert" className="requirements-save-error">{requirementsError}</p>}
-              {!inferredRequirements && !inferringRequirements && <p className="github-muted">Run the agent to infer likely functional capabilities and non-functional quality needs from the current diagram. Results are saved with this project.</p>}
-              {inferredRequirements && <>
-                <p style={{ color: "#8c9aa8", fontSize: 11, lineHeight: 1.5 }}>{inferredRequirements.summary}</p>
-                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.functionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.functionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No functional requirements could be inferred.</p>}</div>
-                <div style={{ marginTop: 14 }}><h3 style={{ color: "#b9dff0", fontSize: 11, margin: "0 0 8px" }}>NON-FUNCTIONAL REQUIREMENTS</h3>{inferredRequirements.nonFunctionalRequirements.length ? <ol style={{ paddingLeft: 18, margin: 0, color: "#c5d1da", fontSize: 11, lineHeight: 1.65 }}>{inferredRequirements.nonFunctionalRequirements.map((item, index) => <li key={index} style={{ marginBottom: 6 }}>{item}</li>)}</ol> : <p className="github-muted">No non-functional requirements could be inferred.</p>}</div>
-                {inferredRequirements.assumptions.length > 0 && <details style={{ marginTop: 12, color: "#8c9aa8", fontSize: 11 }}><summary style={{ cursor: "pointer" }}>Assumptions and unknowns</summary><ul style={{ paddingLeft: 18, lineHeight: 1.6 }}>{inferredRequirements.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul></details>}
-                <p style={{ color: "#6f8190", fontSize: 10, lineHeight: 1.5, marginTop: 12 }}>These are agent-inferred candidates, not guarantees. Confirm them against the product brief and validate measurable targets before treating them as requirements.</p>
-              </>}
-            </section>
-            <div className="requirements-status" role="status"><div className="requirements-metric"><strong>{nodes.length}</strong><span>components</span></div><div className="requirements-metric"><strong>{edges.length}</strong><span>connections</span></div><small className={saveStatus === "error" ? "requirements-save-error" : ""}><span className={saveStatus === "error" ? "save-indicator save-indicator-error" : "save-indicator"} />{saveStatus === "saving" ? "Saving changes…" : saveStatus === "error" ? "Save needs attention" : "Autosaved"}</small></div>
-          </>}
-          </div>}
-        </aside>
-        {activeWorkspaceSection !== "canvas" && <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
-          <div className="workspace-nav-content">
-          {activeWorkspaceSection === "requirements" && <>
+                    {activeWorkspaceSection === "requirements" && <>
             <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
             <section className="brief-card" aria-labelledby="brief-identity-title">
               <div className="brief-card-heading"><span className="brief-step">01</span><div><h2 id="brief-identity-title">Project identity</h2><p>Give this architecture a clear name.</p></div></div>
@@ -1089,14 +1061,7 @@ function ParticipantEditor({
                   
                 />
               </div>
-              <button
-                className="primary-btn catalog-add-btn"
-                
-                onClick={() => addCatalogNode(selectedCatalogItem, undefined, catalogNotes)}
-              >
-                <PlusCircle size={14} /> ADD COMPONENT TO CANVAS
-              </button>
-              <div className="catalog-hint">You can also drag this item from the palette directly onto the canvas.</div>
+              <div className="catalog-hint">Double-click this component in the library to add it to the canvas, or drag it directly onto the canvas.</div>
             </div>
           ) : selected ? (
             <>
@@ -1139,7 +1104,7 @@ function ParticipantEditor({
             <div className="empty-inspector">
               <BookOpen size={18} />
               <p>Select a component from the palette to learn about it, or select a canvas component to edit it.</p>
-              <p className="catalog-hint">Clicking a palette item only opens its details. Use ADD COMPONENT or drag it onto the canvas to place it.</p>
+              <p className="catalog-hint">Double-click a component in the library to add it, or drag it onto the canvas.</p>
             </div>
           )}
 
