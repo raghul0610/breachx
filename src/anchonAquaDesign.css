@@ -194,3 +194,71 @@ button, input, textarea, select { font-family: var(--anchon-font-ui); }
 @media (prefers-reduced-motion: reduce) {
   .dashboard-nav button,.project-dashboard .project-card,.auth-primary { transition: none !important; }
 }
+
+/* Keep the architecture editor on the same Aqua accent system. */
+.app-shell:not(.project-dashboard) {
+  --ws-bg: #0b1114 !important;
+  --ws-panel: #111a1e !important;
+  --ws-panel-raised: #172327 !important;
+  --ws-line: #26363a !important;
+  --ws-text: #edf5f4 !important;
+  --ws-muted: #9aacab !important;
+  --ws-subtle: #718584 !important;
+  --ws-accent: #55d6c2 !important;
+  background: #0b1114 !important;
+  color: #edf5f4 !important;
+  font-family: var(--anchon-font-ui) !important;
+}
+.app-shell:not(.project-dashboard) .topbar,
+.app-shell:not(.project-dashboard) .canvas-toolbar { background: #111a1e !important; border-color: #26363a !important; }
+.app-shell:not(.project-dashboard) .sidebar { background: #10191c !important; }
+.app-shell:not(.project-dashboard) .left-panel,
+.app-shell:not(.project-dashboard) .right-panel { border-color: #26363a !important; }
+.app-shell:not(.project-dashboard) .section-kicker,
+.app-shell:not(.project-dashboard) .eyebrow,
+.app-shell:not(.project-dashboard) .node-category,
+.app-shell:not(.project-dashboard) .catalog-detail-block strong { color: #79d7c9 !important; }
+.app-shell:not(.project-dashboard) .primary-btn,
+.app-shell:not(.project-dashboard) .catalog-add-btn {
+  border-color: #55d6c2 !important; background: #55d6c2 !important; color: #08201d !important;
+  border-radius: 7px !important; font-family: var(--anchon-font-ui) !important;
+}
+.app-shell:not(.project-dashboard) .primary-btn:hover,
+.app-shell:not(.project-dashboard) .catalog-add-btn:hover { border-color: #76e4d2 !important; background: #76e4d2 !important; }
+.app-shell:not(.project-dashboard) .nav-btn,
+.app-shell:not(.project-dashboard) .toolbar-actions button,
+.app-shell:not(.project-dashboard) .icon-btn,
+.app-shell:not(.project-dashboard) .outline-btn {
+  border-color: #35494d !important; background: #172327 !important; color: #b6c9c5 !important;
+  font-family: var(--anchon-font-ui) !important;
+}
+.app-shell:not(.project-dashboard) .nav-btn:hover,
+.app-shell:not(.project-dashboard) .toolbar-actions button:hover { border-color: #55d6c2 !important; color: #8de5d7 !important; }
+.app-shell:not(.project-dashboard) .workspace-nav-item.is-active {
+  border-color: rgba(85,214,194,.22) !important; background: rgba(85,214,194,.1) !important; color: #a5eee2 !important;
+}
+.app-shell:not(.project-dashboard) .workspace-nav-item.is-active svg { color: #55d6c2 !important; }
+.app-shell:not(.project-dashboard) .catalog-item,
+.app-shell:not(.project-dashboard) .feature-card,
+.app-shell:not(.project-dashboard) .panel,
+.app-shell:not(.project-dashboard) .suggested-component,
+.app-shell:not(.project-dashboard) .json-view {
+  border-color: #26363a !important; background: #141f22 !important; color: #eaf4f2 !important;
+}
+.app-shell:not(.project-dashboard) .catalog-item:hover,
+.app-shell:not(.project-dashboard) .catalog-item-active { border-color: rgba(85,214,194,.55) !important; background: #192a2d !important; }
+.app-shell:not(.project-dashboard) .field input,
+.app-shell:not(.project-dashboard) .field textarea,
+.app-shell:not(.project-dashboard) select,
+.app-shell:not(.project-dashboard) input,
+.app-shell:not(.project-dashboard) textarea {
+  border-color: #35494d !important; background: #0c1518 !important; color: #edf5f4 !important;
+  font-family: var(--anchon-font-ui) !important;
+}
+.app-shell:not(.project-dashboard) .field input:focus,
+.app-shell:not(.project-dashboard) .field textarea:focus,
+.app-shell:not(.project-dashboard) select:focus { border-color: #55d6c2 !important; box-shadow: 0 0 0 3px rgba(85,214,194,.11) !important; }
+.app-shell:not(.project-dashboard) .bp-node { border-color: #35494d !important; background: #172327 !important; color: #edf5f4 !important; }
+.app-shell:not(.project-dashboard) .bp-node.selected { border-color: #55d6c2 !important; box-shadow: 0 0 0 2px rgba(85,214,194,.2),0 12px 28px rgba(0,0,0,.32) !important; }
+.app-shell:not(.project-dashboard) .handle { background: #55d6c2 !important; }
+.app-shell:not(.project-dashboard) .status-pill { border-color: rgba(85,214,194,.25) !important; background: rgba(85,214,194,.08) !important; color: #8de1d4 !important; }
