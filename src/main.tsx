@@ -4,6 +4,7 @@ import App from "./App";
 import "./styles.css";
 import "./anchonProfessionalDesign.css";
 import "./anchonLandingFoundation.css";
+import "./anchonAquaDesign.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
