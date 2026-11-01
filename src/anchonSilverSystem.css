@@ -469,3 +469,57 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 .iad-node { --node-accent:#cbd2d8 !important; }
 .iad-node .iad-node-pulse { background:#e3e8ec!important; box-shadow:0 0 9px rgba(226,233,238,.35)!important; }
 .iad-node.is-selected { border-color:#e4e9ec!important; box-shadow:0 0 20px rgba(220,226,231,.12)!important; }
+
+/* Minimal project cards with context-menu actions. */
+.project-dashboard .project-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;gap:11px!important}
+.project-dashboard .project-card{min-height:104px!important;padding:13px 14px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;background:linear-gradient(145deg,#20262b,#171c20)!important;border:1px solid #3c454d!important;border-radius:9px!important;cursor:context-menu;transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease!important}
+.project-dashboard .project-card:hover{border-color:#8d99a2!important;transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,0,0,.2)!important}
+.project-card-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+.project-dashboard .project-card h2{margin:0!important;min-width:0;overflow-wrap:anywhere;font:600 12px/1.4 var(--anchon-font-ui)!important;letter-spacing:-.01em!important;color:#eef1f3!important}
+.project-last-opened{margin:7px 0 0!important;color:#929da5!important;font:10px/1.4 var(--anchon-font-ui)!important}
+.project-play-button{display:grid;place-items:center;flex:none;width:30px;height:30px;padding:0!important;border:1px solid #56616a!important;border-radius:7px!important;background:linear-gradient(145deg,#3a434a,#252c31)!important;color:#f0f3f5!important;cursor:pointer;transition:all .18s ease!important}
+.project-play-button:hover{background:linear-gradient(110deg,#f6f8f9,#aeb8c0)!important;color:#111619!important;border-color:#e2e7ea!important;box-shadow:0 0 14px rgba(226,233,238,.2)!important}
+.project-context-menu{position:fixed;z-index:1200;min-width:176px;padding:6px;border:1px solid #59646d;border-radius:9px;background:linear-gradient(145deg,#252c31,#171c20);box-shadow:0 16px 40px rgba(0,0,0,.48);color:#edf0f2}
+.project-context-title{padding:7px 9px 9px;border-bottom:1px solid #3d474f;margin-bottom:4px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#aeb8c0;font-size:10px}
+.project-context-menu button{display:flex;align-items:center;gap:9px;width:100%;padding:8px 9px;border:0!important;border-radius:6px!important;background:transparent!important;color:#e0e5e8!important;text-align:left;font:500 11px var(--anchon-font-ui)!important;cursor:pointer}
+.project-context-menu button:hover{background:#3a434a!important;color:#fff!important}
+.project-context-menu .project-context-delete{color:#d7c5c5!important}
+.project-dashboard .project-card-top,.project-dashboard .project-description,.project-dashboard .project-updated,.project-dashboard .project-actions{display:none!important}
+.project-dashboard .project-grid{margin-top:16px!important}
+.project-dashboard .project-storage-note{margin-top:16px!important}
+
+/* Consistent neutral-metal surfaces for project, learn, guide, settings and help. */
+.app-shell,.app-section-shell{--anchon-silver-0:#f6f8f9;--anchon-silver-1:#dce2e6;--anchon-silver-2:#aeb8c0;--anchon-silver-3:#737f89;color:#e9edf0!important;font-family:var(--anchon-font-ui,Inter,ui-sans-serif,system-ui,sans-serif)!important}
+.dashboard-brand-mark,.requirements-mark{display:grid;place-items:center;color:#e7ecef!important;background:transparent!important;border:0!important}
+.dashboard-brand-mark svg,.requirements-mark svg{filter:drop-shadow(0 0 5px rgba(230,237,242,.32)) drop-shadow(0 0 12px rgba(190,202,211,.18))}
+.dashboard-brand strong,.topbar>div>strong,.workspace-nav-brand .section-kicker{color:#eef1f3!important}
+.app-section-shell .app-section-content{background:transparent!important}
+.app-section-shell .app-learn-page h1,.app-section-shell .workspace-info-panel>h2,.app-shell .workspace-info-panel>h2,.app-shell .app-learn-lesson h2,.app-shell .app-learn-lesson h3,.app-shell .guide-step-card h3,.app-shell .settings-card-title h3,.app-shell .learn-reference-card h3{color:transparent!important;background:linear-gradient(105deg,#fff 0%,#aeb8c0 36%,#f6f8f9 60%,#89949d 82%,#fff 100%)!important;background-clip:text!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important;filter:drop-shadow(0 0 9px rgba(220,228,234,.16))}
+.app-shell .workspace-page-content,.app-shell .app-section-content,.app-section-shell .project-dashboard-content{background:radial-gradient(ellipse at 50% 0%,rgba(190,202,211,.055),transparent 46%),#0d1115!important}
+.app-shell .guide-step-card,.app-shell .guide-ai-card,.app-shell .settings-card,.app-shell .learn-reference-card,.app-shell .app-learn-lesson,.app-shell .app-learn-topics,.app-shell .share-preview-card,.app-shell .share-action-card,.app-shell .workspace-note-card{background:linear-gradient(145deg,#20262b,#151a1e)!important;border:1px solid #3e4850!important;color:#dce2e6!important;box-shadow:inset 0 1px rgba(255,255,255,.025)!important}
+.app-shell .guide-step-card>span,.app-shell .settings-card-title>svg,.app-shell .workspace-note-card>svg,.app-shell .share-action-card>svg{color:#dce2e6!important}
+.app-shell .guide-step-card p,.app-shell .guide-ai-card p,.app-shell .workspace-page-lead,.app-shell .app-learn-lesson p,.app-shell .app-learn-lesson li,.app-shell .settings-card p,.app-shell .settings-help,.app-shell .workspace-note-card p,.app-shell .share-preview-card p{color:#aeb8c0!important}
+.app-shell .app-learn-topics button{color:#b9c2c9!important;border-color:#3d474f!important;background:#1a2024!important}
+.app-shell .app-learn-topics button.is-active,.app-shell .app-learn-topics button:hover{color:#f3f5f6!important;background:#343d44!important;border-color:#9aa5ad!important}
+.app-shell .app-learn-topics button span,.app-shell .learn-eyebrow{color:#c4cdd3!important}
+.app-shell .settings-card input,.app-shell .settings-card textarea,.app-shell input,.app-shell textarea,.app-shell select{color:#edf0f2!important;background:#111619!important;border-color:#46515a!important}
+.app-shell .settings-card input:focus,.app-shell input:focus,.app-shell textarea:focus,.app-shell select:focus{border-color:#c4cdd3!important;box-shadow:0 0 0 2px rgba(220,228,234,.1)!important;outline:none}
+.app-shell button:not(.tutorial-scrim):not(.project-play-button),.app-shell a{font-family:var(--anchon-font-ui,Inter,ui-sans-serif,system-ui,sans-serif)}
+.app-shell .primary-btn,.app-shell .secondary-btn,.app-shell .guide-actions button,.app-shell .settings-card button,.app-shell .app-learn-pagination button,.app-shell .share-action-card{border-color:#59646d!important;border-radius:7px!important}
+.app-shell .primary-btn,.app-shell .guide-actions .primary-btn{color:#111619!important;background:linear-gradient(110deg,#f4f6f7,#b7c1c8,#e8ecef)!important;border-color:#dce2e6!important}
+.app-shell .secondary-btn,.app-shell .guide-actions .secondary-btn,.app-shell .app-learn-pagination button,.app-shell .settings-card button{color:#e1e6e9!important;background:linear-gradient(145deg,#343d44,#252c31)!important;border:1px solid #59646d!important}
+.app-shell .settings-card button:hover,.app-shell .app-learn-pagination button:hover{background:linear-gradient(110deg,#e9edf0,#aeb8c0)!important;color:#101418!important}
+.app-shell .tutorial-card{color:#e9edf0!important;background:linear-gradient(145deg,#252c31,#151a1e)!important;border:1px solid #606c75!important;box-shadow:0 24px 80px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.04)!important}
+.app-shell .tutorial-card-top,.app-shell .tutorial-progress-track{border-color:#414b53!important}
+.app-shell .tutorial-card-top>span,.app-shell .tutorial-card h2{color:#eef1f3!important}
+.app-shell .tutorial-card p,.app-shell .tutorial-keyboard-hint,.app-shell .tutorial-dismiss-option{color:#b4bec5!important}
+.app-shell .tutorial-progress-label,.app-shell .tutorial-action-note{color:#dce2e6!important;background:#343d44!important;border-color:#606c75!important}
+.app-shell .tutorial-progress-track>span{background:linear-gradient(90deg,#f5f7f8,#aeb8c0)!important}
+.app-shell .tutorial-card button{color:#e8ecef!important;border-color:#5a656e!important;background:#2c343a!important}
+.app-shell .tutorial-card .tutorial-primary-button{color:#111619!important;background:linear-gradient(110deg,#f6f8f9,#aeb8c0)!important;border-color:#e1e6e9!important}
+.app-shell .tutorial-help-button{color:#dce2e6!important;background:#252c31!important;border:1px solid #58636c!important;box-shadow:0 5px 18px rgba(0,0,0,.3)!important}
+.app-shell .tutorial-help-button:hover{color:#fff!important;border-color:#b7c1c8!important}
+.app-shell .workspace-page-content:before{background:linear-gradient(90deg,transparent,rgba(220,228,234,.28),transparent)!important}
+.app-shell .workspace-info-panel a,.app-shell .learn-reference-card a{color:#dce2e6!important;border-color:#7b8790!important}
+.app-shell .workspace-info-panel a:hover,.app-shell .learn-reference-card a:hover{color:#fff!important}
+@media(prefers-reduced-motion:reduce){.project-dashboard .project-card,.project-play-button{transition:none!important}}
