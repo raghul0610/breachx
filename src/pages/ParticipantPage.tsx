@@ -202,7 +202,7 @@ function ParticipantEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [selectedCatalogTypeKey, setSelectedCatalogTypeKey] = useState<string | null>(null);
-  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [requestTraceStep, setRequestTraceStep] = useState(-1);
@@ -1121,7 +1121,7 @@ function ParticipantEditor({
                 ? "Blueprint is ready to save."
                 : "Add an application description, 3 components and 2 connections to save."}
           </div>
-        </aside> : <div className="collapsed-panel-strip collapsed-panel-strip-right"><button className="panel-toggle-button" type="button" onClick={() => setRightPanelOpen(true)} aria-label="Open inspector sidebar" title="Open inspector sidebar"><PanelRightOpen size={16} /></button><span>INSPECTOR</span></div>}
+        </aside> : null}
       </div>
       {activeWorkspaceSection === "canvas" && !chatOpen && <button type="button" className="floating-ai-chat-trigger" style={{ left: `calc(50% + ${chatOffset.x}px)`, bottom: `calc(18vh - ${chatOffset.y}px)` }} onPointerDown={(event) => { chatDragRef.current = { pointerX: event.clientX, pointerY: event.clientY, originX: chatOffset.x, originY: chatOffset.y, moved: false }; event.currentTarget.setPointerCapture(event.pointerId); }} onPointerMove={(event) => { const drag = chatDragRef.current; if (!drag) return; const dx = event.clientX - drag.pointerX, dy = event.clientY - drag.pointerY; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) { const maxX = Math.max(0, window.innerWidth / 2 - 36); const baseBottom = window.innerHeight * 0.18; const minY = baseBottom - (window.innerHeight - 36); const maxY = baseBottom - 18; setChatOffset({ x: Math.max(-maxX, Math.min(maxX, drag.originX + dx)), y: Math.max(minY, Math.min(maxY, drag.originY + dy)) }); } }} onPointerUp={() => { const moved = chatDragRef.current?.moved ?? false; chatDragRef.current = null; if (!moved) setChatOpen(true); }} onPointerCancel={() => { chatDragRef.current = null; }} aria-expanded={chatOpen} aria-controls="floating-ai-chat-panel" aria-label="Open ANCHON assistant" title="Drag to move · Click to open">
         <span className="anchon-bubble-mark" aria-hidden="true"><AnchonLogo size={27} /></span>
