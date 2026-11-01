@@ -2703,3 +2703,9 @@ body, .app-shell, .home, .lp-root {
  .workspace-share-page .share-preview-card{align-items:flex-start;flex-direction:column}
  .share-stats{grid-template-columns:auto auto}
 }
+
+.learn-reference-card{display:grid;gap:10px;margin:18px 0 8px;padding:20px;border:1px solid #342b45;border-radius:15px;background:#11101a}
+.learn-reference-card h3{margin:0;color:#eee8fb;font-size:17px}
+.learn-reference-card p{margin:0;color:#9f95ad;font-size:12px;line-height:1.65}
+.learn-reference-card a{width:fit-content;color:#cbb9fa;font-size:12px;text-decoration:none;border-bottom:1px solid #675385;padding:4px 0}
+.learn-reference-card a:hover{color:#fff;border-color:#bda7ee}
