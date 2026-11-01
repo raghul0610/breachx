@@ -640,10 +640,11 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
   border:1px solid #3a454d!important; border-radius:16px!important;
   background:linear-gradient(155deg,rgba(25,31,36,.985),rgba(16,21,25,.985))!important;
   box-shadow:0 20px 56px rgba(0,0,0,.56),inset 0 1px rgba(255,255,255,.035)!important;
-  transform:translateX(0)!important;
-  transition:opacity .18s ease,transform .2s ease,visibility .18s ease!important;
+  transform:translateX(calc(-100% + 12px))!important;
+  transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s ease!important;
 }
-.app-shell .workspace-navigation.is-open { display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:translateX(0)!important; }
+.app-shell .workspace-navigation.is-open,
+.app-shell .workspace-navigation:hover { display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:translateX(0)!important;box-shadow:0 16px 42px rgba(0,0,0,.48)!important; }
 .app-shell .workspace-navigation.is-collapsed {
   display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:none!important;
   height:auto!important;min-height:0!important;max-height:calc(100dvh - 132px)!important;
