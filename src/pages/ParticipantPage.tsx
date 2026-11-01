@@ -802,7 +802,8 @@ function ParticipantEditor({
               <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
             </button>)}
           </nav>
-          <div className="workspace-nav-divider" />
+        </aside>
+        <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
           <div className="workspace-nav-content">
           {(activeWorkspaceSection === "canvas" || activeWorkspaceSection === "requirements") && <>
             <div className="requirements-panel-header"><div className="requirements-mark"><FileText size={16} /></div><div><div className="section-kicker">PROJECT BRIEF</div><p>Start with the problem. Shape the system around it.</p></div></div>
@@ -856,7 +857,7 @@ function ParticipantEditor({
           {activeWorkspaceSection === "share" && <WorkspaceShare applicationName={applicationName} applicationDescription={applicationDescription} notes={notes} nodes={nodes} edges={edges} onExport={() => exportArchitecturePdf(applicationName, applicationDescription, notes, nodes, edges)} />}
           {activeWorkspaceSection === "settings" && <WorkspaceSettings />}
           </div>
-        </aside>
+        </main>
         {!leftPanelOpen && <button type="button" className="workspace-sidebar-reopen" onClick={() => setLeftPanelOpen(true)} aria-label="Open workspace navigation" title="Open navigation"><PanelLeftOpen size={16} /></button>}
         <div className={`panel-resizer panel-resizer-vertical panel-resizer-left ${leftPanelOpen ? "" : "is-hidden"}`} role="separator" aria-label="Resize requirements sidebar" aria-orientation="vertical" title="Drag to resize sidebar" onPointerDown={(event) => { event.preventDefault(); setResizeDrag({ type: "left", start: event.clientX, initial: leftPanelWidth }); }}><GripVertical size={14} /></div>
 
