@@ -49,6 +49,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
     try {
       setBusy(true);
       const project = createProject();
+      markOpened(project.id);
       refresh();
       onOpenProject(project.id);
     } catch (cause) {
