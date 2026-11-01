@@ -38,6 +38,7 @@ function AppContent() {
         projectId={selectedProjectId}
         initialSection={initialWorkspaceSection}
         onBack={() => setMode("projects")}
+        onOpenSettings={() => setMode("settings")}
         onSubmitted={() => setMode("projects")}
       />
     );
