@@ -1183,6 +1183,15 @@ function ParticipantEditor({
             }}
           />
       </div>}
+      {shortcutsOpen && <div className="workspace-shortcuts-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShortcutsOpen(false); }}>
+        <section className="workspace-shortcuts-dialog" role="dialog" aria-modal="true" aria-labelledby="workspace-shortcuts-title">
+          <div className="workspace-shortcuts-heading"><div><span className="section-kicker">EDITOR REFERENCE</span><h2 id="workspace-shortcuts-title">Keyboard shortcuts</h2></div><button type="button" onClick={() => setShortcutsOpen(false)} aria-label="Close shortcuts"><X size={16}/></button></div>
+          <div className="workspace-shortcuts-list">
+            {[["Open component library","Ctrl / ⌘","K"],["Duplicate selected components","Ctrl / ⌘","D"],["Undo","Ctrl / ⌘","Z"],["Redo","Ctrl / ⌘","Shift + Z"],["Select all components","Ctrl / ⌘","A"],["Delete selection","—","Delete"],["Fit architecture to view","—","F"],["Auto-arrange architecture","—","L"],["Clear selection / close","—","Esc"],["Show this reference","—","?"]].map(([label,modifier,key])=><div className="workspace-shortcut-row" key={label}><span>{label}</span><span className="workspace-shortcut-keys">{modifier !== "—" && <kbd>{modifier}</kbd>}<kbd>{key}</kbd></span></div>)}
+          </div>
+          <p>Shortcuts are disabled while typing in an input or editor field.</p>
+        </section>
+      </div>}
       <InteractiveTutorial page="workspace" onStepChange={handleTutorialStepChange} />
     </div>
   );
