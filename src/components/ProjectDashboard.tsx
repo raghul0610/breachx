@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Copy, FolderPlus, Github, Pencil, Plus, Trash2, Workflow } from "lucide-react";
+import { ArrowLeft, BookOpen, Copy, FolderPlus, Github, Layers3, Pencil, Plus, Settings, Sparkles, Trash2, Workflow } from "lucide-react";
 import {
   createProject,
   deleteProject,
@@ -14,7 +14,7 @@ import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
 import { ShapeGridBackground } from "./ShapeGridBackground";
 
-export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void; onOpenProject: (projectId: string) => void }) {
+export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection }: { onBack: () => void; onOpenProject: (projectId: string) => void; onOpenWorkspaceSection: (projectId: string, section: "learn" | "guide" | "settings") => void }) {
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -91,6 +91,19 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
   return (
     <div className="app-shell project-dashboard">
       <ShapeGridBackground />
+      <aside className="dashboard-sidebar" aria-label="Main navigation">
+        <a className="dashboard-brand" href="#" onClick={(event) => { event.preventDefault(); onBack(); }} aria-label="ANCHON home"><span className="dashboard-brand-mark"><Layers3 size={19} /></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></a>
+        <div className="dashboard-nav-label">WORKSPACE</div>
+        <nav className="dashboard-nav">
+          <button type="button" className="is-active" aria-current="page"><Layers3 size={17} /><span>Projects</span><span className="dashboard-nav-count">{projects.length}</span></button>
+          <button type="button" disabled={!projects.length} onClick={() => projects[0] && onOpenWorkspaceSection(projects[0].id, "learn")}><BookOpen size={17} /><span>Learn</span></button>
+          <button type="button" disabled={!projects.length} onClick={() => projects[0] && onOpenWorkspaceSection(projects[0].id, "guide")}><Sparkles size={17} /><span>Guide</span></button>
+        </nav>
+        <div className="dashboard-sidebar-spacer" />
+        <div className="dashboard-nav dashboard-nav-bottom"><button type="button" disabled={!projects.length} onClick={() => projects[0] && onOpenWorkspaceSection(projects[0].id, "settings")}><Settings size={17} /><span>Settings</span></button></div>
+        <div className="dashboard-sidebar-footer"><span className="dashboard-status-dot" /> Private workspace</div>
+      </aside>
+      <div className="dashboard-main">
       <header className="topbar">
         <button className="nav-btn" onClick={onBack}><ArrowLeft size={14} /> HOME</button>
         <div><strong>ANCHON</strong><span className="topbar-sub"> // PROJECT WORKSPACE</span></div>
@@ -147,6 +160,7 @@ export function ProjectDashboard({ onBack, onOpenProject }: { onBack: () => void
         )}
         <p className="project-storage-note">Cloud persistence is enabled. If a save fails, the cloud-sync banner at the top will show the error.</p>
       </main>
+      </div>
       <InteractiveTutorial page="dashboard" />
     </div>
   );
