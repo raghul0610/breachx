@@ -17,6 +17,7 @@ import { AnchonLogo } from "./AnchonLogo";
 
 export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection }: { onBack: () => void; onOpenProject: (projectId: string) => void; onOpenWorkspaceSection: (section: "learn" | "guide" | "settings") => void }) {
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
+  const [dashboardSidebarOpen, setDashboardSidebarOpen] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [dialog, setDialog] = useState<{ type: "rename"; project: ArchitectureProject; name: string } | { type: "delete"; project: ArchitectureProject } | null>(null);
@@ -119,15 +120,15 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
   };
 
   return (
-    <div className="app-shell project-dashboard">
+    <div className="app-shell project-dashboard" onMouseMove={(event) => { if (event.clientX <= 24) setDashboardSidebarOpen(true); }}>
       <ShapeGridBackground />
-      <aside className="dashboard-sidebar" aria-label="Main navigation">
+      <aside className={`dashboard-sidebar ${dashboardSidebarOpen ? "is-revealed" : ""}`} aria-label="Main navigation" onMouseLeave={(event) => { if (event.clientX > 24) setDashboardSidebarOpen(false); }}>
         <a className="dashboard-brand" href="#" onClick={(event) => { event.preventDefault(); onBack(); }} aria-label="ANCHON home"><span className="dashboard-brand-mark"><AnchonLogo size={25} /></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></a>
         <div className="dashboard-nav-label">WORKSPACE</div>
         <nav className="dashboard-nav">
           <button type="button" className="is-active" aria-current="page"><Layers3 size={17} /><span>Projects</span><span className="dashboard-nav-count">{projects.length}</span></button>
-          <button type="button" onClick={() => openWorkspaceSection("learn")}><BookOpen size={17} /><span>Learn</span></button>
-          <button type="button" onClick={() => openWorkspaceSection("guide")}><Sparkles size={17} /><span>Guide</span></button>
+          <button type="button" onClick={() => window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/system-design-learning-guide.md", "_blank", "noopener,noreferrer")}><BookOpen size={17} /><span>Learn</span></button>
+          <button type="button" onClick={() => window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/anchon-user-guide.md", "_blank", "noopener,noreferrer")}><Sparkles size={17} /><span>Guide</span></button>
         </nav>
         <div className="dashboard-sidebar-spacer" />
         <div className="dashboard-nav dashboard-nav-bottom"><button type="button" onClick={() => openWorkspaceSection("settings")}><Settings size={17} /><span>Settings</span></button></div>
