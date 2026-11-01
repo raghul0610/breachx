@@ -213,6 +213,10 @@ function ParticipantEditor({
   const [componentLibraryOpen, setComponentLibraryOpen] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
   const [componentCategoryFilter, setComponentCategoryFilter] = useState("all");
+  const [libraryActiveCategory, setLibraryActiveCategory] = useState("AI / ML");
+  const [activeWorkspaceSection, setActiveWorkspaceSection] = useState<"requirements" | "learn" | "guide" | "share" | "settings">("requirements");
+  const [activeLearnTopic, setActiveLearnTopic] = useState("Introduction");
+  const [learnSelectedComponent, setLearnSelectedComponent] = useState<string | null>(null);
   const [componentGroupBy, setComponentGroupBy] = useState<"layer" | "category">("category");
   const [componentSort, setComponentSort] = useState<"default" | "name" | "category">("default");
   const [chatOffset, setChatOffset] = useState({ x: 0, y: 0 });
