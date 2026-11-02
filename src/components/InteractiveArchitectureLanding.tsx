@@ -58,22 +58,18 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
   const traceRunning = traceStep >= 0 && traceStep < 5;
 
   useEffect(() => {
-    let shineTimer: number;
-    let cooldownTimer: number;
-    const scheduleShine = () => {
-      shineTimer = window.setTimeout(() => {
-        setAutomaticShine(true);
-        cooldownTimer = window.setTimeout(() => {
-          setAutomaticShine(false);
-          scheduleShine();
-        }, 1250);
-      }, 6000);
-    };
-    scheduleShine();
-    return () => {
-      window.clearTimeout(shineTimer);
-      window.clearTimeout(cooldownTimer);
-    };
+    const shineTimer = window.setInterval(() => {
+      setAutomaticShine(true);
+      window.setTimeout(() => setAutomaticShine(false), 1050);
+    }, 3000);
+    return () => window.clearInterval(shineTimer);
+  }, []);
+
+  useEffect(() => {
+    setCompleted([]);
+    setTraceStep(0);
+    setSelected("client");
+    setShowMission(true);
   }, []);
 
   useEffect(() => {
