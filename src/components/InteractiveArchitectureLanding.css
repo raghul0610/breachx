@@ -553,3 +553,41 @@
 @media(prefers-reduced-motion:reduce) {
   .iad-root .iad-ghost-fibers { opacity:.48; }
 }
+
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap");
+
+/* ANCHON graphite refinement: let the animated background remain visible. */
+.iad-root { background:#080b0d!important;color:#edf0f2!important; }
+.iad-atmosphere { background:linear-gradient(180deg,rgba(8,11,13,.24),rgba(8,11,13,.58))!important; }
+.iad-grid,.iad-orbit,.iad-orbit-two { opacity:.08!important; }
+.iad-hero,.iad-brandline,.iad-spiral-section,.iad-bottom,.iad-footnote { border:0!important; }
+.iad-spiral-section { padding-top:28px!important; }
+.iad-bottom { padding-top:28px!important; }
+.iad-footnote { padding-top:12px!important; }
+.iad-lab { border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;overflow:visible!important; }
+.iad-lab-top,.iad-inspector { border-color:transparent!important;background:transparent!important; }
+.iad-canvas { background:transparent!important; }
+.iad-canvas:before { opacity:.08!important; }
+.iad-node { background:rgba(20,25,29,.16)!important;border-color:rgba(188,197,197,.28)!important;box-shadow:none!important;backdrop-filter:blur(3px); }
+.iad-node:hover,.iad-node.is-selected,.iad-node.is-tracing { background:rgba(188,197,197,.07)!important;border-color:rgba(220,226,230,.72)!important;box-shadow:0 0 24px rgba(220,226,230,.1)!important; }
+.iad-node-icon,.iad-inspector-icon { background:rgba(188,197,197,.07)!important;border-color:rgba(188,197,197,.2)!important;color:#cbd2d6!important; }
+.iad-node-top,.iad-node strong,.iad-inspector-copy h2 { color:#e4e8eb!important; }
+.iad-node-sub,.iad-live-status,.iad-inspector-copy p { color:#aab4bb!important; }
+.iad-node-ports i { background:rgba(8,11,13,.72)!important; }
+.iad-wire-base { stroke:rgba(188,197,197,.35)!important; }
+.iad-wire-flow { stroke:#dce2e6!important;filter:drop-shadow(0 0 5px rgba(220,226,230,.35))!important; }
+.iad-wire-label { background:rgba(12,16,19,.22)!important;border-color:rgba(188,197,197,.2)!important;color:#c4cbd0!important; }
+.iad-legend-dot,.iad-live-dot { background:#dce2e6!important;box-shadow:0 0 10px rgba(220,226,230,.4)!important; }
+.iad-design-spiral-wrap,.iad-design-spiral-aura,.iad-spiral-visual { border:0!important;background:transparent!important;box-shadow:none!important; }
+.iad-design-spiral-wrap { overflow:visible!important; }
+.iad-design-spiral .infinite-spiral__item { border-color:rgba(220,226,230,.18)!important;background:rgba(12,16,19,.12)!important;box-shadow:none!important; }
+.iad-design-spiral .infinite-spiral__item:after { background:transparent!important; }
+.iad-spiral-node { background:rgba(12,16,19,.12)!important;border-color:rgba(188,197,197,.24)!important;box-shadow:none!important;color:#dce2e6!important; }
+.iad-root :is(h1,h2,h3) { animation:iad-heading-sheen 3s ease-in-out infinite;text-shadow:0 0 22px rgba(220,226,230,.08); }
+.iad-headline-wrap h1.iad-brand-title { color:#f1f3f4!important;text-shadow:0 0 24px rgba(220,226,230,.12)!important; }
+.iad-headline-wrap h1.iad-brand-title.is-auto-shining { animation:iad-brand-shine 1.05s ease!important; }
+.iad-root :is(.iad-headline-wrap h1,.iad-design-copy h2,.iad-spiral-copy h2,.iad-bottom-copy h2) { font-family:"Barlow Condensed","Arial Narrow",sans-serif!important;font-weight:800!important;letter-spacing:-.025em!important;text-transform:uppercase; }
+.iad-overline,.iad-brandline,.iad-lab-index,.iad-live-status,.iad-canvas-meta,.iad-canvas-footer,.iad-node-top,.iad-node-sub,.iad-inspector-kicker,.iad-step-count,.iad-footnote,.iad-design-eyebrow,.iad-design-spiral-caption { font-family:"DM Mono",ui-monospace,monospace!important; }
+@keyframes iad-heading-sheen { 0%,72%,100%{text-shadow:0 0 8px rgba(220,226,230,.04)} 84%{text-shadow:0 0 24px rgba(220,226,230,.28),0 0 44px rgba(220,226,230,.12)} }
+@keyframes iad-brand-shine { 0%{filter:brightness(1);text-shadow:0 0 10px rgba(220,226,230,.08)} 45%{filter:brightness(1.55);text-shadow:0 0 34px rgba(240,244,246,.48),0 0 70px rgba(220,226,230,.22)} 100%{filter:brightness(1);text-shadow:0 0 10px rgba(220,226,230,.08)} }
+@media(prefers-reduced-motion:reduce) { .iad-root :is(h1,h2,h3),.iad-headline-wrap h1.iad-brand-title.is-auto-shining { animation:none!important; } }
