@@ -262,3 +262,16 @@
 @media(max-width:760px) {
   .project-dashboard .dashboard-sidebar { top:116px!important;bottom:10px!important;max-height:calc(100dvh - 126px)!important;width:min(280px,86vw)!important; }
 }
+
+/* Dashboard shares the landing page's full-viewport GhostFibers atmosphere. */
+.app-shell.project-dashboard { position:relative!important;isolation:isolate!important;background:#080b0d!important;color:#edf0f2!important; }
+.project-dashboard > .project-dashboard-ghost-background { position:fixed!important;inset:0!important;z-index:0!important;overflow:hidden!important;pointer-events:none!important;opacity:.78; }
+.project-dashboard-ghost-fibers { position:absolute!important;inset:0!important;width:100%!important;height:100%!important; }
+.project-dashboard > :not(.project-dashboard-ghost-background) { position:relative;z-index:1; }
+.project-dashboard .topbar { background:rgba(8,11,13,.58)!important;border-bottom-color:transparent!important;backdrop-filter:blur(8px); }
+.project-dashboard-content { background:transparent!important; }
+.project-dashboard-hero { border-bottom-color:transparent!important; }
+.project-dashboard .github-connection-development,.project-dashboard .project-card,.project-dashboard .project-empty { background:rgba(18,23,27,.22)!important;border-color:rgba(188,197,197,.22)!important;box-shadow:none!important;backdrop-filter:blur(5px); }
+.project-dashboard .project-card:hover { background:rgba(188,197,197,.06)!important;border-color:rgba(220,226,230,.5)!important; }
+.project-dashboard :is(h1,h2,h3) { font-family:"Barlow Condensed","Arial Narrow",sans-serif!important;font-weight:750!important;letter-spacing:-.015em!important;text-transform:uppercase; }
+@media(prefers-reduced-motion:reduce) { .project-dashboard :is(h1,h2,h3) { animation:none!important; } }
