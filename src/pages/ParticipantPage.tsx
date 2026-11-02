@@ -20,7 +20,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Save, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Layers3, Save, Trash2, FileDown, BookOpen, PlusCircle, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, Sparkles, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { supabase } from "../lib/supabase";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
@@ -837,20 +837,15 @@ function ParticipantEditor({
 
       <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
         
-        <EdgeRevealSidebar className="sidebar left-panel requirements-panel workspace-navigation" isOpen={leftPanelOpen} label="Workspace navigation" onMouseLeave={(event) => { if (event.clientX > 24) setLeftPanelOpen(false); }}>
-          <div className="workspace-nav-brand">
-            <div className="requirements-mark"><AnchonLogo size={24} /></div>
-            <div><div className="section-kicker">DESIGN WORKSPACE</div><p>Build · Learn · Validate</p></div>
-            <button className="panel-toggle-button" type="button" onClick={() => setLeftPanelOpen(false)} aria-label="Collapse workspace navigation"><PanelLeftClose size={15} /></button>
-          </div>
-          <nav className="workspace-primary-nav" aria-label="Workspace sections">
-            <button type="button" className={`workspace-nav-item workspace-nav-canvas ${activeWorkspaceSection === "canvas" ? "is-active" : ""}`} onClick={() => { setChatOpen(false); setActiveWorkspaceSection("canvas"); }} aria-current={activeWorkspaceSection === "canvas" ? "page" : undefined}><Layers size={16} /><span><strong>Architecture canvas</strong><small>Return to your design</small></span></button>
+        <EdgeRevealSidebar className="sidebar left-panel requirements-panel workspace-navigation dashboard-sidebar" isOpen={leftPanelOpen} label="Workspace navigation" onMouseLeave={(event) => { if (event.clientX > 24) setLeftPanelOpen(false); }}>
+          <button type="button" className="dashboard-brand" onClick={onBack} aria-label="ANCHON projects"><span className="dashboard-brand-mark"><AnchonLogo size={25} /></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></button>
+          <div className="dashboard-nav-label">WORKSPACE</div>
+          <nav className="dashboard-nav" aria-label="Workspace sections">
+            <button type="button" className={`workspace-nav-canvas ${activeWorkspaceSection === "canvas" ? "is-active" : ""}`} onClick={() => { setChatOpen(false); setActiveWorkspaceSection("canvas"); }} aria-current={activeWorkspaceSection === "canvas" ? "page" : undefined}><Layers3 size={17} /><span>Projects</span><span className="dashboard-nav-count">1</span></button>
             {([
               { id: "learn", label: "Learn", icon: BookOpen, hint: "System design academy" },
               { id: "guide", label: "Guide", icon: Sparkles, hint: "How to use ANCHON" },
-              { id: "share", label: "Share", icon: Link2, hint: "Share your architecture" },
-              { id: "settings", label: "Settings", icon: Layers, hint: "Workspace preferences" },
-            ] as const).map((item) => <button key={item.id} type="button" className={`workspace-nav-item ${activeWorkspaceSection === item.id ? "is-active" : ""}`} onClick={() => {
+            ] as const).map((item) => <button key={item.id} type="button" className={`${activeWorkspaceSection === item.id ? "is-active" : ""}`} onClick={() => {
               if (item.id === "learn") {
                 window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/system-design-learning-guide.md", "_blank", "noopener,noreferrer");
                 return;
@@ -859,16 +854,13 @@ function ParticipantEditor({
                 window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/anchon-user-guide.md", "_blank", "noopener,noreferrer");
                 return;
               }
-              if (item.id === "settings") {
-                onOpenSettings();
-                return;
-              }
-              setChatOpen(false);
-              setActiveWorkspaceSection(item.id);
             }} aria-current={activeWorkspaceSection === item.id ? "page" : undefined}>
-              <item.icon size={16} /><span><strong>{item.label}</strong><small>{item.hint}</small></span>
+              <item.icon size={17} /><span>{item.label}</span>
             </button>)}
           </nav>
+          <div className="dashboard-sidebar-spacer" />
+          <div className="dashboard-nav dashboard-nav-bottom"><button type="button" className={activeWorkspaceSection === "settings" ? "is-active" : ""} onClick={onOpenSettings}><Layers size={17} /><span>Settings</span></button></div>
+          <div className="dashboard-sidebar-footer"><span className="dashboard-status-dot" /> Private workspace</div>
         </EdgeRevealSidebar>
           {activeWorkspaceSection !== "canvas" && <main className="workspace-page-content" aria-label={`${activeWorkspaceSection} workspace`}>
             <div className="workspace-nav-content">

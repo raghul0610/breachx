@@ -116,8 +116,16 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
     }
   };
 
-  const showProjectMenu = (project: ArchitectureProject, x: number, y: number) => {
-    setContextMenu({ project, x: Math.max(8, Math.min(x, window.innerWidth - 214)), y: Math.max(8, Math.min(y, window.innerHeight - 150)) });
+  const showProjectMenu = (project: ArchitectureProject, anchor: HTMLElement) => {
+    const bounds = anchor.getBoundingClientRect();
+    const menuWidth = 202;
+    const menuHeight = 154;
+    const left = Math.max(8, Math.min(bounds.left + 10, window.innerWidth - menuWidth - 8));
+    const below = bounds.bottom + 10;
+    const top = below + menuHeight <= window.innerHeight - 8
+      ? below
+      : Math.max(8, bounds.top - menuHeight - 10);
+    setContextMenu({ project, x: left, y: top });
   };
 
   const confirmDelete = async () => {
@@ -189,11 +197,11 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
         ) : (
           <section className="project-grid" aria-label="Saved architecture projects" data-tutorial="project-grid">
             {projects.map((project) => (
-              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); showProjectMenu(project, event.clientX, event.clientY); }} aria-label={`${project.applicationName}, right-click for project actions`}>
+              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); showProjectMenu(project, event.currentTarget); }} aria-label={`${project.applicationName}, right-click for project actions`}>
                 <div className="project-card-heading">
                   <h2>{project.applicationName}</h2>
                   <div className="project-card-actions">
-                    <button type="button" className="project-menu-trigger" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); const rect = event.currentTarget.getBoundingClientRect(); showProjectMenu(project, rect.right - 202, rect.bottom + 8); }} aria-label={`Actions for ${project.applicationName}`} title="Project actions"><MoreVertical size={17} /></button>
+                    <button type="button" className="project-menu-trigger" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); const card = event.currentTarget.closest<HTMLElement>(".project-card"); if (card) showProjectMenu(project, card); }} aria-label={`Actions for ${project.applicationName}`} title="Project actions"><MoreVertical size={17} /></button>
                     <button type="button" className="project-play-button" onClick={() => open(project.id)} aria-label={`Open ${project.applicationName}`} title="Open project"><Play size={14} fill="currentColor" /></button>
                   </div>
                 </div>

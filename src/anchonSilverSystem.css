@@ -1138,6 +1138,79 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
   background:#454b50!important;
 }
 
+/* Keep project actions directly beside the card that opened them. */
+.project-context-menu { position:fixed!important; }
+
+/* The judge dismiss control sits slightly below the header centerline. */
+.app-shell:not(.lp-root) .architecture-evaluation-header>button {
+  align-self:center!important;
+  transform:translateY(5px)!important;
+  background:#2c3337!important;
+  border-color:#59656d!important;
+  color:#f1f4f5!important;
+}
+.app-shell:not(.lp-root) .architecture-evaluation-header>button:hover {
+  transform:translateY(4px)!important;
+  background:#4a555b!important;
+  border-color:#dce2e6!important;
+}
+
+/* Project editor navigation uses the same sidebar composition as the dashboard. */
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar {
+  display:flex!important;
+  flex-direction:column!important;
+  width:280px!important;
+  min-width:280px!important;
+  padding:22px 13px 14px!important;
+  background:#13181c!important;
+  border:1px solid #30383f!important;
+  border-left:0!important;
+  border-radius:0 14px 14px 0!important;
+}
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-brand {
+  display:flex!important;
+  align-items:center!important;
+  gap:11px!important;
+  width:100%!important;
+  min-height:48px!important;
+  padding:0 9px 21px!important;
+  border:0!important;
+  border-bottom:1px solid #30383f!important;
+  background:transparent!important;
+  color:#edf0f2!important;
+  text-align:left!important;
+  cursor:pointer!important;
+}
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-brand-mark {
+  display:grid!important;
+  place-items:center!important;
+  width:34px!important;
+  height:34px!important;
+  flex:none!important;
+  border:1px solid #626d76!important;
+  border-radius:9px!important;
+  background:linear-gradient(145deg,#343c43,#1d2328)!important;
+}
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-brand>span:last-child { display:flex!important;flex-direction:column!important;gap:3px!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-brand strong { color:#edf0f2!important;font-size:11px!important;font-weight:600!important;letter-spacing:.08em!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-brand small { color:#87929a!important;font:500 8px var(--anchon-font-data)!important;letter-spacing:.1em!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-nav-label { margin:25px 10px 9px!important;color:#87929a!important;font:500 8px var(--anchon-font-data)!important;letter-spacing:.13em!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-nav { display:flex!important;flex-direction:column!important;gap:3px!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-nav button {
+  display:flex!important;align-items:center!important;gap:11px!important;width:100%!important;min-height:35px!important;padding:0 11px!important;
+  border:1px solid transparent!important;border-radius:6px!important;background:transparent!important;color:#aeb7be!important;
+  text-align:left!important;font:500 10px var(--anchon-font-ui)!important;cursor:pointer!important;
+}
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-nav button svg { flex:none!important;color:#929da5!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-nav button:hover { color:#f1f3f5!important;background:#242b30!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-nav button.is-active { color:#f2f4f6!important;background:linear-gradient(110deg,#30383e,#22282d)!important;border-color:#515c65!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-nav button.is-active svg { color:#f1f4f6!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-nav-count { margin-left:auto!important;color:#d4dbe0!important;font:500 8px var(--anchon-font-data)!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-sidebar-spacer { flex:1!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-nav-bottom { padding-top:12px!important;border-top:1px solid #30383f!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-sidebar-footer { display:flex!important;align-items:center!important;gap:8px!important;padding:18px 10px 3px!important;color:#87929a!important;font-size:9px!important; }
+.app-shell:not(.project-dashboard) .workspace-navigation.dashboard-sidebar .dashboard-status-dot { width:7px!important;height:7px!important;border-radius:50%!important;background:#cbd2d8!important;box-shadow:0 0 8px rgba(220,226,231,.3)!important; }
+
 
 /* One shared edge-reveal contract for dashboard and project navigation. */
 .edge-reveal-sidebar {
