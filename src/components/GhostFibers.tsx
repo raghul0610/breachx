@@ -1,5 +1,8 @@
 'use client';
 
+// @ts-nocheck
+// Upstream WebGL shader and render-loop internals use dynamic uniform maps.
+
 import { useEffect, useRef } from 'react';
 
 import './GhostFibers.css';
