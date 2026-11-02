@@ -1,5 +1,6 @@
 import { AnchonLogo } from "./AnchonLogo";
 import LiquidChrome from "./LiquidChrome";
+import InfiniteSpiral from "./InfiniteSpiral";
 import { useEffect, useState } from "react";
 import {
   ArrowDownRight, ArrowRight, Check, CircleDot, Database, GitBranch,
@@ -191,7 +192,35 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
           </article>
           <article className="iad-feature-card">
             <div className="iad-feature-card-top"><span>02 / DESIGN</span><Workflow size={17} /></div>
-            <div className="iad-feature-visual iad-mini-canvas" aria-hidden="true"><div className="iad-mini-edge edge-one" /><div className="iad-mini-edge edge-two" /><div className="iad-mini-edge edge-three" /><span className="iad-mini-node node-one"><Server size={14} /> API</span><span className="iad-mini-node node-two"><Workflow size={14} /> SERVICE</span><span className="iad-mini-node node-three"><Database size={14} /> DATA</span><span className="iad-mini-canvas-caption">CONNECTED COMPONENTS</span></div>
+            <div className="iad-feature-visual iad-mini-canvas iad-mini-spiral" aria-label="Animated spiral of ANCHON architecture component illustrations">
+              <InfiniteSpiral
+                className="iad-feature-spiral"
+                items={[
+                  { id: "api-gateway", src: "/architecture-nodes/api-gateway.svg", alt: "API gateway component" },
+                  { id: "application-service", src: "/architecture-nodes/application-service.svg", alt: "Application service component" },
+                  { id: "database", src: "/architecture-nodes/database.svg", alt: "Database component" },
+                  { id: "authentication", src: "/architecture-nodes/authentication.svg", alt: "Authentication component" },
+                  { id: "message-queue", src: "/architecture-nodes/message-queue.svg", alt: "Message queue component" },
+                  { id: "cache", src: "/architecture-nodes/cache.svg", alt: "Cache component" },
+                  { id: "load-balancer", src: "/architecture-nodes/load-balancer.svg", alt: "Load balancer component" },
+                  { id: "microservices", src: "/architecture-nodes/microservices.svg", alt: "Microservices component" },
+                ]}
+                animationMode="all"
+                speed={0.28}
+                radius={132}
+                cardWidth={124}
+                cardHeight={100}
+                verticalSpacing={50}
+                perspective={950}
+                cardRadius={9}
+                centerScale={1.18}
+                edgeBlur={2.5}
+                cardsPerTurn={8}
+                pauseOnHover
+                grayscale={0.12}
+              />
+              <span className="iad-mini-canvas-caption">LIVE COMPONENT SPIRAL · 08 NODE TYPES</span>
+            </div>
             <h3>Visual architecture canvas</h3><p>Arrange services, connect dependencies, and understand how the parts of your system work together.</p>
           </article>
           <article className="iad-feature-card">
