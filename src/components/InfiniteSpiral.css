@@ -46,3 +46,7 @@
 @media(prefers-reduced-motion:reduce) {
   .infinite-spiral__item { transition:none; }
 }
+
+/* Transparent spiral cards reveal the full-page animated fibers behind them. */
+.infinite-spiral__item { border-color:rgba(220,226,230,.16)!important;background:rgba(12,16,19,.12)!important;box-shadow:none!important; }
+.infinite-spiral__item:after { background:transparent!important; }

@@ -1,3 +1,4 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap");
 
 .iad-root{position:relative;isolation:isolate;min-height:100vh;overflow:hidden;padding:26px clamp(18px,5vw,76px) 22px;background:#08080d;color:#f5f2ff;font-family:"Manrope",Inter,sans-serif}
@@ -50,9 +51,9 @@
 .iad-root { padding-top:30px; }
 .iad-hero { min-height:410px;display:flex;flex-direction:column; }
 .iad-brandline { color:#a9a2bb; }
-.iad-headline-wrap { max-width:880px;margin:42px auto 36px; }
+.iad-headline-wrap { max-width:1100px;margin:42px auto 36px; }
 .iad-headline-wrap .iad-overline { margin-bottom:18px; }
-.iad-headline-wrap h1.iad-brand-title { margin:0;font-size:clamp(88px,18vw,210px);line-height:.82;font-weight:800;letter-spacing:.015em;color:#f7f3ff;text-shadow:0 0 70px rgba(196,181,253,.12); }
+.iad-headline-wrap h1.iad-brand-title { margin:0;font-size:clamp(100px,22vw,260px);line-height:.82;font-weight:800;letter-spacing:-.02em; }
 
 .iad-hero-tagline { margin:20px 0 9px;font-size:clamp(17px,2.3vw,25px);color:#e7e1f7;font-weight:600;letter-spacing:-.04em; }
 .iad-headline-wrap .iad-intro { max-width:520px; }
@@ -151,7 +152,7 @@
 .iad-orbit { border-color: rgba(190,198,208,.035); }
 .iad-lab {
   border-color: rgba(190,198,208,.16);
-  background: linear-gradient(145deg, rgba(13,15,17,.86), rgba(5,6,7,.91));
+  background: transparent;
   box-shadow: 0 26px 100px rgba(0,0,0,.48), inset 0 1px rgba(255,255,255,.025);
 }
 .iad-spiral-visual {
@@ -403,6 +404,11 @@
   box-shadow:0 9px 28px rgba(220,230,238,.16);
 }
 .iad-root .iad-design-cta:focus-visible { outline:2px solid #edf1f4;outline-offset:4px; }
+.iad-root .iad-design-folder { display:flex;justify-content:flex-start;min-height:360px;margin:6px 0 22px;transform:translateY(-56px); }
+.iad-root .iad-design-folder .folder-float { --folder-width:280px;--folder-height:170px;width:280px;height:360px; }
+.iad-root .iad-design-folder .folder-float__front strong { font-size:20px; }
+.iad-root .iad-design-folder .folder-float__item { max-width:180px;font-size:10px; }
+.iad-root .iad-design-actions { display:flex;align-items:flex-end;gap:24px;min-height:0; }
 @media(max-width:1000px) {
   .iad-root .iad-capabilities.iad-design-showcase {
     grid-template-columns:minmax(0,1fr) minmax(330px,.9fr);
@@ -423,6 +429,9 @@
   }
   .iad-root .iad-design-spiral-wrap { height:470px;margin:0 -10px; }
   .iad-root .iad-design-copy { max-width:none;padding:0 8px; }
+  .iad-root .iad-design-folder { min-height:318px;margin-top:8px;margin-bottom:18px;transform:translateY(-34px); }
+  .iad-root .iad-design-folder .folder-float { --folder-width:230px;--folder-height:142px;width:230px;height:318px; }
+  .iad-root .iad-design-actions { align-items:flex-start;gap:8px;flex-direction:column; }
   .iad-root .iad-design-copy>.iad-overline { margin-bottom:22px; }
   .iad-root .iad-design-copy>h2 { max-width:560px;font-size:clamp(42px,10vw,60px); }
   .iad-root .iad-design-description { font-size:14px; }
@@ -553,3 +562,110 @@
 @media(prefers-reduced-motion:reduce) {
   .iad-root .iad-ghost-fibers { opacity:.48; }
 }
+
+
+
+
+/* ANCHON graphite refinement: let the animated background remain visible. */
+.iad-root { background:#080b0d!important;color:#edf0f2!important;padding-top:88px!important; }
+.iad-atmosphere { background:linear-gradient(180deg,rgba(8,11,13,.12),rgba(8,11,13,.36))!important; }
+.iad-root .iad-ghost-fibers { opacity:.96!important; }
+.iad-root .iad-ghost-fibers .ghost-fibers-canvas { opacity:1!important; filter:brightness(1.18) contrast(1.08); }
+.iad-grid,.iad-orbit,.iad-orbit-two { opacity:.08!important; }
+.iad-hero,.iad-brandline,.iad-spiral-section,.iad-bottom,.iad-footnote { border:0!important; }
+.iad-hero { min-height:520px!important;padding-top:34px!important; }
+.iad-headline-wrap { margin-top:76px!important; }
+.iad-spiral-section { padding-top:28px!important; }
+.iad-bottom { padding-top:28px!important; }
+.iad-footnote { padding-top:12px!important; }
+
+/* Give the blueprint centerpiece room to read as a real orbiting system. */
+.iad-spiral-visual { min-height:520px!important; }
+.iad-spiral-ring-outer { width:430px!important;height:430px!important; }
+.iad-spiral-ring-middle { width:320px!important;height:320px!important; }
+.iad-spiral-ring-inner { width:210px!important;height:210px!important; }
+.iad-spiral-glow { width:230px!important;height:230px!important; }
+
+/* Request flow: an open, editorial architecture map rather than a framed panel. */
+.iad-lab { width:min(1320px,100%);border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;overflow:visible!important;margin-top:34px!important; }
+.iad-lab-top { align-items:flex-end!important;background:transparent!important;border:0!important;padding:0 4px 26px!important; }
+.iad-lab-heading { gap:9px!important; }
+.iad-lab-heading strong { font-size:clamp(23px,2.8vw,34px)!important;letter-spacing:-.035em!important; }
+.iad-live-status { padding-bottom:4px; }
+
+/* Canvas: a spacious connection lane with the animated atmosphere showing through. */
+.iad-canvas { background:transparent!important;height:400px!important;min-height:400px!important;overflow:visible!important; }
+.iad-canvas:before { display:none!important; }
+.iad-canvas-meta { top:0!important;left:4px!important;right:4px!important; }
+.iad-canvas-footer { bottom:0!important;left:4px!important;right:4px!important; }
+
+/* Nodes: translucent markers that sit on the flow instead of forming a box. */
+.iad-node { background:rgba(12,17,20,.32)!important;border:1px solid rgba(210,220,226,.24)!important;border-radius:12px!important;box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.07)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;transition:all .3s cubic-bezier(.4,0,.2,1)!important; }
+.iad-node:hover { background:rgba(20,26,32,.65)!important;border-color:rgba(220,230,240,.4)!important;box-shadow:0 12px 44px rgba(0,0,0,.4),0 0 28px rgba(220,230,240,.08),inset 0 1px 0 rgba(255,255,255,.1)!important;transform:translate(-50%,-55%)!important; }
+.iad-node.is-selected,.iad-node.is-tracing { background:rgba(20,26,32,.7)!important;border-color:rgba(220,230,240,.55)!important;box-shadow:0 0 0 1px rgba(220,230,240,.15),0 12px 44px rgba(0,0,0,.4),0 0 36px rgba(220,230,240,.12)!important; }
+.iad-node-client { top:54%!important; }
+.iad-node-gateway { top:54%!important; }
+.iad-node-service { top:54%!important; }
+.iad-node-database { top:27%!important; }
+.iad-node-response { top:54%!important; }
+.iad-node-icon,.iad-inspector-icon { background:rgba(200,210,220,.06)!important;border:1px solid rgba(200,210,220,.15)!important;border-radius:10px!important;color:#c8d4de!important; }
+.iad-node-top,.iad-node strong,.iad-inspector-copy h2 { color:#e4e8eb!important; }
+.iad-node-sub,.iad-live-status,.iad-inspector-copy p { color:#8a95a0!important; }
+.iad-node-ports i { background:rgba(8,11,13,.7)!important;border-color:rgba(200,210,220,.3)!important;box-shadow:0 0 6px rgba(200,210,220,.12)!important; }
+
+/* Wires: thin luminous paths, with labels that float directly on the map. */
+.iad-wire-base { stroke:rgba(200,210,220,.3)!important;stroke-width:1.25!important;stroke-dasharray:3 9!important; }
+.iad-wire-flow { stroke:rgba(220,230,240,.86)!important;stroke-width:2.2!important;filter:drop-shadow(0 0 8px rgba(220,230,240,.42)) drop-shadow(0 0 20px rgba(200,210,220,.15))!important; }
+.iad-wire-label { padding:4px 0!important;background:transparent!important;border:0!important;border-radius:0!important;color:#a0abb5!important;backdrop-filter:none!important;text-shadow:0 2px 8px rgba(0,0,0,.8)!important; }
+
+/* Inspector: a quiet reading strip, separated by one fine rule. */
+.iad-inspector { background:transparent!important;border:0!important;border-top:1px solid rgba(200,210,220,.16)!important;border-radius:0!important;margin:22px 4px 0!important;padding:22px 0 0!important;backdrop-filter:none!important; }
+.iad-canvas-meta { color:rgba(170,180,190,.5)!important; }
+.iad-canvas-footer { color:rgba(170,180,190,.5)!important; }
+.iad-legend-dot,.iad-live-dot { background:#dce2e6!important;box-shadow:0 0 10px rgba(220,226,230,.4)!important; }
+.iad-success { background:rgba(14,18,22,.4)!important;border:0!important;border-top:1px solid rgba(200,210,220,.08)!important;border-radius:10px!important;margin-top:10px!important;backdrop-filter:blur(10px)!important;color:#a8c8b8!important; }
+
+/* Spiral & design sections */
+.iad-design-spiral-wrap,.iad-design-spiral-aura,.iad-spiral-visual { border:0!important;background:transparent!important;box-shadow:none!important; }
+.iad-spiral-visual:before { display:none!important; }
+.iad-design-spiral-wrap { overflow:visible!important; }
+.iad-design-spiral .infinite-spiral__item { border-color:rgba(220,226,230,.18)!important;background:rgba(12,16,19,.12)!important;box-shadow:none!important; }
+.iad-design-spiral .infinite-spiral__item:after { background:transparent!important; }
+.iad-spiral-node { width:max-content!important;min-width:0!important;max-width:92px!important;height:27px!important;padding:5px 7px!important;gap:4px!important;overflow:hidden!important;background:rgba(12,16,19,.2)!important;border-color:rgba(188,197,197,.3)!important;box-shadow:0 6px 16px rgba(0,0,0,.24)!important;color:#dce2e6!important;font-size:7px!important;line-height:1!important;letter-spacing:.03em!important; }
+.iad-spiral-node svg { width:12px!important;height:12px!important;flex:none!important; }
+
+/* Heading animations */
+.iad-root :is(h1,h2,h3) { animation:iad-heading-sheen 3s ease-in-out infinite;text-shadow:0 0 22px rgba(220,226,230,.08); }
+.iad-headline-wrap h1.iad-brand-title { color:#f1f3f4!important;text-shadow:0 0 24px rgba(220,226,230,.12)!important; }
+.iad-headline-wrap h1.iad-brand-title.is-auto-shining { animation:iad-brand-shine 1.05s ease!important; }
+.iad-root :is(.iad-headline-wrap h1,.iad-design-copy h2,.iad-spiral-copy h2,.iad-bottom-copy h2) { font-family:"Barlow Condensed","Arial Narrow",sans-serif!important;font-weight:800!important;letter-spacing:-.025em!important;text-transform:uppercase; }
+.iad-overline,.iad-brandline,.iad-lab-index,.iad-live-status,.iad-canvas-meta,.iad-canvas-footer,.iad-node-top,.iad-node-sub,.iad-inspector-kicker,.iad-step-count,.iad-footnote,.iad-design-eyebrow,.iad-design-spiral-caption { font-family:"DM Mono",ui-monospace,monospace!important; }
+@keyframes iad-heading-sheen { 0%,72%,100%{text-shadow:0 0 8px rgba(220,226,230,.04)} 84%{text-shadow:0 0 24px rgba(220,226,230,.28),0 0 44px rgba(220,226,230,.12)} }
+@keyframes iad-brand-shine { 0%{filter:brightness(1);text-shadow:0 0 10px rgba(220,226,230,.08)} 45%{filter:brightness(1.55);text-shadow:0 0 34px rgba(240,244,246,.48),0 0 70px rgba(220,226,230,.22)} 100%{filter:brightness(1);text-shadow:0 0 10px rgba(220,226,230,.08)} }
+@media(max-width:640px) {
+  .iad-root { padding-top:54px!important; }
+  .iad-hero { min-height:430px!important;padding-top:18px!important; }
+  .iad-headline-wrap { margin-top:56px!important; }
+  .iad-lab { margin-top:22px!important; }
+  .iad-spiral-visual { min-height:410px!important; }
+  .iad-spiral-ring-outer { width:330px!important;height:330px!important; }
+  .iad-spiral-ring-middle { width:245px!important;height:245px!important; }
+  .iad-spiral-ring-inner { width:160px!important;height:160px!important; }
+  .iad-spiral-glow { width:180px!important;height:180px!important; }
+  .iad-root .iad-ghost-fibers { opacity:.88!important; }
+  .iad-root .iad-ghost-fibers .ghost-fibers-canvas { filter:brightness(1.1) contrast(1.05); }
+  .iad-spiral-node { max-width:76px!important;height:24px!important;padding:4px 6px!important;font-size:6px!important; }
+  .iad-spiral-node svg { width:10px!important;height:10px!important; }
+  .iad-lab-top { align-items:flex-start!important;flex-direction:column!important;gap:12px!important;padding-bottom:18px!important; }
+  .iad-canvas { height:420px!important;min-height:420px!important; }
+  .iad-wires { display:block!important; }
+  .iad-node { width:32%!important;min-width:104px!important;padding:8px!important; }
+  .iad-node-client { --mobile-left:14%!important;--mobile-top:52%!important; }
+  .iad-node-gateway { --mobile-left:36%!important;--mobile-top:52%!important; }
+  .iad-node-service { --mobile-left:60%!important;--mobile-top:52%!important; }
+  .iad-node-database { --mobile-left:60%!important;--mobile-top:20%!important; }
+  .iad-node-response { --mobile-left:86%!important;--mobile-top:52%!important; }
+  .iad-canvas-meta,.iad-canvas-footer { left:0!important;right:0!important; }
+  .iad-inspector { margin-inline:0!important;padding-top:18px!important; }
+}
+@media(prefers-reduced-motion:reduce) { .iad-root :is(h1,h2,h3),.iad-headline-wrap h1.iad-brand-title.is-auto-shining { animation:none!important; } }

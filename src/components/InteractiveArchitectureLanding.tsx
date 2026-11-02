@@ -1,11 +1,12 @@
 import { AnchonLogo } from "./AnchonLogo";
 import GhostFibers from "./GhostFibers";
 import InfiniteSpiral from "./InfiniteSpiral";
+import { FolderFloat } from "./FolderFloat";
 import { useEffect, useState } from "react";
 import {
   ArrowDownRight, ArrowRight, Check, CircleDot, Database, GitBranch,
-  Layers3, LockKeyhole, Moon, Play, RotateCcw, Server, ShieldCheck, Sparkles,
-  Sun, Workflow, Zap,
+  Layers3, LockKeyhole, Play, RotateCcw, Server, ShieldCheck, Sparkles,
+  Workflow, Zap,
 } from "lucide-react";
 import "./InteractiveArchitectureLanding.css";
 
@@ -49,7 +50,6 @@ const CONNECTIONS = [
 ];
 
 export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesigner: () => void }) {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [selected, setSelected] = useState("gateway");
   const [traceStep, setTraceStep] = useState(-1);
   const [completed, setCompleted] = useState<number[]>([]);
@@ -58,22 +58,18 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
   const traceRunning = traceStep >= 0 && traceStep < 5;
 
   useEffect(() => {
-    let shineTimer: number;
-    let cooldownTimer: number;
-    const scheduleShine = () => {
-      shineTimer = window.setTimeout(() => {
-        setAutomaticShine(true);
-        cooldownTimer = window.setTimeout(() => {
-          setAutomaticShine(false);
-          scheduleShine();
-        }, 1250);
-      }, 6000);
-    };
-    scheduleShine();
-    return () => {
-      window.clearTimeout(shineTimer);
-      window.clearTimeout(cooldownTimer);
-    };
+    const shineTimer = window.setInterval(() => {
+      setAutomaticShine(true);
+      window.setTimeout(() => setAutomaticShine(false), 1050);
+    }, 3000);
+    return () => window.clearInterval(shineTimer);
+  }, []);
+
+  useEffect(() => {
+    setCompleted([]);
+    setTraceStep(0);
+    setSelected("client");
+    setShowMission(true);
   }, []);
 
   useEffect(() => {
@@ -102,7 +98,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
   const finished = traceStep === 5;
 
   return (
-    <main className="iad-root" data-theme={theme}>
+    <main className="iad-root" data-theme="dark">
       <div className="iad-ghost-background" aria-hidden="true">
         <GhostFibers
           className="iad-ghost-fibers"
@@ -134,7 +130,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
       </div>
 
       <section className="iad-hero">
-        <div className="iad-brandline"><span className="iad-brand-mark"><AnchonLogo size={28} /></span><span>SYSTEM DESIGN, MADE VISIBLE</span><button className="iad-theme-toggle" type="button" onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")} aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}<span>{theme === "dark" ? "LIGHT" : "DARK"}</span></button></div>
+        <div className="iad-brandline"><span className="iad-brand-mark"><AnchonLogo size={28} /></span><span>SYSTEM DESIGN, MADE VISIBLE</span></div>
         <div className="iad-headline-wrap">
           <p className="iad-overline"><span className="iad-live-dot" /> SYSTEM ARCHITECTURE DESIGNER</p>
           <h1 className={`iad-brand-title${automaticShine ? " is-auto-shining" : ""}`} onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--pointer-x", `${((event.clientX - bounds.left) / bounds.width) * 100}%`); }} onPointerLeave={(event) => event.currentTarget.style.setProperty("--pointer-x", "50%")}>ANCHON</h1>
@@ -238,25 +234,21 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
           <h2 id="iad-capabilities-title">Design your system <span>visually.</span></h2>
           <p className="iad-design-description">Arrange services, connect dependencies, and understand how the parts of your system work together in a living architecture.</p>
 
-          <div className="iad-design-capabilities">
-            <article className="iad-design-capability">
-              <span className="iad-design-capability-icon"><Layers3 size={22} strokeWidth={1.6} /></span>
-              <div><h3>Services</h3><p>Core units that run your business logic.</p></div>
-            </article>
-            <article className="iad-design-capability">
-              <span className="iad-design-capability-icon"><Database size={22} strokeWidth={1.6} /></span>
-              <div><h3>Data &amp; storage</h3><p>Manage and persist your system's data.</p></div>
-            </article>
-            <article className="iad-design-capability">
-              <span className="iad-design-capability-icon"><Workflow size={22} strokeWidth={1.6} /></span>
-              <div><h3>Integrations</h3><p>Connect external systems and third-party services.</p></div>
-            </article>
-            <article className="iad-design-capability">
-              <span className="iad-design-capability-icon"><ShieldCheck size={22} strokeWidth={1.6} /></span>
-              <div><h3>Security</h3><p>Handle authentication, authorization, and access control.</p></div>
-            </article>
+          <div className="iad-design-folder" aria-label="Architecture capabilities">
+            <FolderFloat
+              label="System components"
+              sublabel="4 capabilities"
+              items={[
+                { label: "SERVICES", detail: "Core units that run your business logic." },
+                { label: "DATA & STORAGE", detail: "Manage and persist your system's data." },
+                { label: "INTEGRATIONS", detail: "Connect external systems and third-party services." },
+                { label: "SECURITY", detail: "Handle authentication, authorization, and access control." },
+              ]}
+            />
           </div>
-          <button className="iad-design-cta" type="button" onClick={onOpenDesigner}>Explore the canvas <ArrowRight size={15} /></button>
+          <div className="iad-design-actions">
+            <button className="iad-design-cta" type="button" onClick={onOpenDesigner}>Explore the canvas <ArrowRight size={15} /></button>
+          </div>
         </div>
       </section>
 
@@ -277,10 +269,6 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         </div>
       </section>
 
-      <section className="iad-bottom">
-        <div className="iad-bottom-copy"><span className="iad-overline">YOUR TURN</span><h2>Now design <span>your own.</span></h2><p>ANCHON turns your application idea into a connected, inspectable architecture. Build it visually or let AI propose a starting point.</p></div>
-        <button className="iad-open-btn" onClick={onOpenDesigner}>Open architecture designer <ArrowRight size={16} /></button>
-      </section>
       <div className="iad-footnote"><span><LockKeyhole size={11} /> BUILT FOR CLEARER SYSTEM THINKING</span><span><Layers3 size={11} /> VISUALIZE · CONNECT · REFINE</span><span><Zap size={11} /> INTERACTIVE BY DESIGN</span></div>
     </main>
   );
