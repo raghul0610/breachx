@@ -29,6 +29,17 @@ const NODES: FlowNode[] = [
   { id: "response", title: "RESPONSE", kind: "OUTPUT", detail: "The service returns a result to the client. The connection direction makes the request path legible.", role: "Trace the path from input to outcome.", icon: ShieldCheck, x: 91, y: 43, color: "#8b959d" },
 ];
 
+const ARCHITECTURE_SPIRAL_ITEMS = [
+  { id: "api-gateway", src: "/architecture-nodes/api-gateway.svg", alt: "API gateway component" },
+  { id: "application-service", src: "/architecture-nodes/application-service.svg", alt: "Application service component" },
+  { id: "database", src: "/architecture-nodes/database.svg", alt: "Database component" },
+  { id: "authentication", src: "/architecture-nodes/authentication.svg", alt: "Authentication component" },
+  { id: "message-queue", src: "/architecture-nodes/message-queue.svg", alt: "Message queue component" },
+  { id: "cache", src: "/architecture-nodes/cache.svg", alt: "Cache component" },
+  { id: "load-balancer", src: "/architecture-nodes/load-balancer.svg", alt: "Load balancer component" },
+  { id: "microservices", src: "/architecture-nodes/microservices.svg", alt: "Microservices component" },
+];
+
 const CONNECTIONS = [
   { id: "c1", from: "client", to: "gateway", label: "HTTPS / REQUEST" },
   { id: "c2", from: "gateway", to: "service", label: "ROUTE" },
@@ -195,16 +206,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
             <div className="iad-feature-visual iad-mini-canvas iad-mini-spiral" aria-label="Animated spiral of ANCHON architecture component illustrations">
               <InfiniteSpiral
                 className="iad-feature-spiral"
-                items={[
-                  { id: "api-gateway", src: "/architecture-nodes/api-gateway.svg", alt: "API gateway component" },
-                  { id: "application-service", src: "/architecture-nodes/application-service.svg", alt: "Application service component" },
-                  { id: "database", src: "/architecture-nodes/database.svg", alt: "Database component" },
-                  { id: "authentication", src: "/architecture-nodes/authentication.svg", alt: "Authentication component" },
-                  { id: "message-queue", src: "/architecture-nodes/message-queue.svg", alt: "Message queue component" },
-                  { id: "cache", src: "/architecture-nodes/cache.svg", alt: "Cache component" },
-                  { id: "load-balancer", src: "/architecture-nodes/load-balancer.svg", alt: "Load balancer component" },
-                  { id: "microservices", src: "/architecture-nodes/microservices.svg", alt: "Microservices component" },
-                ]}
+                items={ARCHITECTURE_SPIRAL_ITEMS}
                 animationMode="all"
                 speed={0.28}
                 radius={132}
