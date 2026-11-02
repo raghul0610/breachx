@@ -1250,7 +1250,8 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
   display:flex!important;
   visibility:visible!important;
   opacity:1!important;
-  transform:translateX(calc(-100% + 12px))!important;
+  transform:translateX(calc(-100% + 34px))!important;
+  pointer-events:auto!important;
 }
 .app-shell .workspace-navigation.is-open {
   transform:translateX(0)!important;
@@ -1353,7 +1354,8 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
   box-shadow:0 18px 48px rgba(0,0,0,.55)!important;
 }
 .app-shell .workspace > .left-panel.requirements-panel.workspace-navigation.is-collapsed:not(:hover) {
-  transform:translate3d(calc(-100% + 10px),0,0)!important;
+  transform:translate3d(calc(-100% + 34px),0,0)!important;
+  pointer-events:auto!important;
 }
 @media(max-width:760px) {
   .app-shell .workspace > .left-panel.requirements-panel.workspace-navigation {
