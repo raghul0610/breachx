@@ -270,9 +270,9 @@ button, input, textarea, select { font-family: var(--anchon-font-ui); }
 }
 .iad-headline-wrap h1.iad-brand-title {
   font-family: var(--anchon-font-ui) !important;
-  font-size: clamp(64px, 10vw, 112px) !important;
+  font-size: clamp(100px, 20vw, 250px) !important;
   font-weight: 800 !important;
-  line-height: .98 !important;
+  line-height: .82 !important;
   letter-spacing: -.075em !important;
   font-stretch: normal !important;
 }

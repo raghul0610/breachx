@@ -1,4 +1,14 @@
-.vercel
-.env*
+# Environment secrets
+.env
+.env.*
+!.env.example
 
+# Vercel local configuration
+.vercel/
+
+# TypeScript build cache
 *.tsbuildinfo
+
+# Dependencies and build output
+node_modules/
+dist/
