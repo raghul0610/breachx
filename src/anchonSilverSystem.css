@@ -1159,3 +1159,99 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
   border-radius:14px 0 0 14px!important;
   background:radial-gradient(ellipse at 50% 0%,rgba(210,219,226,.055),transparent 48%),linear-gradient(145deg,#171d22,#11161a)!important;
 }
+
+
+/* Request playback: explain the focused component in the inspector, not in a bottom overlay. */
+.app-shell:not(.lp-root) .request-trace-inspector {
+  display:grid!important;
+  gap:8px!important;
+  margin:14px 0!important;
+  padding:13px!important;
+  border:1px solid rgba(220,226,231,.2)!important;
+  border-radius:9px!important;
+  background:linear-gradient(145deg,rgba(39,46,52,.78),rgba(20,24,28,.94))!important;
+  color:#e9edf0!important;
+}
+.request-trace-inspector .section-kicker,
+.request-trace-inspector strong { color:#e5eaed!important; }
+.request-trace-inspector strong { font:600 11px/1.45 var(--anchon-font-ui)!important;letter-spacing:.025em!important; }
+.request-trace-inspector p { margin:0!important;color:#c2cbd1!important;font:400 11px/1.65 var(--anchon-font-ui)!important; }
+.request-trace-inspector span { color:#8f9aa2!important;font:400 10px/1.5 var(--anchon-font-ui)!important; }
+.request-trace-inspector button {
+  justify-self:start!important;padding:6px 9px!important;border:1px solid #59646d!important;
+  border-radius:6px!important;background:linear-gradient(145deg,#30383e,#20262b)!important;
+  color:#e8edf0!important;font:600 9px var(--anchon-font-ui)!important;cursor:pointer!important;
+}
+.app-shell:not(.lp-root) .run-request-canvas {
+  border-color:#dce2e6!important;
+  background:linear-gradient(110deg,#f5f7f8 0%,#c4cbd0 48%,#eef1f3 100%)!important;
+  color:#111519!important;
+  box-shadow:0 5px 22px rgba(220,226,231,.12)!important;
+}
+.app-shell:not(.lp-root) .run-request-canvas:hover {
+  background:linear-gradient(110deg,#fff,#dce2e6,#fff)!important;
+  box-shadow:0 8px 25px rgba(220,226,231,.2)!important;
+}
+.request-trace-spinner { border-color:rgba(17,21,25,.22)!important;border-top-color:#111519!important; }
+.app-shell:not(.lp-root) .react-flow__node.request-trace-node.is-active .bp-node {
+  border-color:#f0f3f5!important;
+  box-shadow:0 0 0 2px rgba(226,233,238,.2),0 0 28px rgba(226,233,238,.16),0 16px 40px #0008!important;
+}
+.app-shell:not(.lp-root) .react-flow__node.request-trace-node.is-complete .bp-node {
+  border-color:rgba(184,195,203,.72)!important;
+  box-shadow:0 0 0 1px rgba(184,195,203,.12),0 12px 30px #0006!important;
+}
+.app-shell:not(.lp-root) .react-flow__edge.request-trace-edge.is-active .react-flow__edge-path {
+  stroke:#e5eaed!important;stroke-width:4!important;
+  filter:drop-shadow(0 0 7px rgba(226,233,238,.65))!important;
+}
+.app-shell:not(.lp-root) .react-flow__edge.request-trace-edge.is-complete .react-flow__edge-path {
+  stroke:#aeb8c0!important;filter:drop-shadow(0 0 4px rgba(184,195,203,.25))!important;
+}
+
+/* Architecture Judge uses the same graphite/silver visual language. */
+.app-shell:not(.lp-root) .architecture-evaluation-panel {
+  border-color:#414b53!important;background:rgba(12,15,18,.97)!important;color:#edf0f2!important;
+  box-shadow:0 16px 48px rgba(0,0,0,.52)!important;backdrop-filter:blur(18px)!important;
+}
+.architecture-evaluation-header { border-bottom-color:rgba(220,226,231,.14)!important; }
+.architecture-evaluation-status-icon,.architecture-evaluation-heading strong,
+.architecture-evaluation-header>button { color:#dce2e6!important; }
+.architecture-evaluation-heading span,.architecture-evaluation-clean,
+.architecture-finding-copy>span,.architecture-evaluation-more { color:#aeb8c0!important; }
+.architecture-evaluation-header>button,
+.architecture-evaluation-finding { border-color:rgba(184,195,203,.18)!important;color:#e8edf0!important; }
+.architecture-evaluation-finding:hover,.architecture-evaluation-finding.is-selected {
+  background:rgba(184,195,203,.09)!important;border-color:rgba(220,226,231,.48)!important;
+}
+.architecture-finding-copy em { color:#d4dce1!important; }
+.severity-low .architecture-finding-severity { color:#c5cdd2!important; }
+
+/* Keep the workspace navigation flush to the viewport edge and animate it into view. */
+.app-shell .workspace > .left-panel.requirements-panel.workspace-navigation {
+  left:0!important;top:68px!important;bottom:0!important;
+  width:min(280px,calc(100vw - 32px))!important;
+  max-height:calc(100dvh - 68px)!important;
+  border-left:0!important;border-radius:0 12px 12px 0!important;
+  transform:translate3d(calc(-100% + 10px),0,0)!important;
+  transition:transform .32s cubic-bezier(.22,.8,.22,1),box-shadow .32s ease!important;
+  will-change:transform!important;
+}
+.app-shell .workspace > .left-panel.requirements-panel.workspace-navigation.is-open,
+.app-shell .workspace > .left-panel.requirements-panel.workspace-navigation.is-revealed,
+.app-shell .workspace > .left-panel.requirements-panel.workspace-navigation:hover {
+  transform:translate3d(0,0,0)!important;
+  box-shadow:0 18px 48px rgba(0,0,0,.55)!important;
+}
+.app-shell .workspace > .left-panel.requirements-panel.workspace-navigation.is-collapsed:not(:hover) {
+  transform:translate3d(calc(-100% + 10px),0,0)!important;
+}
+@media(max-width:760px) {
+  .app-shell .workspace > .left-panel.requirements-panel.workspace-navigation {
+    left:0!important;top:58px!important;bottom:0!important;
+    width:min(280px,86vw)!important;max-height:calc(100dvh - 58px)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell .workspace > .left-panel.requirements-panel.workspace-navigation { transition:none!important; }
+}
