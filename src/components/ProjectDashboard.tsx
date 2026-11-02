@@ -12,7 +12,7 @@ import {
 import { deleteOwnedProject } from "../lib/projectsRepository";
 import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
-import { ShapeGridBackground } from "./ShapeGridBackground";
+import GhostFibers from "./GhostFibers";
 import { AnchonLogo } from "./AnchonLogo";
 import { EdgeRevealSidebar } from "./EdgeRevealSidebar";
 
@@ -122,7 +122,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
 
   return (
     <div className="app-shell project-dashboard" onMouseMove={(event) => { if (event.clientX <= 24) setDashboardSidebarOpen(true); }}>
-      <ShapeGridBackground />
+      <div className="project-dashboard-ghost-background" aria-hidden="true"><GhostFibers className="project-dashboard-ghost-fibers" glowColor="#323535" layers={3} twist={1.2} threads={72} fiberStyle="dots" depthOfField={0.85} hoverEffect="focus" intro mouseInteraction lineColor="#bcc5c5" secondaryColor="#323535" speed={0.22} density={0.65} particles={0.16} glow={0.42} brightness={0.72} dpr={1.25} /></div>
       <EdgeRevealSidebar className="dashboard-sidebar" isOpen={dashboardSidebarOpen} label="Main navigation" onMouseLeave={(event) => { if (event.clientX > 24) setDashboardSidebarOpen(false); }}>
         <a className="dashboard-brand" href="#" onClick={(event) => { event.preventDefault(); onBack(); }} aria-label="ANCHON home"><span className="dashboard-brand-mark"><AnchonLogo size={25} /></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></a>
         <div className="dashboard-nav-label">WORKSPACE</div>
