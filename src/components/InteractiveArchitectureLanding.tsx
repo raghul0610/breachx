@@ -189,47 +189,55 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         {finished && <div className="iad-success"><Check size={14} /> Request completed. You just traced a client request through routing, compute, persistence, and back.</div>}
       </section>
 
-      <section className="iad-capabilities" aria-labelledby="iad-capabilities-title">
-        <div className="iad-capabilities-heading">
-          <p className="iad-overline"><span className="iad-live-dot" /> 02 / THE ANCHON WORKFLOW</p>
-          <h2 id="iad-capabilities-title">From an idea to an <span>engineered system.</span></h2>
-          <p>ANCHON brings the essential architecture workflow into one focused workspace.</p>
+      <section className="iad-capabilities iad-design-showcase" aria-labelledby="iad-capabilities-title">
+        <div className="iad-design-spiral-wrap" aria-label="Floating spiral of ANCHON architecture components">
+          <div className="iad-design-spiral-aura" />
+          <InfiniteSpiral
+            className="iad-design-spiral"
+            items={ARCHITECTURE_SPIRAL_ITEMS}
+            animationMode="all"
+            speed={0.22}
+            radius={205}
+            cardWidth={156}
+            cardHeight={132}
+            verticalSpacing={78}
+            perspective={1100}
+            cardRadius={13}
+            centerScale={1.28}
+            edgeFade={0.18}
+            edgeBlur={1.2}
+            cardsPerTurn={8}
+            pauseOnHover
+            grayscale={0.04}
+          />
+          <span className="iad-design-spiral-caption">ANCHON / ARCHITECTURE COMPONENTS</span>
         </div>
-        <div className="iad-feature-grid">
-          <article className="iad-feature-card">
-            <div className="iad-feature-card-top"><span>01 / GENERATE</span><Sparkles size={17} /></div>
-            <div className="iad-feature-visual iad-prompt-visual" aria-hidden="true"><div className="iad-prompt-window"><div className="iad-window-dots"><i /><i /><i /></div><span className="iad-prompt-label">DESCRIBE YOUR SYSTEM</span><div className="iad-prompt-line long" /><div className="iad-prompt-line medium" /><div className="iad-prompt-submit"><Sparkles size={12} /> Generate architecture <ArrowRight size={12} /></div></div><span className="iad-visual-orbit" /></div>
-            <h3>AI-assisted generation</h3><p>Describe what you are building and get an architecture proposal you can inspect and refine.</p>
-          </article>
-          <article className="iad-feature-card">
-            <div className="iad-feature-card-top"><span>02 / DESIGN</span><Workflow size={17} /></div>
-            <div className="iad-feature-visual iad-mini-canvas iad-mini-spiral" aria-label="Animated spiral of ANCHON architecture component illustrations">
-              <InfiniteSpiral
-                className="iad-feature-spiral"
-                items={ARCHITECTURE_SPIRAL_ITEMS}
-                animationMode="all"
-                speed={0.28}
-                radius={132}
-                cardWidth={124}
-                cardHeight={100}
-                verticalSpacing={50}
-                perspective={950}
-                cardRadius={9}
-                centerScale={1.18}
-                edgeBlur={2.5}
-                cardsPerTurn={8}
-                pauseOnHover
-                grayscale={0.12}
-              />
-              <span className="iad-mini-canvas-caption">LIVE COMPONENT SPIRAL · 08 NODE TYPES</span>
-            </div>
-            <h3>Visual architecture canvas</h3><p>Arrange services, connect dependencies, and understand how the parts of your system work together.</p>
-          </article>
-          <article className="iad-feature-card">
-            <div className="iad-feature-card-top"><span>03 / UNDERSTAND</span><Layers3 size={17} /></div>
-            <div className="iad-feature-visual iad-inspector-visual" aria-hidden="true"><div className="iad-inspector-mock"><div className="iad-inspector-mock-head"><span className="iad-mock-icon"><Server size={14} /></span><span><b>API SERVICE</b><small>COMPONENT DETAILS</small></span><Check size={13} /></div><div className="iad-mock-field"><span>RESPONSIBILITY</span><i /></div><div className="iad-mock-field"><span>DEPENDENCIES</span><i /></div><div className="iad-mock-field"><span>DATA FLOW</span><i /></div></div></div>
-            <h3>Inspectable components</h3><p>Select any component to review its role, properties, and relationships instead of treating diagrams as static pictures.</p>
-          </article>
+
+        <div className="iad-design-copy">
+          <p className="iad-overline"><span className="iad-live-dot" /> 02 / DESIGN</p>
+          <span className="iad-design-eyebrow"><i /> VISUAL ARCHITECTURE CANVAS</span>
+          <h2 id="iad-capabilities-title">Design your system <span>visually.</span></h2>
+          <p className="iad-design-description">Arrange services, connect dependencies, and understand how the parts of your system work together in a living architecture.</p>
+
+          <div className="iad-design-capabilities">
+            <article className="iad-design-capability">
+              <span className="iad-design-capability-icon"><Layers3 size={22} strokeWidth={1.6} /></span>
+              <div><h3>Services</h3><p>Core units that run your business logic.</p></div>
+            </article>
+            <article className="iad-design-capability">
+              <span className="iad-design-capability-icon"><Database size={22} strokeWidth={1.6} /></span>
+              <div><h3>Data &amp; storage</h3><p>Manage and persist your system's data.</p></div>
+            </article>
+            <article className="iad-design-capability">
+              <span className="iad-design-capability-icon"><Workflow size={22} strokeWidth={1.6} /></span>
+              <div><h3>Integrations</h3><p>Connect external systems and third-party services.</p></div>
+            </article>
+            <article className="iad-design-capability">
+              <span className="iad-design-capability-icon"><ShieldCheck size={22} strokeWidth={1.6} /></span>
+              <div><h3>Security</h3><p>Handle authentication, authorization, and access control.</p></div>
+            </article>
+          </div>
+          <button className="iad-design-cta" type="button" onClick={onOpenDesigner}>Explore the canvas <ArrowRight size={15} /></button>
         </div>
       </section>
 
