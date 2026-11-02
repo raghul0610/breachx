@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Check } from "lucide-react";
 import { CategoryIcon, getCategoryVisual } from "./CategoryIcon";
 import "../categoryVisuals.css";
 import "../architectureWorkspaceRefresh.css";
@@ -27,6 +27,7 @@ export const BlueprintNode = memo(({ data, selected }: NodeProps) => {
       <div className="node-heading">
         <span className="node-category-icon"><CategoryIcon category={node.category} size={15} /></span>
         <span className="node-category">{node.category}</span>
+        <span className="node-status" aria-hidden="true"><Check size={12} /></span>
       </div>
       <div className="node-label" title={node.label}>{node.label}</div>
       {node.notes?.trim() ? <div className="node-notes">{node.notes}</div> : <div className="node-notes">AI-ready architecture component</div>}

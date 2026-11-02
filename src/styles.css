@@ -1200,6 +1200,46 @@ body::-webkit-scrollbar,
 .canvas .react-flow__minimap { border: 1px solid #2a3b49; }
 .canvas .react-flow__attribution { font-size: 10px; }
 
+/* Canvas node language: graphite cards, restrained metadata, and luminous request paths. */
+.app-shell .canvas .bp-node {
+  width:220px!important;
+  min-width:220px!important;
+  max-width:220px!important;
+  min-height:128px!important;
+  padding:13px 14px 14px!important;
+  border:1px solid #53616a!important;
+  border-top:1px solid #8a969d!important;
+  border-radius:11px!important;
+  background:linear-gradient(145deg,#283136 0%,#171d21 100%)!important;
+  box-shadow:0 16px 34px rgba(0,0,0,.4),inset 0 1px rgba(255,255,255,.09)!important;
+  color:#e7ecef!important;
+}
+.app-shell .canvas .bp-node::after { background:linear-gradient(125deg,rgba(230,237,240,.07),transparent 42%)!important; }
+.app-shell .canvas .bp-node:hover,
+.app-shell .canvas .bp-node.selected {
+  border-color:#c5d0d5!important;
+  box-shadow:0 0 0 2px rgba(190,205,212,.14),0 18px 40px rgba(0,0,0,.48),0 0 24px rgba(153,211,217,.08)!important;
+}
+.app-shell .canvas .bp-node .node-heading { min-height:20px;margin-bottom:12px!important;gap:8px; }
+.app-shell .canvas .bp-node .node-category-icon {
+  width:32px!important;height:32px!important;border:1px solid #64737c!important;border-radius:9px!important;
+  background:linear-gradient(145deg,#39464e,#222b30)!important;color:#b9dbe0!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.1)!important;
+}
+.app-shell .canvas .bp-node .node-category { color:#b9c3c8!important;font:600 9px/1.2 var(--anchon-font-data,ui-monospace,monospace)!important;letter-spacing:.1em;text-transform:uppercase; }
+.app-shell .canvas .bp-node .node-status { display:grid;place-items:center;margin-left:auto;color:#85e2ca; }
+.app-shell .canvas .bp-node .node-label { margin-top:0!important;color:#f0f3f4!important;font:700 13px/1.35 var(--anchon-font-data,ui-monospace,monospace)!important;letter-spacing:.035em;text-transform:uppercase; }
+.app-shell .canvas .bp-node .node-notes { display:block!important;margin-top:6px;color:#aab5bb!important;font:500 10px/1.45 var(--anchon-font-data,ui-monospace,monospace)!important;letter-spacing:.01em; }
+.app-shell .canvas .bp-node .handle { width:8px!important;height:8px!important;background:#9bd6dc!important;border:2px solid #172025!important;box-shadow:0 0 0 1px rgba(155,214,220,.2),0 0 9px rgba(120,215,220,.22)!important; }
+.app-shell .canvas .bp-node .react-flow__handle-top,
+.app-shell .canvas .bp-node .react-flow__handle-bottom { opacity:.28; }
+.app-shell .canvas .react-flow__edge-path { stroke:#69d4d7!important;stroke-width:2.2!important;filter:drop-shadow(0 0 5px rgba(70,208,211,.45))!important; }
+.app-shell .canvas .react-flow__edge.selected .react-flow__edge-path { stroke:#b8eef0!important;stroke-width:3.2px!important;filter:drop-shadow(0 0 8px rgba(128,235,236,.72))!important; }
+.app-shell .canvas .architecture-edge-label { padding:3px 6px!important;border:1px solid rgba(112,202,207,.24)!important;border-radius:4px!important;background:rgba(9,16,19,.78)!important;color:#b4dadd!important;font:700 9px/1.2 var(--anchon-font-data,ui-monospace,monospace)!important;letter-spacing:.07em;text-shadow:0 1px 5px #000; }
+.app-shell .canvas .react-flow__background pattern circle { fill:rgba(179,205,208,.2)!important; }
+@media(max-width:900px) { .app-shell .canvas .bp-node { width:196px!important;min-width:196px!important;max-width:196px!important; } }
+@media(max-width:640px) { .app-shell .canvas .bp-node { width:176px!important;min-width:176px!important;max-width:176px!important;padding:11px!important; } .app-shell .canvas .bp-node .node-notes { font-size:9px!important; } }
+
 .connection-review {
   margin-top: 14px;
   padding: 12px;
@@ -2458,6 +2498,88 @@ body, .app-shell, .home, .lp-root {
 
 
 /* Workspace navigation: persistent product navigation with a scrollable content pane. */
+
+/* Semantic canvas silhouettes: category is legible before the label is read. */
+.app-shell .canvas .bp-node {
+  box-sizing:border-box!important;
+  width:220px!important;
+  min-width:220px!important;
+  max-width:220px!important;
+  min-height:128px!important;
+  border:1px solid #53616a!important;
+  border-top:1px solid #8a969d!important;
+  background:linear-gradient(145deg,#283136,#171d21)!important;
+  box-shadow:0 16px 34px rgba(0,0,0,.4),inset 0 1px rgba(255,255,255,.09)!important;
+}
+.app-shell .canvas .bp-node > :not(.handle) { position:relative;z-index:2; }
+.app-shell .canvas .bp-node .handle { z-index:5!important; }
+
+/* Core services: stable rounded rectangles with a quiet left rail. */
+.app-shell .canvas :is(.bp-node--kind-app_server,.bp-node--kind-microservice,.bp-node--kind-container,.bp-node--kind-worker,.bp-node--kind-serverless,.bp-node--kind-batch_job,.bp-node--kind-rest_api,.bp-node--kind-graphql) {
+  border-radius:12px!important;
+  background:linear-gradient(145deg,#2c353a,#171d21)!important;
+  box-shadow:inset 4px 0 #91c6cb,0 16px 34px rgba(0,0,0,.4),inset 0 1px rgba(255,255,255,.08)!important;
+}
+
+/* Databases and durable stores: cylinder silhouette with visible top and bottom lips. */
+.app-shell .canvas :is(.bp-node--kind-database,.bp-node--kind-nosql_database,.bp-node--kind-graph_database,.bp-node--kind-time_series_db,.bp-node--kind-database_replica,.bp-node--kind-database_shard,.bp-node--kind-object_storage,.bp-node--kind-blob_storage,.bp-node--kind-data_warehouse,.bp-node--kind-data_lake) {
+  border-radius:50% / 13%!important;
+  padding-top:21px!important;
+  border-top:2px solid #d0a969!important;
+  background:linear-gradient(180deg,#3b3326 0%,#24221f 46%,#171b1e 100%)!important;
+  box-shadow:inset 0 9px rgba(241,195,112,.08),0 16px 34px rgba(0,0,0,.44)!important;
+}
+.app-shell .canvas :is(.bp-node--kind-database,.bp-node--kind-nosql_database,.bp-node--kind-graph_database,.bp-node--kind-time_series_db,.bp-node--kind-database_replica,.bp-node--kind-database_shard,.bp-node--kind-object_storage,.bp-node--kind-blob_storage,.bp-node--kind-data_warehouse,.bp-node--kind-data_lake)::before {
+  content:"";position:absolute;z-index:1;top:0;left:-1px;right:-1px;height:18px;border:1px solid #d0a969;border-radius:50%;background:rgba(241,195,112,.1);pointer-events:none;
+}
+.app-shell .canvas :is(.bp-node--kind-database,.bp-node--kind-nosql_database,.bp-node--kind-graph_database,.bp-node--kind-time_series_db,.bp-node--kind-database_replica,.bp-node--kind-database_shard,.bp-node--kind-object_storage,.bp-node--kind-blob_storage,.bp-node--kind-data_warehouse,.bp-node--kind-data_lake)::after {
+  content:"";position:absolute;z-index:1;left:-1px;right:-1px;bottom:0;height:18px;border:1px solid rgba(208,169,105,.72);border-radius:50%;pointer-events:none;background:transparent!important;
+}
+
+/* APIs and gateways: clipped six-sided routing markers. */
+.app-shell .canvas :is(.bp-node--kind-api_gateway,.bp-node--kind-load_balancer,.bp-node--kind-reverse_proxy,.bp-node--kind-nat_gateway,.bp-node--kind-egress_gateway,.bp-node--kind-llm_gateway,.bp-node--kind-rest_api,.bp-node--kind-graphql) {
+  border-radius:14px!important;
+  clip-path:polygon(9% 0,91% 0,100% 50%,91% 100%,9% 100%,0 50%)!important;
+  padding-inline:22px!important;
+  background:linear-gradient(145deg,#293349,#181d2b)!important;
+  border-color:#9daed0!important;
+  box-shadow:none!important;
+}
+.app-shell .canvas :is(.bp-node--kind-api_gateway,.bp-node--kind-load_balancer,.bp-node--kind-reverse_proxy,.bp-node--kind-nat_gateway,.bp-node--kind-egress_gateway,.bp-node--kind-llm_gateway,.bp-node--kind-rest_api,.bp-node--kind-graphql) .node-category-icon { color:#b9c9ed!important;background:#3a465e!important;border-color:#8498bf!important; }
+
+/* Queues and event buses: pill body with layered rails for backlog/flow. */
+.app-shell .canvas :is(.bp-node--kind-queue,.bp-node--kind-kafka,.bp-node--kind-event_bus,.bp-node--kind-dead_letter_queue,.bp-node--kind-stream_processor,.bp-node--kind-smtp_relay,.bp-node--kind-push_gateway) {
+  border-radius:999px!important;
+  padding-inline:22px!important;
+  background:linear-gradient(145deg,#332b3e,#1b1a24)!important;
+  border-color:#a48cba!important;
+  box-shadow:inset 0 5px rgba(192,132,252,.1),inset 0 -5px rgba(192,132,252,.06),0 16px 34px rgba(0,0,0,.4)!important;
+}
+.app-shell .canvas :is(.bp-node--kind-queue,.bp-node--kind-kafka,.bp-node--kind-event_bus,.bp-node--kind-dead_letter_queue,.bp-node--kind-stream_processor,.bp-node--kind-smtp_relay,.bp-node--kind-push_gateway)::before { content:"";position:absolute;left:18px;right:18px;top:10px;height:1px;background:rgba(224,195,244,.5);box-shadow:0 8px rgba(224,195,244,.22);pointer-events:none; }
+
+/* External systems and clients: soft cloud-like silhouette. */
+.app-shell .canvas :is(.bp-node--kind-client,.bp-node--kind-internet,.bp-node--kind-web_client,.bp-node--kind-mobile_app,.bp-node--kind-external_api,.bp-node--kind-payment_service,.bp-node--kind-third_party_service,.bp-node--kind-external_system,.bp-node--kind-webhook) {
+  border-radius:31px 31px 20px 20px!important;
+  background:linear-gradient(145deg,#2d3b46,#182128)!important;
+  border-color:#8ba9b2!important;
+  box-shadow:inset 0 4px rgba(145,198,203,.13),0 16px 34px rgba(0,0,0,.4)!important;
+}
+.app-shell .canvas :is(.bp-node--kind-client,.bp-node--kind-internet,.bp-node--kind-web_client,.bp-node--kind-mobile_app,.bp-node--kind-external_api,.bp-node--kind-payment_service,.bp-node--kind-third_party_service,.bp-node--kind-external_system,.bp-node--kind-webhook)::before { content:"";position:absolute;top:-7px;left:25%;width:40%;height:18px;border-radius:50%;background:rgba(145,198,203,.12);border:1px solid rgba(145,198,203,.4);pointer-events:none; }
+
+/* Security and identity: reinforced double border signals a protected boundary. */
+.app-shell .canvas :is(.bp-node--kind-firewall,.bp-node--kind-ddos_protection,.bp-node--kind-identity_provider,.bp-node--kind-auth_service,.bp-node--kind-iam,.bp-node--kind-secrets_manager,.bp-node--kind-kms,.bp-node--kind-hsm,.bp-node--kind-token_service,.bp-node--kind-prompt_guardrails) {
+  border:3px double #c98d9b!important;
+  border-radius:8px!important;
+  background:linear-gradient(145deg,#382b32,#201b20)!important;
+  box-shadow:inset 0 0 0 3px rgba(251,113,133,.06),0 16px 34px rgba(0,0,0,.42)!important;
+}
+
+.app-shell .canvas .bp-node .node-category-icon { box-sizing:border-box; }
+.app-shell .canvas .bp-node .node-status { color:#86e1c4; }
+.app-shell .canvas .react-flow__edge-path { stroke:#69d4d7!important;stroke-width:2.2!important;filter:drop-shadow(0 0 5px rgba(70,208,211,.45))!important; }
+.app-shell .canvas .react-flow__edge.selected .react-flow__edge-path { stroke:#c5f1f1!important;stroke-width:3.2px!important; }
+@media(max-width:900px) { .app-shell .canvas .bp-node { width:196px!important;min-width:196px!important;max-width:196px!important; } }
+@media(max-width:640px) { .app-shell .canvas .bp-node { width:176px!important;min-width:176px!important;max-width:176px!important;padding:11px!important; } }
 .workspace-navigation{display:flex!important;flex-direction:column!important;gap:0!important;min-height:0!important;padding:14px 10px 12px!important;background:linear-gradient(180deg,#0d121b,#090e15)!important;overflow:hidden!important}
 .workspace-nav-brand{display:flex;align-items:center;gap:10px;padding:4px 7px 14px;border-bottom:1px solid rgba(148,163,184,.13)}
 .workspace-nav-brand>div:nth-child(2){min-width:0;flex:1}
