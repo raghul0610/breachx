@@ -156,3 +156,58 @@
 .iad-root[data-theme="light"] .iad-inspector-mock-head b { color:#28424a; }.iad-root[data-theme="light"] .iad-mock-field { color:#617780; }
 .iad-root[data-theme="light"] .iad-spiral-section,.iad-root[data-theme="light"] .iad-bottom,.iad-root[data-theme="light"] .iad-footnote { border-color:#d6e1e1; }
 .iad-root[data-theme="light"] .iad-spiral-core strong { color:#28424a; }.iad-root[data-theme="light"] .iad-footnote { color:#657b83; }
+
+
+/* Landing-page-wide GhostFibers layer and typography system. */
+.iad-root {
+  --anchon-font-ui:"DM Sans",Manrope,Inter,sans-serif;
+  --iad-font-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  position:relative;
+  isolation:isolate;
+  background:#080b0d!important;
+  font-family:var(--anchon-font-ui)!important;
+}
+.iad-root .iad-ghost-background {
+  position:absolute;inset:0;z-index:0;min-height:100%;overflow:hidden;
+  pointer-events:none;background:#080b0d;
+}
+.iad-root .iad-ghost-fibers {
+  position:absolute;inset:0;width:100%;height:100%;min-height:100%;opacity:.78;
+}
+.iad-root .iad-atmosphere {
+  z-index:1!important;
+  background:linear-gradient(180deg,rgba(7,10,12,.36),rgba(7,10,12,.58) 48%,rgba(7,10,12,.76))!important;
+  opacity:1!important;
+}
+.iad-root .iad-hero,
+.iad-root .iad-lab,
+.iad-root .iad-capabilities,
+.iad-root .iad-spiral-section,
+.iad-root .iad-bottom,
+.iad-root .iad-footnote,
+.iad-root>section,
+.iad-root>footer {position:relative;z-index:2;}
+.iad-root :is(h1,h2,h3,h4,.iad-lab-heading strong,.iad-hero-tagline) {
+  font-family:var(--iad-font-display)!important;
+  font-weight:600;letter-spacing:-.025em;
+}
+.iad-root .iad-headline-wrap h1 {
+  font-size:clamp(64px,9vw,112px)!important;line-height:.88!important;
+  letter-spacing:-.045em!important;font-weight:700!important;
+}
+.iad-root .iad-hero-tagline {font-size:clamp(24px,3vw,36px)!important;line-height:1.12!important;}
+.iad-root :is(.iad-intro,.iad-design-description,.iad-design-capability p,.iad-bottom p,.iad-spiral-copy>p:not(.iad-overline),.iad-capabilities-heading>p:not(.iad-overline)) {
+  font-family:var(--anchon-font-ui)!important;font-size:clamp(14px,1.08vw,16px);line-height:1.75;
+}
+.iad-root :is(.iad-design-copy>h2,.iad-bottom-copy h2,.iad-spiral-copy h2,.iad-capabilities-heading h2) {
+  font-family:var(--iad-font-display)!important;font-size:clamp(48px,6vw,78px)!important;
+  line-height:.96!important;letter-spacing:-.04em!important;font-weight:700!important;
+}
+.iad-root .iad-design-capability h3 {font-family:var(--iad-font-display)!important;font-size:20px!important;line-height:1.05!important;letter-spacing:.005em!important;}
+.iad-root :is(.iad-overline,.iad-brandline,.iad-lab-index,.iad-live-status,.iad-canvas-meta,.iad-canvas-footer,.iad-node-top,.iad-node-sub,.iad-inspector-kicker,.iad-step-count,.iad-footnote,.iad-design-eyebrow,.iad-design-spiral-caption) {
+  font-family:"DM Mono",ui-monospace,monospace!important;letter-spacing:.13em;
+}
+@media(max-width:760px) {
+  .iad-root .iad-headline-wrap h1 {font-size:clamp(58px,16vw,88px)!important;}
+  .iad-root :is(.iad-design-copy>h2,.iad-bottom-copy h2,.iad-spiral-copy h2,.iad-capabilities-heading h2) {font-size:clamp(44px,12vw,62px)!important;}
+}
