@@ -316,9 +316,22 @@ function ParticipantEditor({
 
   useEffect(() => {
     if (requestTraceStep < 0 || requestTraceStep >= requestTraceEdges.length) return;
-    const timeout = window.setTimeout(() => setRequestTraceStep((step) => step + 1), 900);
+    const timeout = window.setTimeout(() => setRequestTraceStep((step) => step + 1), 1500);
     return () => window.clearTimeout(timeout);
   }, [requestTraceStep, requestTraceEdges.length]);
+
+  useEffect(() => {
+    if (requestTraceStep < 0 || requestTraceStep > requestTraceEdges.length || requestTraceEdges.length === 0) return;
+    const activeEdge = requestTraceEdges[Math.min(requestTraceStep, requestTraceEdges.length - 1)];
+    const focusNodeId = requestTraceStep >= requestTraceEdges.length ? activeEdge.target : activeEdge.source;
+    if (!focusNodeId) return;
+    setSelectedId(focusNodeId);
+    setSelectedEdgeId(null);
+    setSelectedCatalogTypeKey(null);
+    setRequirementsInspectorOpen(false);
+    setRightPanelOpen(true);
+    void fitView({ nodes: [{ id: focusNodeId }], padding: 0.62, duration: 650 });
+  }, [requestTraceStep, requestTraceEdges, fitView]);
 
   const runRequestTrace = useCallback(() => {
     const result = evaluateSystemDesign({
@@ -332,12 +345,15 @@ function ParticipantEditor({
     setSelectedFindingId(result.findings[0]?.id ?? null);
     setChatOpen(false);
     setComponentLibraryOpen(false);
+    setRequirementsInspectorOpen(false);
     if (requestTraceEdges.length) {
+      setRightPanelOpen(true);
       setRequestTraceStep(0);
       setSelectedId(requestTraceEdges[0].source);
       setSelectedEdgeId(null);
       setSelectedCatalogTypeKey(null);
-      void fitView({ padding: 0.22, duration: 500 });
+      setRightPanelOpen(true);
+      void fitView({ nodes: [{ id: requestTraceEdges[0].source }], padding: 0.62, duration: 650 });
     } else {
       setRequestTraceStep(-1);
       const firstProblemNodeId = result.findings[0]?.nodeIds?.[0];
@@ -933,11 +949,6 @@ function ParticipantEditor({
             </button>
           </div>
 
-          {requestTraceStep >= 0 && <div className="request-trace-status" role="status" aria-live="polite">
-            <span className={requestTraceStep < requestTraceEdges.length ? "request-trace-status-dot is-running" : "request-trace-status-dot"} />
-            <div><strong>{requestTraceStep >= requestTraceEdges.length ? "FLOW COMPLETE" : "DATA FLOW · STEP " + (requestTraceStep + 1) + " OF " + requestTraceEdges.length}</strong><span>{requestTraceStep >= requestTraceEdges.length ? "Followed every connection in your architecture." : (() => { const edge = requestTraceEdges[requestTraceStep]; const from = nodes.find((node) => node.id === edge?.source)?.data.label ?? edge?.source; const to = nodes.find((node) => node.id === edge?.target)?.data.label ?? edge?.target; return from + " → " + to; })()}</span></div>
-            {requestTraceStep >= requestTraceEdges.length && <button type="button" onClick={() => setRequestTraceStep(-1)} aria-label="Dismiss flow result"><X size={14} /></button>}
-          </div>}
           {activeEvaluationResult && <section className="architecture-evaluation-panel" aria-label="Architecture judge results" aria-live="polite">
             <div className="architecture-evaluation-header">
               <div className="architecture-evaluation-status-icon">{activeEvaluationResult.findings.some((finding) => finding.severity === "critical") ? <ShieldAlert size={17} /> : activeEvaluationResult.findings.some((finding) => finding.severity === "high") ? <AlertTriangle size={17} /> : <CheckCircle2 size={17} />}</div>
@@ -1119,6 +1130,13 @@ function ParticipantEditor({
             </div>
           )}
 
+          {requestTraceStep >= 0 && selected && <section className="request-trace-inspector" aria-live="polite">
+            <div className="section-kicker">LIVE REQUEST TRACE</div>
+            <strong>{requestTraceStep >= requestTraceEdges.length ? "REQUEST FLOW COMPLETE" : "NODE " + (requestTraceStep + 1) + " · " + selected.data.label}</strong>
+            <p>{selected.data.notes?.trim() || "This component participates in the request path. Inspect its connections and component details to understand its responsibility."}</p>
+            <span>{requestTraceStep >= requestTraceEdges.length ? "All reachable connections have been traversed." : "Following the connected request path. The canvas will focus each node in sequence."}</span>
+            <button type="button" onClick={() => setRequestTraceStep(-1)}>END TRACE</button>
+          </section>}
           <div className="editor-history-status" aria-live="polite" data-tutorial="connections">{pastRef.current.length} undo step{pastRef.current.length === 1 ? "" : "s"} available · {futureRef.current.length} redo step{futureRef.current.length === 1 ? "" : "s"} </div>
 
           <div className="submission-rule">
