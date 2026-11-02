@@ -1,4 +1,6 @@
 import { AnchonLogo } from "./AnchonLogo";
+import GhostFibers from "./GhostFibers";
+import InfiniteSpiral from "./InfiniteSpiral";
 import { useEffect, useState } from "react";
 import {
   ArrowDownRight, ArrowRight, Check, CircleDot, Database, GitBranch,
@@ -27,6 +29,17 @@ const NODES: FlowNode[] = [
   { id: "response", title: "RESPONSE", kind: "OUTPUT", detail: "The service returns a result to the client. The connection direction makes the request path legible.", role: "Trace the path from input to outcome.", icon: ShieldCheck, x: 91, y: 43, color: "#8b959d" },
 ];
 
+const ARCHITECTURE_SPIRAL_ITEMS = [
+  { id: "api-gateway", src: "/architecture-nodes/api-gateway.svg", alt: "API gateway component" },
+  { id: "application-service", src: "/architecture-nodes/application-service.svg", alt: "Application service component" },
+  { id: "database", src: "/architecture-nodes/database.svg", alt: "Database component" },
+  { id: "authentication", src: "/architecture-nodes/authentication.svg", alt: "Authentication component" },
+  { id: "message-queue", src: "/architecture-nodes/message-queue.svg", alt: "Message queue component" },
+  { id: "cache", src: "/architecture-nodes/cache.svg", alt: "Cache component" },
+  { id: "load-balancer", src: "/architecture-nodes/load-balancer.svg", alt: "Load balancer component" },
+  { id: "microservices", src: "/architecture-nodes/microservices.svg", alt: "Microservices component" },
+];
+
 const CONNECTIONS = [
   { id: "c1", from: "client", to: "gateway", label: "HTTPS / REQUEST" },
   { id: "c2", from: "gateway", to: "service", label: "ROUTE" },
@@ -41,7 +54,27 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
   const [traceStep, setTraceStep] = useState(-1);
   const [completed, setCompleted] = useState<number[]>([]);
   const [showMission, setShowMission] = useState(false);
+  const [automaticShine, setAutomaticShine] = useState(false);
   const traceRunning = traceStep >= 0 && traceStep < 5;
+
+  useEffect(() => {
+    let shineTimer: number;
+    let cooldownTimer: number;
+    const scheduleShine = () => {
+      shineTimer = window.setTimeout(() => {
+        setAutomaticShine(true);
+        cooldownTimer = window.setTimeout(() => {
+          setAutomaticShine(false);
+          scheduleShine();
+        }, 1250);
+      }, 6000);
+    };
+    scheduleShine();
+    return () => {
+      window.clearTimeout(shineTimer);
+      window.clearTimeout(cooldownTimer);
+    };
+  }, []);
 
   useEffect(() => {
     if (!traceRunning) return;
@@ -70,6 +103,28 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
 
   return (
     <main className="iad-root" data-theme={theme}>
+      <div className="iad-ghost-background" aria-hidden="true">
+        <GhostFibers
+          className="iad-ghost-fibers"
+          glowColor="#323535"
+          layers={3}
+          twist={1.2}
+          threads={72}
+          fiberStyle="dots"
+          depthOfField={0.85}
+          hoverEffect="focus"
+          intro
+          mouseInteraction
+          lineColor="#bcc5c5"
+          secondaryColor="#323535"
+          speed={0.22}
+          density={0.65}
+          particles={0.16}
+          glow={0.42}
+          brightness={0.72}
+          dpr={1.25}
+        />
+      </div>
       <div className="iad-atmosphere" aria-hidden="true">
         <div className="iad-orbit iad-orbit-one" />
         <div className="iad-orbit iad-orbit-two" />
@@ -82,7 +137,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         <div className="iad-brandline"><span className="iad-brand-mark"><AnchonLogo size={28} /></span><span>SYSTEM DESIGN, MADE VISIBLE</span><button className="iad-theme-toggle" type="button" onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")} aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}<span>{theme === "dark" ? "LIGHT" : "DARK"}</span></button></div>
         <div className="iad-headline-wrap">
           <p className="iad-overline"><span className="iad-live-dot" /> SYSTEM ARCHITECTURE DESIGNER</p>
-          <h1 className="iad-brand-title" onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--pointer-x", `${((event.clientX - bounds.left) / bounds.width) * 100}%`); }} onPointerLeave={(event) => event.currentTarget.style.setProperty("--pointer-x", "50%")}>ANCHON</h1>
+          <h1 className={`iad-brand-title${automaticShine ? " is-auto-shining" : ""}`} onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--pointer-x", `${((event.clientX - bounds.left) / bounds.width) * 100}%`); }} onPointerLeave={(event) => event.currentTarget.style.setProperty("--pointer-x", "50%")}>ANCHON</h1>
           <p className="iad-hero-tagline">Think in systems. Design with clarity.</p>
           <p className="iad-intro">Turn an application idea into a living system blueprint. Explore the flow, understand every boundary, and build architecture that makes sense.</p>
           <button className="iad-hero-cta" onClick={onOpenDesigner}>Start designing <ArrowRight size={15} /></button>
@@ -153,28 +208,55 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         {finished && <div className="iad-success"><Check size={14} /> Request completed. You just traced a client request through routing, compute, persistence, and back.</div>}
       </section>
 
-      <section className="iad-capabilities" aria-labelledby="iad-capabilities-title">
-        <div className="iad-capabilities-heading">
-          <p className="iad-overline"><span className="iad-live-dot" /> 02 / THE ANCHON WORKFLOW</p>
-          <h2 id="iad-capabilities-title">From an idea to an <span>engineered system.</span></h2>
-          <p>ANCHON brings the essential architecture workflow into one focused workspace.</p>
+      <section className="iad-capabilities iad-design-showcase" aria-labelledby="iad-capabilities-title">
+        <div className="iad-design-spiral-wrap" aria-label="Floating spiral of ANCHON architecture components">
+          <div className="iad-design-spiral-aura" />
+          <InfiniteSpiral
+            className="iad-design-spiral"
+            items={ARCHITECTURE_SPIRAL_ITEMS}
+            animationMode="all"
+            speed={0.22}
+            radius={205}
+            cardWidth={156}
+            cardHeight={132}
+            verticalSpacing={78}
+            perspective={1100}
+            cardRadius={13}
+            centerScale={1.28}
+            edgeFade={0.18}
+            edgeBlur={1.2}
+            cardsPerTurn={8}
+            pauseOnHover
+            grayscale={0.04}
+          />
+          <span className="iad-design-spiral-caption">ANCHON / ARCHITECTURE COMPONENTS</span>
         </div>
-        <div className="iad-feature-grid">
-          <article className="iad-feature-card">
-            <div className="iad-feature-card-top"><span>01 / GENERATE</span><Sparkles size={17} /></div>
-            <div className="iad-feature-visual iad-prompt-visual" aria-hidden="true"><div className="iad-prompt-window"><div className="iad-window-dots"><i /><i /><i /></div><span className="iad-prompt-label">DESCRIBE YOUR SYSTEM</span><div className="iad-prompt-line long" /><div className="iad-prompt-line medium" /><div className="iad-prompt-submit"><Sparkles size={12} /> Generate architecture <ArrowRight size={12} /></div></div><span className="iad-visual-orbit" /></div>
-            <h3>AI-assisted generation</h3><p>Describe what you are building and get an architecture proposal you can inspect and refine.</p>
-          </article>
-          <article className="iad-feature-card">
-            <div className="iad-feature-card-top"><span>02 / DESIGN</span><Workflow size={17} /></div>
-            <div className="iad-feature-visual iad-mini-canvas" aria-hidden="true"><div className="iad-mini-edge edge-one" /><div className="iad-mini-edge edge-two" /><div className="iad-mini-edge edge-three" /><span className="iad-mini-node node-one"><Server size={14} /> API</span><span className="iad-mini-node node-two"><Workflow size={14} /> SERVICE</span><span className="iad-mini-node node-three"><Database size={14} /> DATA</span><span className="iad-mini-canvas-caption">CONNECTED COMPONENTS</span></div>
-            <h3>Visual architecture canvas</h3><p>Arrange services, connect dependencies, and understand how the parts of your system work together.</p>
-          </article>
-          <article className="iad-feature-card">
-            <div className="iad-feature-card-top"><span>03 / UNDERSTAND</span><Layers3 size={17} /></div>
-            <div className="iad-feature-visual iad-inspector-visual" aria-hidden="true"><div className="iad-inspector-mock"><div className="iad-inspector-mock-head"><span className="iad-mock-icon"><Server size={14} /></span><span><b>API SERVICE</b><small>COMPONENT DETAILS</small></span><Check size={13} /></div><div className="iad-mock-field"><span>RESPONSIBILITY</span><i /></div><div className="iad-mock-field"><span>DEPENDENCIES</span><i /></div><div className="iad-mock-field"><span>DATA FLOW</span><i /></div></div></div>
-            <h3>Inspectable components</h3><p>Select any component to review its role, properties, and relationships instead of treating diagrams as static pictures.</p>
-          </article>
+
+        <div className="iad-design-copy">
+          <p className="iad-overline"><span className="iad-live-dot" /> 02 / DESIGN</p>
+          <span className="iad-design-eyebrow"><i /> VISUAL ARCHITECTURE CANVAS</span>
+          <h2 id="iad-capabilities-title">Design your system <span>visually.</span></h2>
+          <p className="iad-design-description">Arrange services, connect dependencies, and understand how the parts of your system work together in a living architecture.</p>
+
+          <div className="iad-design-capabilities">
+            <article className="iad-design-capability">
+              <span className="iad-design-capability-icon"><Layers3 size={22} strokeWidth={1.6} /></span>
+              <div><h3>Services</h3><p>Core units that run your business logic.</p></div>
+            </article>
+            <article className="iad-design-capability">
+              <span className="iad-design-capability-icon"><Database size={22} strokeWidth={1.6} /></span>
+              <div><h3>Data &amp; storage</h3><p>Manage and persist your system's data.</p></div>
+            </article>
+            <article className="iad-design-capability">
+              <span className="iad-design-capability-icon"><Workflow size={22} strokeWidth={1.6} /></span>
+              <div><h3>Integrations</h3><p>Connect external systems and third-party services.</p></div>
+            </article>
+            <article className="iad-design-capability">
+              <span className="iad-design-capability-icon"><ShieldCheck size={22} strokeWidth={1.6} /></span>
+              <div><h3>Security</h3><p>Handle authentication, authorization, and access control.</p></div>
+            </article>
+          </div>
+          <button className="iad-design-cta" type="button" onClick={onOpenDesigner}>Explore the canvas <ArrowRight size={15} /></button>
         </div>
       </section>
 

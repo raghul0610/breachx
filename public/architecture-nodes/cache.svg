@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="260" viewBox="0 0 320 260">
+ <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#30383e"/><stop offset="1" stop-color="#111619"/></linearGradient><linearGradient id="silver" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f1f4f6"/><stop offset=".5" stop-color="#9ca8b1"/><stop offset="1" stop-color="#68747d"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="5"/></filter></defs>
+ <rect x="9" y="9" width="302" height="242" rx="16" fill="url(#bg)" stroke="#73808a" stroke-opacity=".65"/>
+ <path d="M30 48H290M30 212H290" stroke="#dce2e6" stroke-opacity=".1" stroke-dasharray="3 7"/>
+ <g fill="none" stroke="url(#silver)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M160 70V91M160 169V190"/>
+ <path d="M80 130H116M204 130H240" stroke-opacity=".45"/>
+ <rect x="116" y="91" width="88" height="78" rx="12" fill="#20272c" stroke-width="2"/>
+ </g>
+ <circle cx="160" cy="130" r="24" fill="#9ca8b1" opacity=".12" filter="url(#glow)"/>
+ <g fill="none" stroke="url(#silver)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M145 114h30v30h-30zM151 120h18v18h-18z"/><path d="M160 105v9M160 144v9"/>
+ </g>
+ <g fill="#e8edf0" font-family="Arial,sans-serif"><text x="28" y="32" font-size="10" letter-spacing="2" opacity=".65">ANCHON / COMPONENT</text><text x="28" y="232" font-size="13" font-weight="700" letter-spacing="1.3">CACHE</text><text x="282" y="232" font-size="10" text-anchor="end" opacity=".55">CACHE</text></g>
+ <circle cx="160" cy="70" r="3" fill="#9ca8b1"/><circle cx="160" cy="190" r="3" fill="#9ca8b1"/>
+ </svg>

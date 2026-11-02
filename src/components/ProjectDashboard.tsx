@@ -14,9 +14,11 @@ import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
 import { ShapeGridBackground } from "./ShapeGridBackground";
 import { AnchonLogo } from "./AnchonLogo";
+import { EdgeRevealSidebar } from "./EdgeRevealSidebar";
 
 export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection }: { onBack: () => void; onOpenProject: (projectId: string) => void; onOpenWorkspaceSection: (section: "learn" | "guide" | "settings") => void }) {
   const [projects, setProjects] = useState<ArchitectureProject[]>([]);
+  const [dashboardSidebarOpen, setDashboardSidebarOpen] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [dialog, setDialog] = useState<{ type: "rename"; project: ArchitectureProject; name: string } | { type: "delete"; project: ArchitectureProject } | null>(null);
@@ -119,20 +121,20 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
   };
 
   return (
-    <div className="app-shell project-dashboard">
+    <div className="app-shell project-dashboard" onMouseMove={(event) => { if (event.clientX <= 24) setDashboardSidebarOpen(true); }}>
       <ShapeGridBackground />
-      <aside className="dashboard-sidebar" aria-label="Main navigation">
+      <EdgeRevealSidebar className="dashboard-sidebar" isOpen={dashboardSidebarOpen} label="Main navigation" onMouseLeave={(event) => { if (event.clientX > 24) setDashboardSidebarOpen(false); }}>
         <a className="dashboard-brand" href="#" onClick={(event) => { event.preventDefault(); onBack(); }} aria-label="ANCHON home"><span className="dashboard-brand-mark"><AnchonLogo size={25} /></span><span><strong>ANCHON</strong><small>ARCHITECTURE STUDIO</small></span></a>
         <div className="dashboard-nav-label">WORKSPACE</div>
         <nav className="dashboard-nav">
           <button type="button" className="is-active" aria-current="page"><Layers3 size={17} /><span>Projects</span><span className="dashboard-nav-count">{projects.length}</span></button>
-          <button type="button" onClick={() => openWorkspaceSection("learn")}><BookOpen size={17} /><span>Learn</span></button>
-          <button type="button" onClick={() => openWorkspaceSection("guide")}><Sparkles size={17} /><span>Guide</span></button>
+          <button type="button" onClick={() => window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/system-design-learning-guide.md", "_blank", "noopener,noreferrer")}><BookOpen size={17} /><span>Learn</span></button>
+          <button type="button" onClick={() => window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/anchon-user-guide.md", "_blank", "noopener,noreferrer")}><Sparkles size={17} /><span>Guide</span></button>
         </nav>
         <div className="dashboard-sidebar-spacer" />
         <div className="dashboard-nav dashboard-nav-bottom"><button type="button" onClick={() => openWorkspaceSection("settings")}><Settings size={17} /><span>Settings</span></button></div>
         <div className="dashboard-sidebar-footer"><span className="dashboard-status-dot" /> Private workspace</div>
-      </aside>
+      </EdgeRevealSidebar>
       <div className="dashboard-main">
       <header className="topbar">
         <button className="nav-btn" onClick={onBack}><ArrowLeft size={14} /> HOME</button>
@@ -170,7 +172,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
         ) : (
           <section className="project-grid" aria-label="Saved architecture projects" data-tutorial="project-grid">
             {projects.map((project) => (
-              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); setContextMenu({ project, x: Math.min(event.clientX, window.innerWidth - 190), y: Math.min(event.clientY, window.innerHeight - 160) }); }} aria-label={`${project.applicationName}, right-click for project actions`}>
+              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); setContextMenu({ project, x: Math.max(8, Math.min(event.clientX, window.innerWidth - 196)), y: Math.max(8, Math.min(event.clientY, window.innerHeight - 112)) }); }} aria-label={`${project.applicationName}, right-click for project actions`}>
                 <div className="project-card-heading">
                   <h2>{project.applicationName}</h2>
                   <button type="button" className="project-play-button" onClick={() => open(project.id)} aria-label={`Open ${project.applicationName}`} title="Open project"><Play size={14} fill="currentColor" /></button>
@@ -186,9 +188,8 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
       {contextMenu && (
         <div className="project-context-menu" role="menu" aria-label={`Actions for ${contextMenu.project.applicationName}`} style={{ left: contextMenu.x, top: contextMenu.y }} onPointerDown={(event) => event.stopPropagation()}>
           <div className="project-context-title">{contextMenu.project.applicationName}</div>
-          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); rename(project); }}><Pencil size={13} /> Rename</button>
-          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); duplicate(project); }}><Copy size={13} /> Duplicate</button>
-          <button type="button" role="menuitem" className="project-context-delete" onClick={() => { const project = contextMenu.project; setContextMenu(null); remove(project); }}><Trash2 size={13} /> Delete</button>
+          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); rename(project); }}><Pencil size={13} /> Edit project</button>
+          <button type="button" role="menuitem" className="project-context-delete" onClick={() => { const project = contextMenu.project; setContextMenu(null); remove(project); }}><Trash2 size={13} /> Delete project</button>
         </div>
       )}
       {dialog && (
