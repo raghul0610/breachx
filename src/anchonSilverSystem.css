@@ -1363,6 +1363,28 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
     width:min(280px,86vw)!important;max-height:calc(100dvh - 58px)!important;
   }
 }
+
+/* Final editor rail contract: keep the sidebar at the viewport edge and hoverable. */
+.app-shell .workspace > .sidebar.left-panel.requirements-panel.workspace-navigation {
+  left:0!important;
+}
+.app-shell .workspace > .sidebar.left-panel.requirements-panel.workspace-navigation.is-collapsed {
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:min(280px,calc(100vw - 32px))!important;
+  pointer-events:auto!important;
+  transform:translate3d(calc(-100% + 34px),0,0)!important;
+}
+.app-shell .workspace > .sidebar.left-panel.requirements-panel.workspace-navigation.is-open,
+.app-shell .workspace > .sidebar.left-panel.requirements-panel.workspace-navigation.is-revealed,
+.app-shell .workspace > .sidebar.left-panel.requirements-panel.workspace-navigation:hover {
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:translate3d(0,0,0)!important;
+}
 @media(prefers-reduced-motion:reduce) {
   .app-shell .workspace > .left-panel.requirements-panel.workspace-navigation { transition:none!important; }
 }

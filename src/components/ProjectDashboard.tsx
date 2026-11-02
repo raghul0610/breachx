@@ -201,7 +201,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
                 <div className="project-card-heading">
                   <h2>{project.applicationName}</h2>
                   <div className="project-card-actions">
-                    <button type="button" className="project-menu-trigger" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); const card = event.currentTarget.closest<HTMLElement>(".project-card"); if (card) showProjectMenu(project, card); }} aria-label={`Actions for ${project.applicationName}`} title="Project actions"><MoreVertical size={17} /></button>
+                    <button type="button" className="project-menu-trigger" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); if (contextMenu?.project.id === project.id) { setContextMenu(null); return; } const card = event.currentTarget.closest<HTMLElement>(".project-card"); if (card) showProjectMenu(project, card); }} aria-label={`Actions for ${project.applicationName}`} title="Project actions"><MoreVertical size={17} /></button>
                     <button type="button" className="project-play-button" onClick={() => open(project.id)} aria-label={`Open ${project.applicationName}`} title="Open project"><Play size={14} fill="currentColor" /></button>
                   </div>
                 </div>
