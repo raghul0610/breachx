@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap");
 
 .iad-root{position:relative;isolation:isolate;min-height:100vh;overflow:hidden;padding:26px clamp(18px,5vw,76px) 22px;background:#08080d;color:#f5f2ff;font-family:"Manrope",Inter,sans-serif}
@@ -554,7 +555,6 @@
   .iad-root .iad-ghost-fibers { opacity:.48; }
 }
 
-@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap");
 
 /* ANCHON graphite refinement: let the animated background remain visible. */
 .iad-root { background:#080b0d!important;color:#edf0f2!important; }
