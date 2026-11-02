@@ -1,5 +1,5 @@
 import { AnchonLogo } from "./AnchonLogo";
-import LiquidChrome from "./LiquidChrome";
+import GhostFibers from "./GhostFibers";
 import InfiniteSpiral from "./InfiniteSpiral";
 import { useEffect, useState } from "react";
 import {
@@ -103,8 +103,27 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
 
   return (
     <main className="iad-root" data-theme={theme}>
-      <div className="iad-liquid-background" aria-hidden="true">
-        <LiquidChrome color="#ffffff" speed={0.2} amplitude={0.3} detail={4} thickness={1} interactive={true} style={{}} />
+      <div className="iad-ghost-background" aria-hidden="true">
+        <GhostFibers
+          className="iad-ghost-fibers"
+          glowColor="#323535"
+          layers={3}
+          twist={1.2}
+          threads={72}
+          fiberStyle="dots"
+          depthOfField={0.85}
+          hoverEffect="focus"
+          intro
+          mouseInteraction
+          lineColor="#bcc5c5"
+          secondaryColor="#323535"
+          speed={0.22}
+          density={0.65}
+          particles={0.16}
+          glow={0.42}
+          brightness={0.72}
+          dpr={1.25}
+        />
       </div>
       <div className="iad-atmosphere" aria-hidden="true">
         <div className="iad-orbit iad-orbit-one" />
