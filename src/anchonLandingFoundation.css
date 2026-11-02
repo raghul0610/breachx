@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&display=swap");
 /* ANCHON landing page — Obsidian + engineered teal. */
 .iad-root {
   --iad-bg:#0a111b; --iad-surface:#101b28; --iad-surface-raised:#142333;
@@ -212,7 +213,6 @@
   .iad-root :is(.iad-design-copy>h2,.iad-bottom-copy h2,.iad-spiral-copy h2,.iad-capabilities-heading h2) {font-size:clamp(44px,12vw,62px)!important;}
 }
 
-@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&display=swap");
 /* Final silver landing-page overrides: background stays unobstructed. */
 .iad-root { --iad-bg:#080b0d!important;--iad-surface:transparent!important;--iad-surface-raised:rgba(220,226,230,.04)!important;--iad-line:rgba(188,197,197,.2)!important;--iad-text:#edf0f2!important;--iad-muted:#aab4bb!important;--iad-accent:#dce2e6!important;background:#080b0d!important;color:#edf0f2!important; }
 .iad-atmosphere { background:linear-gradient(180deg,rgba(8,11,13,.2),rgba(8,11,13,.56))!important; }
