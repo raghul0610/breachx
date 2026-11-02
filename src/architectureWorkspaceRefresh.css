@@ -70,6 +70,80 @@
 @media(prefers-reduced-motion:reduce){.app-shell .bp-node{transition:none!important}}
 
 
+/* Canvas nodes follow the compact reference card while keeping each category glyph. */
+.app-shell .canvas .bp-node {
+  width:220px!important;
+  min-width:220px!important;
+  max-width:220px!important;
+  min-height:160px!important;
+  padding:15px 14px 14px!important;
+  border:1px solid rgba(226,233,238,.78)!important;
+  border-radius:14px!important;
+  background:linear-gradient(145deg,rgba(22,27,30,.98),rgba(15,18,20,.99))!important;
+  box-shadow:0 14px 30px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.035)!important;
+  color:#e7edf0!important;
+}
+.app-shell .canvas .bp-node::before,
+.app-shell .canvas .bp-node::after { display:none!important; }
+.app-shell .canvas .bp-node:hover,
+.app-shell .canvas .bp-node.selected {
+  border-color:#e2e9ee!important;
+  box-shadow:0 0 0 1px rgba(226,233,238,.18),0 16px 36px rgba(0,0,0,.4)!important;
+}
+.app-shell .canvas .bp-node .node-heading {
+  width:100%;
+  min-height:15px;
+  margin:0!important;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.app-shell .canvas .bp-node .node-category {
+  color:#c5cdd2!important;
+  font:500 9px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  letter-spacing:.12em!important;
+}
+.app-shell .canvas .bp-node .node-status-icon { color:#8ce6c3; flex:none; }
+.app-shell .canvas .bp-node .node-symbol {
+  display:grid;
+  place-items:center;
+  width:43px;
+  height:43px;
+  margin:14px 0 10px;
+  border:1px solid rgba(183,201,211,.5);
+  border-radius:12px;
+  background:rgba(95,117,129,.2);
+  color:#d5e0e6;
+}
+.app-shell .canvas .bp-node .node-label {
+  margin:0!important;
+  color:#e9eef1!important;
+  font:700 14px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  letter-spacing:.045em!important;
+}
+.app-shell .canvas .bp-node .node-notes {
+  margin-top:7px!important;
+  color:#aab5bc!important;
+  font:500 10px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+}
+.app-shell .canvas .bp-node .handle {
+  width:10px!important;
+  height:10px!important;
+  background:#22343f!important;
+  border:1px solid #6b8797!important;
+  box-shadow:none!important;
+}
+@media(max-width:900px) {
+  .app-shell .canvas .bp-node { width:204px!important;min-width:204px!important;max-width:204px!important;min-height:148px!important; }
+}
+@media(max-width:640px) {
+  .app-shell .canvas .bp-node { width:180px!important;min-width:180px!important;max-width:180px!important;min-height:132px!important;padding:12px 11px 11px!important; }
+  .app-shell .canvas .bp-node .node-symbol { width:36px;height:36px;margin:10px 0 8px; }
+  .app-shell .canvas .bp-node .node-label { font-size:11px!important; }
+  .app-shell .canvas .bp-node .node-notes { font-size:9px!important; }
+}
+
+
 /* Final pass: symmetrical gutters, cleaner sidebar rhythm, semantic AI component silhouettes. */
 .app-shell .workspace {
   padding-inline:18px!important;
