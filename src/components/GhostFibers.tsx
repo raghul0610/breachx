@@ -1,7 +1,6 @@
-'use client';
-
 // @ts-nocheck
 // Upstream WebGL shader and render-loop internals use dynamic uniform maps.
+'use client';
 
 import { useEffect, useRef } from 'react';
 
