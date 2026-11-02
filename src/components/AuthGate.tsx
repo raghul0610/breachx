@@ -2,8 +2,8 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import { AnchonLogo } from "./AnchonLogo";
-import { listProjects, mergeProjectsFromCloud, replaceProjectsFromCloud } from "../lib/storage";
-import { listOwnedProjects, saveOwnedProjects } from "../lib/projectsRepository";
+import { createProject, listProjects, mergeProjectsFromCloud, replaceProjectsFromCloud } from "../lib/storage";
+import { importSharedProject, listOwnedProjects, saveOwnedProject, saveOwnedProjects } from "../lib/projectsRepository";
 import "./AuthGate.css";
 
 const OWNER_KEY = "anchon-cloud-owner-v1";
@@ -59,6 +59,18 @@ export function AuthGate({ children }: { children: ReactNode }) {
         localStorage.setItem(OWNER_KEY, userId);
         // Migrate anonymous local-first projects and reconcile local cache with the cloud.
         await saveOwnedProjects(listProjects());
+        const shareToken = new URLSearchParams(window.location.search).get("share");
+        if (shareToken) {
+          const sharedProject = await importSharedProject(shareToken);
+          if (sharedProject) {
+            const existing = listProjects().some((project) => project.applicationName === sharedProject.applicationName && project.notes === sharedProject.notes);
+            if (!existing) {
+              const localProject = createProject(sharedProject);
+              await saveOwnedProject(localProject);
+            }
+          }
+          window.history.replaceState({}, "", window.location.pathname);
+        }
         if (!alive) return;
         setProjectsReady(true);
       } catch (cause) {

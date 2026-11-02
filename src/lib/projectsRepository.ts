@@ -16,6 +16,11 @@ export type ProjectRow = {
   updated_at: string;
 };
 
+export type ProjectShare = {
+  token: string;
+  project: ArchitectureProject;
+};
+
 function toProject(row: ProjectRow): ArchitectureProject {
   return {
     id: row.id,
@@ -131,4 +136,33 @@ export async function deleteOwnedProject(projectId: string): Promise<void> {
   await requireOwnerId();
   const { error } = await supabase.from("projects").delete().eq("id", projectId);
   if (error) throw error;
+}
+
+export async function createProjectShare(projectId: string): Promise<string> {
+  const ownerId = await requireOwnerId();
+  const token = crypto.randomUUID();
+  const { error } = await supabase.from("project_shares").insert({ token, project_id: projectId, owner_id: ownerId });
+  if (error) throw error;
+  return `${window.location.origin}/?share=${encodeURIComponent(token)}`;
+}
+
+export async function importSharedProject(token: string): Promise<ArchitectureProject | null> {
+  await requireOwnerId();
+  const { data, error } = await supabase.rpc("resolve_project_share", { share_token: token });
+  if (error) throw error;
+  const row = (data as ProjectRow[] | null)?.[0];
+  if (!row) return null;
+  return {
+    id: crypto.randomUUID(),
+    applicationName: `${row.application_name} (shared)`,
+    applicationDescription: row.application_description,
+    nodes: structuredClone(row.nodes),
+    edges: structuredClone(row.edges),
+    notes: row.notes,
+    workload: row.workload ?? undefined,
+    viewport: row.viewport ?? undefined,
+    status: "draft",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 }

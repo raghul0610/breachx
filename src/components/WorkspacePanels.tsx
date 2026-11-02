@@ -28,7 +28,7 @@ export function WorkspaceShare({ applicationName, applicationDescription, notes,
     <div className="share-preview-card"><div><span className="section-kicker">CURRENT DESIGN</span><h3>{applicationName || "Untitled architecture"}</h3><p>{applicationDescription}</p></div><div className="share-stats"><strong>{nodes.length}</strong><span>components</span><strong>{edges.length}</strong><span>connections</span></div></div>
     <div className="share-action-grid"><button type="button" className="share-action-card" onClick={onExport}><Download size={19}/><strong>Export PDF</strong><span>Readable architecture document</span></button><button type="button" className="share-action-card" onClick={copySnapshot}><Copy size={19}/><strong>Copy JSON snapshot</strong><span>Portable structured architecture data</span></button></div>
     {status && <p className="workspace-inline-status" role="status">{status}</p>}
-    <div className="workspace-note-card"><ShieldCheck size={18}/><div><strong>Sharing status</strong><p>Public live links and collaborative editing are not enabled in this workspace yet. This page only exports or copies data; it does not make your project public.</p></div></div>
+    <div className="workspace-note-card"><ShieldCheck size={18}/><div><strong>Sharing status</strong><p>Use the three-dot menu on a project card to create a private share link. Recipients must sign in before ANCHON copies the shared project into their workspace.</p></div></div>
   </div>;
 }
 

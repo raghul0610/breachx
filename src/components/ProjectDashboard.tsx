@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, BookOpen, Copy, FolderPlus, Github, Layers3, Pencil, Play, Plus, Settings, Sparkles, Trash2, Workflow } from "lucide-react";
+import { ArrowLeft, BookOpen, FolderPlus, Github, Layers3, MoreVertical, Pencil, Play, Plus, Settings, Share2, Sparkles, Trash2, Workflow } from "lucide-react";
 import {
   createProject,
   deleteProject,
@@ -9,7 +9,7 @@ import {
   setActiveProject,
   type ArchitectureProject,
 } from "../lib/storage";
-import { deleteOwnedProject } from "../lib/projectsRepository";
+import { createProjectShare, deleteOwnedProject } from "../lib/projectsRepository";
 import "./ProjectDashboard.css";
 import { InteractiveTutorial } from "./InteractiveTutorial";
 import GhostFibers from "./GhostFibers";
@@ -23,6 +23,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
   const [busy, setBusy] = useState(false);
   const [dialog, setDialog] = useState<{ type: "rename"; project: ArchitectureProject; name: string } | { type: "delete"; project: ArchitectureProject } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ project: ArchitectureProject; x: number; y: number } | null>(null);
+  const [shareMessage, setShareMessage] = useState("");
   const [lastOpened, setLastOpened] = useState<Record<string, string>>({});
   const markOpened = (id: string) => { const timestamp = new Date().toISOString(); try { window.localStorage.setItem(`anchon:project-last-opened:${id}`, timestamp); } catch { /* local tracking is optional */ } setLastOpened(current => ({ ...current, [id]: timestamp })); };
   const formatLastOpened = (id: string) => { const value = lastOpened[id]; if (!value) return "Not opened yet"; const date = new Date(value); return Number.isNaN(date.getTime()) ? "Not opened yet" : `Last opened ${date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · ${date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`; };
@@ -104,6 +105,21 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
 
   const remove = (project: ArchitectureProject) => setDialog({ type: "delete", project });
 
+  const share = async (project: ArchitectureProject) => {
+    setContextMenu(null);
+    try {
+      const link = await createProjectShare(project.id);
+      await navigator.clipboard.writeText(link);
+      setShareMessage("Share link copied. Anyone with the link can sign in to receive a copy of this project.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not create a share link.");
+    }
+  };
+
+  const showProjectMenu = (project: ArchitectureProject, x: number, y: number) => {
+    setContextMenu({ project, x: Math.max(8, Math.min(x, window.innerWidth - 214)), y: Math.max(8, Math.min(y, window.innerHeight - 150)) });
+  };
+
   const confirmDelete = async () => {
     if (dialog?.type !== "delete") return;
     const project = dialog.project;
@@ -162,6 +178,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
           </div>
         </section>
         {error && <div className="project-error" role="alert">{error}</div>}
+        {shareMessage && <div className="project-share-feedback" role="status">{shareMessage}<button type="button" onClick={() => setShareMessage("")} aria-label="Dismiss share message">×</button></div>}
         {projects.length === 0 && !error ? (
           <section className="project-empty panel">
             <FolderPlus size={28} />
@@ -172,10 +189,13 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
         ) : (
           <section className="project-grid" aria-label="Saved architecture projects" data-tutorial="project-grid">
             {projects.map((project) => (
-              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); setContextMenu({ project, x: Math.max(8, Math.min(event.clientX, window.innerWidth - 196)), y: Math.max(8, Math.min(event.clientY, window.innerHeight - 112)) }); }} aria-label={`${project.applicationName}, right-click for project actions`}>
+              <article className="project-card panel" key={project.id} onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); showProjectMenu(project, event.clientX, event.clientY); }} aria-label={`${project.applicationName}, right-click for project actions`}>
                 <div className="project-card-heading">
                   <h2>{project.applicationName}</h2>
-                  <button type="button" className="project-play-button" onClick={() => open(project.id)} aria-label={`Open ${project.applicationName}`} title="Open project"><Play size={14} fill="currentColor" /></button>
+                  <div className="project-card-actions">
+                    <button type="button" className="project-menu-trigger" onPointerDown={(event) => event.stopPropagation()} onClick={(event) => { event.stopPropagation(); const rect = event.currentTarget.getBoundingClientRect(); showProjectMenu(project, rect.right - 202, rect.bottom + 8); }} aria-label={`Actions for ${project.applicationName}`} title="Project actions"><MoreVertical size={17} /></button>
+                    <button type="button" className="project-play-button" onClick={() => open(project.id)} aria-label={`Open ${project.applicationName}`} title="Open project"><Play size={14} fill="currentColor" /></button>
+                  </div>
                 </div>
                 <p className="project-last-opened">{formatLastOpened(project.id)}</p>
               </article>
@@ -188,7 +208,8 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
       {contextMenu && (
         <div className="project-context-menu" role="menu" aria-label={`Actions for ${contextMenu.project.applicationName}`} style={{ left: contextMenu.x, top: contextMenu.y }} onPointerDown={(event) => event.stopPropagation()}>
           <div className="project-context-title">{contextMenu.project.applicationName}</div>
-          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); rename(project); }}><Pencil size={13} /> Edit project</button>
+          <button type="button" role="menuitem" onClick={() => { const project = contextMenu.project; setContextMenu(null); rename(project); }}><Pencil size={13} /> Rename project</button>
+          <button type="button" role="menuitem" onClick={() => void share(contextMenu.project)}><Share2 size={13} /> Share project</button>
           <button type="button" role="menuitem" className="project-context-delete" onClick={() => { const project = contextMenu.project; setContextMenu(null); remove(project); }}><Trash2 size={13} /> Delete project</button>
         </div>
       )}

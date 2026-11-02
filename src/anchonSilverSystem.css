@@ -1255,6 +1255,8 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 .architecture-finding-copy>span,.architecture-evaluation-more { color:#aeb8c0!important; }
 .architecture-evaluation-header>button,
 .architecture-evaluation-finding { border-color:rgba(184,195,203,.18)!important;color:#e8edf0!important; }
+.app-shell:not(.lp-root) .architecture-evaluation-header>button { border-color:#59656d!important;background:#2c3337!important;color:#f1f4f5!important; }
+.app-shell:not(.lp-root) .architecture-evaluation-header>button:hover { border-color:#dce2e6!important;background:#4a555b!important; }
 .architecture-evaluation-finding:hover,.architecture-evaluation-finding.is-selected {
   background:rgba(184,195,203,.09)!important;border-color:rgba(220,226,231,.48)!important;
 }

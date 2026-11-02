@@ -2269,7 +2269,9 @@ body, .app-shell, .home, .lp-root {
 .architecture-evaluation-heading { display:flex; flex:1; flex-direction:column; gap:3px; min-width:0; }
 .architecture-evaluation-heading strong { font-size:10px; letter-spacing:.12em; color:#ddd0ff; }
 .architecture-evaluation-heading span { font-size:11px; color:#a69bb9; }
-.architecture-evaluation-header>button { display:grid; place-items:center; width:27px; height:27px; border-radius:8px; border:1px solid rgba(196,181,253,.18); color:#c4b5fd; background:rgba(196,181,253,.06); cursor:pointer; }
+.architecture-evaluation-header>button { display:grid; place-items:center; flex:none; width:32px; height:32px; margin-left:auto; border:1px solid rgba(220,226,231,.3); border-radius:9px; color:#e7edf0; background:#252c30; cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
+.architecture-evaluation-header>button:hover { border-color:#e7edf0; background:#394247; transform:translateY(-1px); }
+.architecture-evaluation-header>button:focus-visible { outline:2px solid #dce2e6; outline-offset:3px; }
 .architecture-evaluation-clean { margin:11px 2px 2px; color:#b5aeca; font-size:12px; line-height:1.6; }
 .architecture-evaluation-findings { display:grid; gap:7px; padding-top:9px; }
 .architecture-evaluation-finding { width:100%; display:grid; grid-template-columns:70px minmax(0,1fr); gap:9px; padding:9px; text-align:left; border-radius:10px; border:1px solid rgba(196,181,253,.14); color:#e8e1f5; background:rgba(255,255,255,.025); cursor:pointer; }

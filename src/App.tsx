@@ -54,7 +54,7 @@ function AppContent() {
 
 
 export default function App() {
-  const [authRequested, setAuthRequested] = useState(false);
+  const [authRequested, setAuthRequested] = useState(() => new URLSearchParams(window.location.search).has("share"));
   const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
