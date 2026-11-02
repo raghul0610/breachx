@@ -68,7 +68,7 @@ button, input, textarea, select { font-family: var(--anchon-font-ui); }
 .dashboard-nav button.is-active svg { color: var(--aqua-accent); }
 .dashboard-nav button:disabled { opacity: .38; cursor: not-allowed; }
 .dashboard-nav-count { margin-left: auto; color: #7e9995; font: 500 9px var(--anchon-font-data); }
-.dashboard-sidebar-spacer { flex: 1; }
+.dashboard-sidebar-spacer { flex: 1 1 auto; min-height: 150px; }
 .dashboard-nav-bottom { padding-top: 12px; border-top: 1px solid rgba(149,181,177,.12); }
 .dashboard-sidebar-footer { display: flex; align-items: center; gap: 8px; padding: 18px 10px 3px; color: #718582; font-size: 10px; }
 .dashboard-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--aqua-accent); box-shadow: 0 0 10px rgba(85,214,194,.4); }
