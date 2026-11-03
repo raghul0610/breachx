@@ -161,7 +161,7 @@ export function ArchitectureAIChat({
         {loading && <div className="ai-chat-loading"><LoaderCircle size={14} className="ai-chat-spinner" /> Thinking through the architecture…</div>}
       </div>
       {error && <p className="ai-chat-error" role="alert">{error}</p>}
-      {pending && mode === "planning" && (
+      {pending && (
         <div className="ai-chat-plan">
           <div><strong>PROPOSED CHANGESET</strong><span>{pending.nodes.length} components · {pending.edges.length} connections</span></div>
           <p>{pending.result.designDecisions.slice(0, 2).join(" ") || pending.result.overview}</p>
