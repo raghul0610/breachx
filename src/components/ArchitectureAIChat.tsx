@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Check, LoaderCircle, MessageSquare, Send } from "lucide-react";
+import { Check, LoaderCircle, MessageSquare, Send, BrainCircuit, Bot } from "lucide-react";
 import { AnchonLogo } from "./AnchonLogo";
 import { MarkerType, Position, type Edge, type Node } from "@xyflow/react";
 import { supabase } from "../lib/supabase";
@@ -20,6 +20,7 @@ type GeneratedArchitecture = {
   connections: { source: string; target: string; label: string; communicationType?: string; purpose?: string }[];
 };
 type ChatMessage = { role: "user" | "assistant"; content: string };
+type Mode = "planning" | "agent";
 
 export function ArchitectureAIChat({
   name,
@@ -36,6 +37,7 @@ export function ArchitectureAIChat({
   onApply: (name: string, nodes: Node<BlueprintNodeData>[], edges: Edge[], summary: string) => void;
   onBeforeApply: () => void;
 }) {
+  const [mode, setMode] = useState<Mode>("planning");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -126,7 +128,12 @@ export function ArchitectureAIChat({
       const validationSummary = result.validation?.warnings?.length ? " Structural warnings: " + result.validation.warnings.slice(0, 2).join(" ") : "";
       const evaluationSummary = " Judge score " + (result.evaluation?.score ?? "—") + "/100; no critical/high findings."; 
       const summary = "Proposed " + spaciousNodes.length + " components and " + nextEdges.length + " connections in a compact horizontal layout. " + result.overview + evaluationSummary + validationSummary;
-      setMessages((current) => [...current, { role: "assistant", content: `Architecture proposal ready. ${summary} Review it, then apply the changes to your canvas.` }]);
+      setMessages((current) => [...current, { role: "assistant", content: mode === "agent" ? `Applied your request: ${summary}` : `Plan ready. ${summary} Review it, then apply the proposal to the canvas.` }]);
+      if (mode === "agent") {
+        onBeforeApply();
+        onApply(result.architectureName || name, spaciousNodes, nextEdges, result.overview);
+        setPending(null);
+      }
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "The architecture assistant could not complete that request.";
       setError(message);
@@ -147,10 +154,15 @@ export function ArchitectureAIChat({
   return (
     <section className="architecture-ai-chat" aria-label="AI architecture assistant" data-tutorial="architecture-ai-chat">
       <div className="ai-chat-heading">
-        <div className="ai-chat-title-icon"><AnchonLogo size={23} /></div>
-        <div className="ai-chat-title"><strong>Ask ANCHON</strong><span>Architecture assistant</span></div>
+        <div className="ai-chat-title-icon"><AnchonLogo size={21} /></div>
+        <div className="ai-chat-title"><strong>ARCHITECTURE AI</strong><span>CRUD assistant · OpenRouter</span></div>
         <span className="ai-chat-live-dot" title="Assistant available" />
       </div>
+      <div className="ai-chat-mode" role="group" aria-label="AI operating mode">
+        <button type="button" className={mode === "planning" ? "active" : ""} onClick={() => { setMode("planning"); setPending(null); }} aria-pressed={mode === "planning"}><BrainCircuit size={12} /> PLANNING</button>
+        <button type="button" className={mode === "agent" ? "active" : ""} onClick={() => { setMode("agent"); setPending(null); }} aria-pressed={mode === "agent"}><Bot size={12} /> AGENT</button>
+      </div>
+      <div className="ai-chat-mode-hint">{mode === "planning" ? "Propose changes first. You decide when to apply them." : "Generate and apply changes directly to the canvas."}</div>
       <div className="ai-chat-messages" aria-live="polite">
         {messages.map((message, index) => (
           <article key={index} className={`ai-chat-message ai-chat-message-${message.role}`}>
@@ -161,11 +173,11 @@ export function ArchitectureAIChat({
         {loading && <div className="ai-chat-loading"><LoaderCircle size={14} className="ai-chat-spinner" /> Thinking through the architecture…</div>}
       </div>
       {error && <p className="ai-chat-error" role="alert">{error}</p>}
-      {pending && (
+      {pending && mode === "planning" && (
         <div className="ai-chat-plan">
           <div><strong>PROPOSED CHANGESET</strong><span>{pending.nodes.length} components · {pending.edges.length} connections</span></div>
           <p>{pending.result.designDecisions.slice(0, 2).join(" ") || pending.result.overview}</p>
-          <button type="button" className="ai-chat-apply" onClick={applyPlan}><Check size={14} /> Apply to canvas</button>
+          <button type="button" className="ai-chat-apply" onClick={applyPlan}><Check size={13} /> APPLY TO CANVAS</button>
         </div>
       )}
       <form className="ai-chat-composer" onSubmit={submit}>
