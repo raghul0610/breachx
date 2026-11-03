@@ -14,76 +14,101 @@ const curriculum:Level[] = rawLevels.map((level:any, levelIndex:number)=>({
     lesson:item[5]+" "+item[4]
   }))
 }));
-const STORAGE_KEY="anchon.academy.mastery.v3";
-const LAB_STORAGE_KEY="anchon.academy.lab.v1";
+
+const STORAGE_KEY="anchon.academy.learned.v4";
+const LAB_STORAGE_KEY="anchon.academy.lab.v2";
+const references=[
+ {name:"Google SRE Book",url:"https://sre.google/sre-book/table-of-contents/"},
+ {name:"Google SRE Workbook",url:"https://sre.google/workbook/table-of-contents/"},
+ {name:"AWS Well-Architected",url:"https://docs.aws.amazon.com/wellarchitected/latest/framework/"},
+ {name:"AWS Builders' Library",url:"https://aws.amazon.com/builders-library/"},
+ {name:"Azure Well-Architected",url:"https://learn.microsoft.com/en-us/azure/well-architected/"},
+ {name:"Google Cloud Architecture Framework",url:"https://cloud.google.com/architecture/framework"},
+ {name:"Designing Data-Intensive Applications resources",url:"https://dataintensive.net/"},
+ {name:"Netflix Tech Blog",url:"https://netflixtechblog.com/"},
+ {name:"Uber Engineering",url:"https://www.uber.com/blog/engineering/"},
+ {name:"Meta Engineering",url:"https://engineering.fb.com/"}
+];
+const projectBriefs=[
+ {name:"Campus marketplace",context:"Build a campus marketplace for 20,000 students. Students list products, search listings, message sellers and report abuse.",constraints:["Peak traffic is 8× the daily average during evening hours.","Private messages must only be visible to participants.","Images must remain available if an application instance is replaced."],deliverable:"A requirements map, capacity estimate, service boundary and first request/data-flow diagram."},
+ {name:"Multi-tenant SaaS issue tracker",context:"Design an issue tracker used by 500 organizations. Teams create projects, assign issues, comment, search and receive notifications.",constraints:["A tenant must never read another tenant's records.","Search results may be eventually consistent for a few seconds.","A single noisy tenant must not exhaust shared capacity."],deliverable:"An API boundary, tenant-aware data model, authorization flow and isolation strategy."},
+ {name:"Digital wallet and ledger",context:"Build a wallet for peer-to-peer transfers, balance history, refunds and reconciliation.",constraints:["A transfer must never debit without a corresponding credit.","Retries must not create duplicate transfers.","The ledger must be auditable and recoverable."],deliverable:"A transactional data model, invariants, idempotent APIs and concurrency-control design."},
+ {name:"Short-video processing platform",context:"Users upload short videos, apply processing, publish clips and stream them to followers.",constraints:["Uploads can be large and processing can take minutes.","Workers can crash and messages can be delivered more than once.","Playback should not depend on the processing service being online."],deliverable:"An upload, queue, worker, object-storage and playback architecture."},
+ {name:"Flash-sale commerce platform",context:"A commerce platform launches a limited-stock sale with sudden traffic spikes and concurrent checkout attempts.",constraints:["Inventory must not become negative.","The platform must protect payment and order services from overload.","Users need clear outcomes when checkout is delayed."],deliverable:"A traffic-management plan, inventory consistency model, cache strategy and asynchronous order flow."},
+ {name:"Food delivery dispatch",context:"Customers place orders, restaurants prepare them and couriers accept and complete deliveries.",constraints:["Order state transitions must be valid.","Location updates arrive continuously and may be delayed.","Dispatch must continue when a downstream notification provider is unavailable."],deliverable:"A domain service map, event flow, queue partitioning and failure-handling strategy."},
+ {name:"Online examination platform",context:"Run timed examinations for 100,000 candidates, autosave answers and submit responses reliably.",constraints:["A candidate must not lose saved answers after a browser refresh.","Exam submission has a strict deadline.","Traffic peaks at synchronized start and end times."],deliverable:"A resilient write path, autosave contract, admission-control strategy and observability plan."},
+ {name:"Healthcare appointment platform",context:"Patients find clinicians, book appointments, receive reminders and view their own records.",constraints:["Patient data requires strict access control and auditability.","A reminder provider can be unavailable.","Double booking must be prevented."],deliverable:"A privacy boundary, transactional booking model, durable workflow and audit design."},
+ {name:"Global collaboration workspace",context:"Teams collaborate on documents, comments and real-time activity across regions.",constraints:["Concurrent edits need a conflict strategy.","Users expect low latency across regions.","A regional outage must have a documented recovery plan."],deliverable:"A collaboration data flow, consistency model, regional topology and recovery plan."},
+ {name:"Global video-on-demand platform",context:"Design a production-scale video platform with upload, transcoding, metadata, search, recommendations and global playback.",constraints:["Media processing is asynchronous and retryable.","Playback is globally distributed and cache-heavy.","The system must tolerate regional failures and control cost per viewing hour."],deliverable:"An end-to-end architecture, capacity model, failure analysis, security controls and operational plan."}
+];
 export function AcademyPage(){
- const [completed,setCompleted]=useState<string[]>([]);
  const [activeLevel,setActiveLevel]=useState(0);
- const [activePuzzle,setActivePuzzle]=useState(0);
- const [selected,setSelected]=useState<number|null>(null);
- const [submitted,setSubmitted]=useState(false);
- const [activeTab,setActiveTab]=useState<"learn"|"lab">("learn");
+ const [activeTopic,setActiveTopic]=useState(0);
+ const [activeTab,setActiveTab]=useState<"learn"|"build">("learn");
+ const [learned,setLearned]=useState<string[]>([]);
  const [completedLabs,setCompletedLabs]=useState<number[]>([]);
- useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");if(Array.isArray(saved))setCompleted(saved.filter((id:any)=>typeof id==="string"));const labs=JSON.parse(localStorage.getItem(LAB_STORAGE_KEY)||"[]");if(Array.isArray(labs))setCompletedLabs(labs.filter((id:any)=>Number.isInteger(id)&&id>=0&&id<10));}catch{setCompleted([]);setCompletedLabs([]);}},[]);
- const total=curriculum.reduce((sum,level)=>sum+level.puzzles.length,0);
- const completedCount=completed.length;
- const progress=Math.round(completedCount/total*100);
- const puzzlesDone=(level:Level)=>level.puzzles.every(p=>completed.includes(p.id));
- const levelDone=(level:Level)=>puzzlesDone(level)&&completedLabs.includes(curriculum.indexOf(level));
- const unlockedLevel=Math.min(curriculum.length-1,curriculum.findIndex(level=>!levelDone(level))===-1?curriculum.length-1:curriculum.findIndex(level=>!levelDone(level)));
- const currentLevel=curriculum[activeLevel];
- const currentPuzzle=currentLevel.puzzles[activePuzzle];
- const puzzleDone=completed.includes(currentPuzzle.id);
- const levelUnlocked=(index:number)=>index<=unlockedLevel;
- const puzzleUnlocked=(levelIndex:number,puzzleIndex:number)=>levelIndex<unlockedLevel||(levelIndex===unlockedLevel&&curriculum[levelIndex].puzzles.slice(0,puzzleIndex).every(p=>completed.includes(p.id)));
- const selectPuzzle=(levelIndex:number,puzzleIndex:number)=>{if(!puzzleUnlocked(levelIndex,puzzleIndex))return;setActiveLevel(levelIndex);setActivePuzzle(puzzleIndex);setSelected(null);setSubmitted(false);setActiveTab("learn");};
- const completeLab=(levelIndex:number)=>{if(completedLabs.includes(levelIndex))return;const next=[...completedLabs,levelIndex];setCompletedLabs(next);try{localStorage.setItem(LAB_STORAGE_KEY,JSON.stringify(next));}catch{/* progress remains in memory for this session */}};
- const persist=(next:string[])=>{setCompleted(next);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}catch{/* progress remains in memory for this session */}};
- const checkAnswer=()=>{if(selected===null)return;setSubmitted(true);if(selected===currentPuzzle.answer&&!completed.includes(currentPuzzle.id))persist([...completed,currentPuzzle.id]);};
- const nextPuzzle=()=>{if(activePuzzle<9)selectPuzzle(activeLevel,activePuzzle+1);else if(activeLevel<9&&levelDone(currentLevel))selectPuzzle(activeLevel+1,0);};
- const reset=()=>{persist([]);setCompletedLabs([]);try{localStorage.removeItem(LAB_STORAGE_KEY);}catch{/* ignore unavailable storage */}setActiveLevel(0);setActivePuzzle(0);setSelected(null);setSubmitted(false);setActiveTab("learn");};
- const refs=[{name:"Google SRE Book",url:"https://sre.google/sre-book/table-of-contents/"},{name:"Google SRE Workbook",url:"https://sre.google/workbook/table-of-contents/"},{name:"AWS Well-Architected Framework",url:"https://docs.aws.amazon.com/wellarchitected/latest/framework/"},{name:"Microsoft Azure Well-Architected Framework",url:"https://learn.microsoft.com/en-us/azure/well-architected/pillars"},{name:"Google Cloud Architecture Framework",url:"https://docs.cloud.google.com/architecture/framework"}];
- return <div className="academy-page academy-v2 academy-mastery">
-  <header className="academy-hero">
-   <div className="academy-kicker">ANCHON ACADEMY · SYSTEM DESIGN MASTERY PATH</div>
-   <h1>Think in systems. <span>Design for reality.</span></h1>
-   <p>Ten progressive levels. One hundred scenario-based puzzles. Build the reasoning required to design, evaluate and operate complex systems—from first principles to global architecture.</p>
-   <div className="academy-progress"><div><span>MASTERY PROGRESS</span><strong>{completedCount} / {total} puzzles solved</strong></div><strong>{progress}%</strong><div className="academy-progress-track"><span style={{width:progress+"%"}}/></div></div>
-   <div className="academy-mastery-stats"><span><strong>10</strong> LEVELS</span><span><strong>100</strong> PUZZLES</span><span><strong>10</strong> DESIGN LABS</span><span><strong>{curriculum.filter(levelDone).length}</strong> LEVELS CLEARED</span></div>
+ useEffect(()=>{try{const topics=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");if(Array.isArray(topics))setLearned(topics.filter((x:any)=>typeof x==="string"));const labs=JSON.parse(localStorage.getItem(LAB_STORAGE_KEY)||"[]");if(Array.isArray(labs))setCompletedLabs(labs.filter((x:any)=>Number.isInteger(x)&&x>=0&&x<10));}catch{/* local progress is optional */}},[]);
+ const level=curriculum[activeLevel];
+ const topic=level.puzzles[activeTopic];
+ const topicKey=topic.id;
+ const topicDone=learned.includes(topicKey);
+ const totalTopics=curriculum.reduce((n,item)=>n+item.puzzles.length,0);
+ const learnedCount=learned.length;
+ const progress=Math.round(learnedCount/totalTopics*100);
+ const saveLearned=(next:string[])=>{setLearned(next);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}catch{/* keep session progress */}};
+ const markLearned=()=>{if(!topicDone)saveLearned([...learned,topicKey]);};
+ const chooseLevel=(index:number)=>{setActiveLevel(index);setActiveTopic(0);setActiveTab("learn");};
+ const chooseTopic=(index:number)=>{setActiveTopic(index);setActiveTab("learn");};
+ const completeLab=()=>{if(completedLabs.includes(activeLevel))return;const next=[...completedLabs,activeLevel];setCompletedLabs(next);try{localStorage.setItem(LAB_STORAGE_KEY,JSON.stringify(next));}catch{/* keep session progress */}};
+ const resetProgress=()=>{saveLearned([]);setCompletedLabs([]);try{localStorage.removeItem(LAB_STORAGE_KEY);}catch{/* ignore */}};
+ const project=projectBriefs[activeLevel];
+ const implementationSteps=[
+  "Translate the scenario into functional requirements and measurable quality attributes.",
+  "Identify the trust boundaries, data owners and external dependencies.",
+  "Place the components needed to satisfy the brief on the canvas.",
+  "Connect request, data and asynchronous flows in the correct direction.",
+  "Run the request or failure scenario, inspect the result and locate the broken boundary.",
+  "Revise the graph and validate the architecture against every stated constraint."
+ ];
+ return <main className="academy-page academy-v3">
+  <header className="academy-v3-hero">
+   <div className="academy-v3-kicker">ANCHON ACADEMY / SYSTEM DESIGN STUDIO</div>
+   <h1>Learn the system. <span>Build the architecture.</span></h1>
+   <p>Ten open curriculum sections, one hundred engineering topics, and ten project-scale architecture studios. Learn by modelling real systems, connecting components, running requests and diagnosing failures.</p>
+   <div className="academy-v3-progress"><div><span>LEARNING JOURNEY</span><strong>{learnedCount} / {totalTopics} topics studied</strong></div><strong>{progress}%</strong><div className="academy-v3-progress-track"><i style={{width:progress+"%"}}/></div></div>
+   <div className="academy-v3-stats"><span><b>10</b> SECTIONS</span><span><b>100</b> ENGINEERING TOPICS</span><span><b>10</b> PROJECT STUDIOS</span><span><b>{completedLabs.length}</b> DESIGNS VALIDATED</span></div>
   </header>
-  <div className="academy-layout">
-   <aside className="academy-level-list" aria-label="System design mastery levels">
-    {curriculum.map((level,index)=>{const done=levelDone(level),locked=!levelUnlocked(index);return <button type="button" key={level.id} disabled={locked} className={index===activeLevel?"active":""} onClick={()=>selectPuzzle(index,0)}>
-      <span className="academy-level-number">{done?<Check size={14}/>:locked?<Lock size={13}/>:String(index+1).padStart(2,"0")}</span>
-      <span className="academy-level-copy"><small>{level.subtitle}</small><strong>{level.title}</strong><em>{done?"LEVEL CLEARED":locked?"LOCKED":`${level.puzzles.filter(p=>completed.includes(p.id)).length}/10 PUZZLES`}</em></span><ChevronRight size={15}/>
-    </button>;})}
-    <div className="academy-level-note"><Trophy size={15}/><span>Clear all 10 puzzles and the hands-on design challenge to unlock the next level.</span></div>
-    <button type="button" className="academy-reset" onClick={reset}><RotateCcw size={13}/> Reset mastery progress</button>
+  <div className="academy-v3-shell">
+   <aside className="academy-v3-sidebar">
+    <div className="academy-v3-sidebar-title"><span>CURRICULUM</span><small>ALL SECTIONS OPEN</small></div>
+    {curriculum.map((item,index)=>{const done=item.puzzles.filter(p=>learned.includes(p.id)).length;return <button type="button" key={item.id} className={activeLevel===index?"active":""} onClick={()=>chooseLevel(index)}><span className="academy-v3-index">{String(index+1).padStart(2,"0")}</span><span className="academy-v3-section-name"><small>{item.subtitle.split("·").slice(1).join("·").trim()}</small><strong>{item.title}</strong><i>{done}/10 topics studied</i></span><ChevronRight size={15}/></button>;})}
+    <button type="button" className="academy-v3-reset" onClick={resetProgress}><RotateCcw size={13}/> Reset learning progress</button>
    </aside>
-   <section className="academy-mission">
-    <div className="academy-mission-top"><span>{currentLevel.subtitle}</span><span>{levelDone(currentLevel)?"LEVEL CLEARED":"IN PROGRESS"}</span></div>
-    <h2>{currentLevel.title}</h2><p className="academy-briefing">{currentLevel.outcome}</p>
-    <div className="academy-level-intro">{currentLevel.intro}</div>
-    <div className="academy-phase-tabs" role="tablist" aria-label="Academy phases">
-     <button type="button" role="tab" aria-selected={activeTab==="learn"} className={activeTab==="learn"?"active":""} onClick={()=>setActiveTab("learn")}><BookOpen size={14}/> LEARN & SOLVE <span>{currentLevel.puzzles.filter(p=>completed.includes(p.id)).length}/10</span></button>
-     <button type="button" role="tab" aria-selected={activeTab==="lab"} className={activeTab==="lab"?"active":""} disabled={!puzzlesDone(currentLevel)} onClick={()=>setActiveTab("lab")}><ShieldCheck size={14}/> DESIGN LAB <span>{completedLabs.includes(activeLevel)?"CLEARED":puzzlesDone(currentLevel)?"UNLOCKED":"LOCKED"}</span></button>
+   <section className="academy-v3-main">
+    <div className="academy-v3-section-head"><div><span>{level.subtitle}</span><h2>{level.title}</h2><p>{level.outcome}</p></div><span className="academy-v3-open">OPEN CURRICULUM</span></div>
+    <div className="academy-v3-intro">{level.intro}</div>
+    <div className="academy-v3-tabs" role="tablist" aria-label="Section workspace">
+     <button type="button" role="tab" aria-selected={activeTab==="learn"} className={activeTab==="learn"?"active":""} onClick={()=>setActiveTab("learn")}><BookOpen size={15}/> LEARN THE TOPICS <span>{level.puzzles.filter(p=>learned.includes(p.id)).length}/10</span></button>
+     <button type="button" role="tab" aria-selected={activeTab==="build"} className={activeTab==="build"?"active":""} onClick={()=>setActiveTab("build")}><Waypoints size={15}/> SECTION DESIGN STUDIO <span>{completedLabs.includes(activeLevel)?"VALIDATED":"CANVAS"}</span></button>
     </div>
-    {activeTab==="learn"?<>
-    <div className="academy-lesson-tabs" aria-label="Puzzles in this level">{currentLevel.puzzles.map((puzzle,index)=>{const done=completed.includes(puzzle.id),locked=!puzzleUnlocked(activeLevel,index);return <button type="button" key={puzzle.id} disabled={locked} className={index===activePuzzle?"active":""} onClick={()=>selectPuzzle(activeLevel,index)} aria-label={`Puzzle ${index+1}: ${puzzle.title}`}><span>{done?<Check size={12}/>:index+1}</span><small>{puzzle.title}</small></button>;})}</div>
-    <article className="academy-lesson">
-     <div className="academy-lesson-meta"><span>PUZZLE {String(activePuzzle+1).padStart(2,"0")} / 10</span>{puzzleDone&&<span className="academy-complete-label"><Check size={12}/> SOLVED</span>}</div>
-     <h3>{currentPuzzle.title}</h3>
-     <p className="academy-lesson-content">{currentPuzzle.lesson}</p>
-     <div className="academy-knowledge-check"><div className="academy-check-title"><CircleHelp size={16}/><strong>ARCHITECTURE PUZZLE</strong></div><h4>{currentPuzzle.prompt}</h4>
-      <div className="academy-answer-list">{currentPuzzle.options.map((option,index)=>{const chosen=selected===index,correct=index===currentPuzzle.answer,reveal=submitted&&(correct||chosen);return <button type="button" key={option} disabled={submitted} className={`academy-answer ${chosen?"chosen":""} ${reveal&&correct?"correct":reveal&&chosen&&!correct?"incorrect":""}`} onClick={()=>setSelected(index)}><span>{String.fromCharCode(65+index)}</span>{option}{reveal&&correct&&<Check size={15}/>}</button>;})}</div>
-      {submitted&&<div className={`academy-explanation ${selected===currentPuzzle.answer?"correct":"incorrect"}`} role="status"><strong>{selected===currentPuzzle.answer?"Correct — puzzle cleared":"Not quite. Review the reasoning and retry."}</strong><p>{currentPuzzle.explanation}</p><small>{currentPuzzle.takeaway}</small></div>}
-      <div className="academy-check-actions">{!submitted?<button type="button" className="academy-validate" disabled={selected===null} onClick={checkAnswer}>Submit solution <ArrowRight size={14}/></button>:selected===currentPuzzle.answer?<button type="button" className="academy-validate" onClick={nextPuzzle}>{activePuzzle===9?(activeLevel===9?"Path completed":"Enter next level"):"Next puzzle"} <ArrowRight size={14}/></button>:<button type="button" className="academy-validate" onClick={()=>{setSelected(null);setSubmitted(false);}}>Retry puzzle <RotateCcw size={14}/></button>}</div>
-     </div>
-    </article>
-    </>:<SystemDesignLab levelIndex={activeLevel} completed={completedLabs.includes(activeLevel)} onComplete={()=>completeLab(activeLevel)}/>}
-    <div className="academy-level-outcome"><ShieldCheck size={16}/><span><strong>{levelDone(currentLevel)?"LEVEL MASTERED":"MASTERY CHECKPOINT"}</strong>{levelDone(currentLevel)?"You cleared the knowledge checks and practical architecture challenge. The next level is now available.":puzzlesDone(currentLevel)?"Knowledge checks complete. Clear the design lab to unlock the next level.":currentLevel.outcome}</span></div>
+    {activeTab==="learn"?<div className="academy-v3-learning">
+     <nav className="academy-v3-topic-list" aria-label="Topics in this section">{level.puzzles.map((item,index)=><button type="button" key={item.id} className={activeTopic===index?"active":""} onClick={()=>chooseTopic(index)}><span>{learned.includes(item.id)?<Check size={13}/>:String(index+1).padStart(2,"0")}</span><strong>{item.title}</strong><ChevronRight size={13}/></button>)}</nav>
+     <article className="academy-v3-lesson">
+      <div className="academy-v3-lesson-meta"><span>SECTION {String(activeLevel+1).padStart(2,"0")} / TOPIC {String(activeTopic+1).padStart(2,"0")}</span><span>{topicDone?"STUDIED":"LEARNING MODULE"}</span></div>
+      <h3>{topic.title}</h3>
+      <p className="academy-v3-lesson-lead">{topic.takeaway}</p>
+      <section><h4>THE ENGINEERING CONCEPT</h4><p>{topic.explanation}</p><p>{topic.lesson}</p></section>
+      <section><h4>APPLY IT TO A REAL SYSTEM</h4><p>{topic.prompt.replace(/\?$/, ".")}</p><p>For the {project.name.toLowerCase()} project, decide how this concept changes the architecture. Identify the component that owns the behavior, the data it reads or writes, and what happens when the dependency is slow or unavailable.</p></section>
+      <section className="academy-v3-practice"><h4>IMPLEMENTATION WORKFLOW</h4><ol>{implementationSteps.map(step=><li key={step}>{step}</li>)}</ol><p>Use the section design studio after studying the topics. Its component palette is scoped to the section's architecture problem; the canvas is where you prove the design, not a multiple-choice answer.</p></section>
+      <div className="academy-v3-lesson-actions"><button type="button" className="academy-v3-mark" onClick={markLearned} disabled={topicDone}>{topicDone?<><Check size={14}/> TOPIC STUDIED</>:<>MARK TOPIC STUDIED <ArrowRight size={14}/></>}</button><button type="button" className="academy-v3-next" onClick={()=>{if(activeTopic<9)chooseTopic(activeTopic+1);else setActiveTab("build");}}>{activeTopic===9?"OPEN SECTION STUDIO":"NEXT TOPIC"} <ChevronRight size={14}/></button></div>
+     </article>
+    </div>:<div className="academy-v3-studio">
+      <header><div><span>FINAL-YEAR PROJECT BRIEF / {String(activeLevel+1).padStart(2,"0")}</span><h3>{project.name}</h3><p>{project.context}</p></div><span className={completedLabs.includes(activeLevel)?"validated":""}>{completedLabs.includes(activeLevel)?"DESIGN VALIDATED":"ARCHITECTURE CHALLENGE"}</span></header>
+      <div className="academy-v3-brief-grid"><section><h4>NON-NEGOTIABLE CONSTRAINTS</h4>{project.constraints.map(item=><p key={item}><Check size={13}/>{item}</p>)}</section><section><h4>YOUR DELIVERABLE</h4><p>{project.deliverable}</p><h4>DESIGN PROCESS</h4><ol>{implementationSteps.map(step=><li key={step}>{step}</li>)}</ol></section></div>
+      <SystemDesignLab levelIndex={activeLevel} completed={completedLabs.includes(activeLevel)} onComplete={completeLab}/>
+    </div>}
    </section>
   </div>
-  <section className="academy-sources"><div><BookOpen size={17}/><div><strong>Engineering references</strong><p>Original explanations and scenario puzzles informed by public engineering guidance. These are learning assessments, not a guarantee of professional mastery; real mastery also requires designing, building and operating systems.</p></div></div><div className="academy-source-links">{refs.map(ref=><a key={ref.name} href={ref.url} target="_blank" rel="noreferrer">{ref.name}<ArrowRight size={12}/></a>)}</div></section>
- </div>;
+  <footer className="academy-v3-sources"><div><strong>ENGINEERING READING ROOM</strong><p>Curriculum concepts are aligned with established architecture and operations guidance. Read primary engineering material and compare the trade-offs against your own design.</p></div><div>{references.map(ref=><a href={ref.url} key={ref.name} target="_blank" rel="noreferrer">{ref.name}<ArrowRight size={12}/></a>)}</div></footer>
+ </main>;
 }
