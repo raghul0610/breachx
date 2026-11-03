@@ -781,3 +781,51 @@
   .app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-results {padding:16px!important}
   .app-shell:not(.lp-root) .floating-ai-chat-panel {left:8px!important;right:8px!important;bottom:82px!important;top:8px!important;width:auto!important;height:auto!important}
 }
+
+
+/* Final refinement: compact two-column component cards and genuinely neutral inspector. */
+.app-shell:not(.lp-root) .workspace .catalog-inspector,
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-inspector {
+  background:linear-gradient(155deg,#252d32 0%,#1b2227 100%)!important;
+  border-color:#657078!important;color:#eef1f3!important;
+}
+.app-shell:not(.lp-root) .workspace .catalog-inspector .catalog-detail-block,
+.app-shell:not(.lp-root) .workspace .catalog-inspector .catalog-summary,
+.app-shell:not(.lp-root) .workspace .catalog-inspector .catalog-inspector-title,
+.app-shell:not(.lp-root) .workspace .catalog-inspector .field {
+  background:#20282d!important;border-color:#59656c!important;color:#e1e6e9!important;
+}
+.app-shell:not(.lp-root) .workspace .catalog-inspector .catalog-detail-block>strong,
+.app-shell:not(.lp-root) .workspace .catalog-inspector .section-kicker,
+.app-shell:not(.lp-root) .workspace .catalog-inspector h3,
+.app-shell:not(.lp-root) .workspace .catalog-inspector p,
+.app-shell:not(.lp-root) .workspace .catalog-inspector label {
+  color:#e0e5e8!important;
+}
+.app-shell:not(.lp-root) .workspace .catalog-inspector .catalog-component-icon {
+  background:#303a40!important;border-color:#78848b!important;color:#eef1f3!important;
+}
+.app-shell:not(.lp-root) .workspace .catalog-inspector .catalog-learn-btn {
+  background:#354047!important;border-color:#859199!important;color:#f1f4f5!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-node-grid {
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch!important;gap:12px!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-item {
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;
+  gap:13px!important;min-height:82px!important;height:auto!important;
+  padding:18px 20px!important;text-align:left!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-item strong {
+  font-size:16px!important;line-height:1.45!important;font-weight:700!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-item span {
+  font-size:13px!important;line-height:1.4!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-item .catalog-component-icon {
+  width:38px!important;height:38px!important;flex:0 0 38px!important;
+}
+@media(max-width:620px){
+ .app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-node-grid{grid-template-columns:1fr!important}
+}
