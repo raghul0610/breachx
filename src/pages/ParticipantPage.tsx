@@ -20,7 +20,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ArrowLeft, FileText, Layers, Layers3, Save, Trash2, FileDown, BookOpen, PlusCircle, Play, Undo2, Redo2, Link2, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, FileText, Layers, Layers3, Save, Trash2, FileDown, BookOpen, PlusCircle, Play, Undo2, Redo2, Link2, PanelRightClose, PanelRightOpen, GripVertical, GripHorizontal, MessageSquare, X, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { exportArchitecturePdf } from "../lib/exportArchitecturePdf";
 import { supabase } from "../lib/supabase";
 import { BlueprintNode, type BlueprintNodeData } from "../components/BlueprintNode";
@@ -31,7 +31,6 @@ import { readSubmission, writeSubmission, logActivity, type DesignSubmission } f
 import { deleteGraphSelection } from "../lib/graphEditing";
 import { InteractiveTutorial } from "../components/InteractiveTutorial";
 import { AnchonLogo } from "../components/AnchonLogo";
-import { EdgeRevealSidebar } from "../components/EdgeRevealSidebar";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 import { WorkspaceShare, WorkspaceSettings } from "../components/WorkspacePanels";
 import { evaluateSystemDesign, type EvaluationResult } from "../lib/evaluationEngine";
