@@ -81,7 +81,7 @@ export function AcademyPage() {
   const [nodes,setNodes,onNodesChange]=useNodesState<Node>([]); const [edges,setEdges,onEdgesChange]=useEdgesState<Edge>([]);
   const [instance,setInstance]=useState<ReactFlowInstance|null>(null);
   const [revealed,setRevealed]=useState(false); const [judge,setJudge]=useState<any>(null); const [judging,setJudging]=useState(false);
-  const [assistantOpen,setAssistantOpen]=useState(false); const [paletteOpen,setPaletteOpen]=useState(false); const [question,setQuestion]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
+  const [assistantOpen,setAssistantOpen]=useState(false); const [question,setQuestion]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
   const scenario=useMemo(()=>buildScenario(level,challenge),[level,challenge]);
   const [completed,setCompleted]=useState<string[]>([]);
   const key=`${level}-${challenge}`; const done=completed.includes(key);
