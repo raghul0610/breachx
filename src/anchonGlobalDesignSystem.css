@@ -125,3 +125,302 @@ select:focus-visible {
 .lp-root * {
   font-family: var(--anchon-font) !important;
 }
+
+
+/* =========================================================
+   ANCHON monochrome silver system + shared interaction motion
+   Black is the foundation; silver is the only accent family.
+   ========================================================= */
+:root {
+  color-scheme: dark;
+  --anchon-black: #050607;
+  --anchon-black-soft: #0a0d0f;
+  --anchon-panel: #101417;
+  --anchon-panel-raised: #171c20;
+  --anchon-panel-hover: #20272c;
+  --anchon-silver-50: #f5f7f8;
+  --anchon-silver-100: #e5eaed;
+  --anchon-silver-200: #cbd3d8;
+  --anchon-silver-300: #aab5bc;
+  --anchon-silver-400: #87949c;
+  --anchon-silver-glow: rgba(218, 227, 232, .2);
+  --anchon-motion-fast: 140ms;
+  --anchon-motion: 220ms;
+  --anchon-motion-slow: 320ms;
+  --anchon-ease: cubic-bezier(.2,.75,.25,1);
+  --anchon-ease-out: cubic-bezier(.16,1,.3,1);
+  --anchon-focus-ring: 0 0 0 3px rgba(207,218,224,.16);
+  --lp-bg: var(--anchon-black);
+  --lp-panel: var(--anchon-panel);
+  --lp-line: rgba(205,216,223,.18);
+  --lp-muted: #a4afb6;
+  --lp-text: #f1f4f6;
+  --lp-cyan: #d7dfe3;
+  --lp-green: #c5cfd4;
+}
+
+/* Neutralise legacy blue/violet accents without changing component geometry. */
+.lp-root {
+  --lp-cyan: var(--anchon-silver-200);
+  --lp-green: var(--anchon-silver-300);
+  background: var(--anchon-black) !important;
+  color: var(--anchon-silver-50) !important;
+}
+.lp-root::before,
+.lp-root::after { opacity: .32; }
+.lp-root .lp-hero::before {
+  background:
+    radial-gradient(ellipse at 50% 28%, rgba(210,220,226,.09), transparent 58%),
+    linear-gradient(rgba(210,220,226,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(210,220,226,.035) 1px, transparent 1px) !important;
+}
+.lp-root .lp-hero::after { background: rgba(210,220,226,.055) !important; }
+.lp-root .lp-letter:nth-child(2),
+.lp-root .lp-letter:nth-child(5) { color: var(--anchon-silver-200) !important; }
+.lp-root .lp-nav-cta,
+.lp-root .lp-hero-actions button,
+.lp-root .lp-section-kicker,
+.lp-root .lp-eyebrow { color: var(--anchon-silver-200) !important; }
+.lp-root .lp-nav-cta { border-color: rgba(205,216,223,.45) !important; background: rgba(205,216,223,.07) !important; }
+.lp-root .lp-nav-cta:hover { background: rgba(205,216,223,.15) !important; }
+
+/* Shared transitions: buttons, links, fields, cards and navigation controls. */
+:where(button, a, input, textarea, select,
+  .panel, .app-card, .feature-card, .catalog-item, .component-dock-item,
+  .da-brief, .da-design-section, .da-judge, .da-coach,
+  .sidebar, .right-panel, .topbar, .canvas-toolbar) {
+  transition:
+    color var(--anchon-motion) var(--anchon-ease),
+    background-color var(--anchon-motion) var(--anchon-ease),
+    border-color var(--anchon-motion) var(--anchon-ease),
+    box-shadow var(--anchon-motion) var(--anchon-ease),
+    transform var(--anchon-motion) var(--anchon-ease),
+    opacity var(--anchon-motion) var(--anchon-ease);
+}
+:where(button, .catalog-item, .component-dock-item, .feature-card):not(:disabled):active {
+  transform: translateY(1px) scale(.985);
+}
+:where(button, a, .catalog-item, .component-dock-item):focus-visible {
+  outline: 1px solid var(--anchon-silver-200);
+  outline-offset: 3px;
+  box-shadow: var(--anchon-focus-ring);
+}
+:where(button, .catalog-item, .component-dock-item, .feature-card):hover {
+  border-color: rgba(210,220,226,.58);
+}
+:where(input, textarea, select):focus {
+  border-color: var(--anchon-silver-200) !important;
+  box-shadow: var(--anchon-focus-ring);
+}
+
+/* Monochrome controls and navigation, including legacy route-specific buttons. */
+:where(.app-shell, .design-academy, .admin-content, .generator-shell) {
+  --accent: var(--anchon-silver-200);
+  --accent-strong: var(--anchon-silver-50);
+}
+.app-shell,
+.design-academy,
+.admin-content,
+.generator-shell {
+  background-color: var(--anchon-black);
+  color: var(--anchon-silver-100);
+}
+.app-shell .topbar,
+.app-shell .sidebar,
+.app-shell .canvas-toolbar,
+.app-shell .component-dock,
+.app-shell .right-panel,
+.app-shell .requirements-panel {
+  background-color: var(--anchon-black-soft);
+  border-color: rgba(195,207,214,.17);
+}
+.app-shell :where(button, .nav-btn, .catalog-learn-btn, .catalog-item),
+.design-academy :where(button, .da-challenge-trigger, .da-palette-toggle) {
+  border-color: rgba(190,202,209,.28);
+}
+.app-shell :where(button:hover, .nav-btn:hover, .catalog-learn-btn:hover, .catalog-item:hover),
+.design-academy :where(button:hover, .da-challenge-trigger:hover, .da-palette-toggle:hover) {
+  border-color: var(--anchon-silver-200);
+  box-shadow: 0 5px 18px rgba(0,0,0,.24), 0 0 0 1px rgba(220,229,234,.07);
+}
+.app-shell .primary-btn,
+.app-shell .da-submit,
+.design-academy .da-submit,
+.design-academy .da-level-picker button.active {
+  background: linear-gradient(145deg,#f0f3f5,#aeb9bf) !important;
+  border-color: #dce3e7 !important;
+  color: #090c0e !important;
+}
+.app-shell .primary-btn:hover,
+.app-shell .da-submit:hover,
+.design-academy .da-submit:hover {
+  background: linear-gradient(145deg,#fff,#c7d0d5) !important;
+  box-shadow: 0 7px 22px rgba(205,216,223,.16);
+}
+
+/* Sidebar and inspector surfaces use black/graphite, not violet or saturated blue. */
+.app-shell .sidebar,
+.app-shell .right-panel,
+.app-shell .component-dock,
+.app-shell .requirements-panel,
+.app-shell .catalog-inspector,
+.app-shell .catalog-detail-block,
+.design-academy .da-brief,
+.design-academy .da-design-section,
+.design-academy .da-judge,
+.design-academy .da-coach,
+.design-academy .da-builder,
+.design-academy .da-palette-wrap {
+  background-color: var(--anchon-panel) !important;
+  border-color: rgba(190,202,209,.2) !important;
+}
+.app-shell .catalog-component-icon,
+.app-shell .component-dock-item,
+.design-academy .da-palette > div {
+  background: linear-gradient(145deg,#1d2429,#111619) !important;
+  border-color: rgba(195,207,214,.28) !important;
+  color: var(--anchon-silver-100) !important;
+}
+
+/* Persistent architecture node treatment and silver hover/selection response. */
+.app-shell .bp-node,
+.design-academy .bp-node {
+  border-color: rgba(195,207,214,.62) !important;
+  background: linear-gradient(145deg,#20272c 0%,#101518 100%) !important;
+  color: var(--anchon-silver-50) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.055) !important;
+  transition:
+    transform var(--anchon-motion) var(--anchon-ease),
+    border-color var(--anchon-motion) var(--anchon-ease),
+    box-shadow var(--anchon-motion) var(--anchon-ease),
+    background var(--anchon-motion) var(--anchon-ease) !important;
+}
+.app-shell .bp-node:hover,
+.design-academy .bp-node:hover {
+  transform: translateY(-2px);
+  border-color: var(--anchon-silver-100) !important;
+  box-shadow: 0 16px 34px rgba(0,0,0,.48), 0 0 0 1px rgba(225,233,237,.13) !important;
+}
+.app-shell .bp-node.selected,
+.design-academy .bp-node.selected {
+  border-color: #f0f3f5 !important;
+  box-shadow: 0 0 0 2px rgba(220,229,234,.2), 0 16px 34px rgba(0,0,0,.5) !important;
+}
+.app-shell .bp-node .node-category,
+.app-shell .bp-node .node-category-icon,
+.design-academy .bp-node .node-category {
+  color: var(--anchon-silver-200) !important;
+}
+.app-shell .bp-node .handle,
+.app-shell .bp-node .react-flow__handle,
+.design-academy .bp-node .handle,
+.design-academy .bp-node .react-flow__handle {
+  background: #bfcbd1 !important;
+  border-color: #f1f4f6 !important;
+  box-shadow: 0 0 0 3px rgba(207,218,224,.13) !important;
+  transition: transform var(--anchon-motion-fast) var(--anchon-ease),background var(--anchon-motion-fast) ease,box-shadow var(--anchon-motion-fast) ease !important;
+}
+.app-shell .bp-node .react-flow__handle:hover,
+.design-academy .bp-node .react-flow__handle:hover {
+  transform: scale(1.25);
+  background: #fff !important;
+  box-shadow: 0 0 0 5px rgba(220,229,234,.2) !important;
+}
+
+/* Edges animate consistently on selection/hover and remain readable on black canvas. */
+.react-flow__edge-path {
+  stroke: #aebbc2 !important;
+  stroke-width: 1.65px;
+  transition: stroke var(--anchon-motion) var(--anchon-ease),stroke-width var(--anchon-motion) var(--anchon-ease),filter var(--anchon-motion) var(--anchon-ease);
+}
+.react-flow__edge:hover .react-flow__edge-path,
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #f0f3f5 !important;
+  stroke-width: 2.35px;
+  filter: drop-shadow(0 0 4px rgba(220,229,234,.32));
+}
+.react-flow__edge-text,
+.react-flow__edge-text tspan {
+  fill: #d8e0e4 !important;
+  font-family: var(--anchon-font) !important;
+}
+.react-flow__edge-textbg {
+  fill: transparent !important;
+  fill-opacity: 0 !important;
+  stroke: transparent !important;
+}
+.react-flow__connection-path {
+  stroke: #e5ebee !important;
+  stroke-width: 2px;
+  stroke-dasharray: 5 4;
+  animation: anchon-flow-dash 1.1s linear infinite;
+}
+.react-flow__handle-connecting,
+.react-flow__handle-valid {
+  background: #f4f6f7 !important;
+  box-shadow: 0 0 0 5px rgba(220,229,234,.2) !important;
+}
+
+/* Canvas, modal and dropdown entrances share one restrained motion curve. */
+@keyframes anchon-rise-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes anchon-flow-dash { to { stroke-dashoffset: -18; } }
+@keyframes anchon-silver-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(220,229,234,0); }
+  50% { box-shadow: 0 0 18px 1px rgba(220,229,234,.11); }
+}
+:where(.da-challenge-menu, .da-judge, .da-coach-body, .catalog-inspector,
+  .right-panel .catalog-detail-block, .modal, [role="dialog"]) {
+  animation: anchon-rise-in var(--anchon-motion-slow) var(--anchon-ease-out) both;
+}
+.react-flow__node {
+  transition: opacity var(--anchon-motion) ease,filter var(--anchon-motion) ease;
+}
+.react-flow__node.dragging .bp-node {
+  transform: scale(1.025);
+  border-color: #f1f4f6 !important;
+  box-shadow: 0 20px 44px rgba(0,0,0,.55),0 0 0 2px rgba(220,229,234,.18) !important;
+}
+.react-flow__controls,
+.react-flow__minimap {
+  border: 1px solid rgba(195,207,214,.28) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35) !important;
+}
+.react-flow__controls button {
+  background: #171d21 !important;
+  color: #dce3e7 !important;
+  border-color: rgba(195,207,214,.18) !important;
+  transition: background var(--anchon-motion) ease,color var(--anchon-motion) ease !important;
+}
+.react-flow__controls button:hover {
+  background: #303940 !important;
+  color: #fff !important;
+}
+
+/* Scrollbars share the brushed-silver treatment across all pages and portals. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #9daab1 #0b0f12;
+}
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: #0b0f12; }
+*::-webkit-scrollbar-thumb {
+  border: 2px solid #0b0f12;
+  border-radius: 999px;
+  background: linear-gradient(180deg,#eef2f4 0%,#87959d 48%,#d4dce0 100%);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg,#fff 0%,#b8c3c9 52%,#e4e9ec 100%);
+}
+
+/* Respect reduced-motion preferences for accessibility. */
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
