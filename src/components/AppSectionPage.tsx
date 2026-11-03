@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, BookOpen, Check, ChevronRight, Lock, Target, Trophy } from "lucide-react";
 import { LearnPracticeCanvas } from "./LearnPracticeCanvas";
+import { WorkspaceGuide, WorkspaceSettings } from "./WorkspacePanels";
 
 type AcademyLevel = {
   id: string;
