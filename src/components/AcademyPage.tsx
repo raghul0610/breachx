@@ -58,7 +58,8 @@ function buildScenario(level:number,index:number):Scenario {
 }
 function makeNode(id:string,type:string,x:number,y:number):Node {
   const item=palette.find(p=>p[0]===type);
-  const catalogKeys:Record<string,string>={gateway:"api_gateway",service:"microservice",search:"search_engine",auth:"auth_service",monitoring:"metrics",payment:"payment_service",notification:"notification_service"};\n  return {id,type:"default",position:{x,y},data:{label:item?.[1] ?? type,typeKey:catalogKeys[type]??type},style:{background:"#1c242a",color:"#e9eef1",border:"1px solid #65727a",borderRadius:9,padding:10,minWidth:135,fontSize:12}};
+  const catalogKeys:Record<string,string>={gateway:"api_gateway",service:"microservice",search:"search_engine",auth:"auth_service",monitoring:"metrics",payment:"payment_service",notification:"notification_service"};
+  return {id,type:"default",position:{x,y},data:{label:item?.[1] ?? type,typeKey:catalogKeys[type]??type},style:{background:"#1c242a",color:"#e9eef1",border:"1px solid #65727a",borderRadius:9,padding:10,minWidth:135,fontSize:12}};
 }
 export function AcademyPage() {
   const [level,setLevel]=useState(0); const [challenge,setChallenge]=useState(0);
