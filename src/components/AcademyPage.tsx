@@ -71,7 +71,7 @@ export function AcademyPage(){
  const chooseLevel=(index:number)=>{setActiveLevel(index);setActiveTopic(0);setActiveTab("learn");};
  const chooseTopic=(index:number)=>{setActiveTopic(index);setActiveTab("learn");};
  const completeLab=()=>{if(completedLabs.includes(activeLevel))return;const next=[...completedLabs,activeLevel];setCompletedLabs(next);try{localStorage.setItem(LAB_STORAGE_KEY,JSON.stringify(next));}catch{/* keep session progress */}};
- const resetProgress=()=>{saveLearned([]);setCompletedLabs([]);try{localStorage.removeItem(LAB_STORAGE_KEY);}catch{/* ignore */}};
+ const resetProgress=()=>{saveLearned([]);setCompletedLabs([]);setSolvedTopics([]);try{localStorage.removeItem(LAB_STORAGE_KEY);localStorage.removeItem(SOLVED_STORAGE_KEY);}catch{/* ignore */}};
  const project=activeLevel<10?projectBriefs[activeLevel]:advancedProjectBriefs[activeLevel-10];
  const implementationSteps=[
   "Translate the scenario into functional requirements and measurable quality attributes.",
@@ -110,7 +110,7 @@ export function AcademyPage(){
       <p className="academy-v3-lesson-lead">{topic.takeaway}</p>
       <section><h4>THE ENGINEERING CONCEPT</h4><p>{topic.explanation}</p><p>{topic.lesson}</p><h4>HOW IT WORKS IN A REAL SYSTEM</h4><p>Trace the lifecycle from the caller to the component that owns this responsibility. Identify the input contract, the state it reads or changes, the response returned to the caller, and the operational signal that proves the behavior is working.</p><h4>TRADE-OFFS AND FAILURE MODES</h4><p>{topic.takeaway} Consider overload, partial failure, retries, stale data, duplicate work and dependency outages where they apply. A production design must define what happens when the happy path is unavailable.</p></section>
       <section><h4>APPLY IT TO A REAL SYSTEM</h4><p>For the {project.name.toLowerCase()} project, identify the component that owns this responsibility, its upstream dependency and the downstream component that consumes its output.</p></section>
-      <TopicConnectionPuzzle topicId={topic.id} title={topic.title} prompt={topic.prompt} explanation={topic.explanation} solved={topicSolved} onSolved={markTopicSolved}/>
+      <TopicConnectionPuzzle topicId={topic.id} title={topic.title} prompt={`For ${project.name}, model the ${topic.title.toLowerCase()} responsibility. Connect the component that produces the required input to the component that owns or consumes it.`} explanation={topic.explanation} solved={topicSolved} onSolved={markTopicSolved}/>
       <section className="academy-v3-practice"><h4>IMPLEMENTATION WORKFLOW</h4><ol>{implementationSteps.map(step=><li key={step}>{step}</li>)}</ol><p>Use the section design studio after studying the topics. Its component palette is scoped to the section's architecture problem; the canvas is where you prove the design, not a multiple-choice answer.</p></section>
       <div className="academy-v3-lesson-actions"><button type="button" className="academy-v3-mark" onClick={markLearned} disabled={topicDone||!topicSolved}>{topicDone?<><Check size={14}/> TOPIC STUDIED</>:<>MARK TOPIC STUDIED <ArrowRight size={14}/></>}</button><button type="button" className="academy-v3-next" onClick={()=>{if(activeTopic<9)chooseTopic(activeTopic+1);else setActiveTab("build");}}>{activeTopic===9?"OPEN SECTION STUDIO":"NEXT TOPIC"} <ChevronRight size={14}/></button></div>
      </article>
