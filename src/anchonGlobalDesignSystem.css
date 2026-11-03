@@ -1,0 +1,128 @@
+/*
+ * ANCHON global design system
+ * Inter is the single application typeface, matching the landing page.
+ * Component-specific layout and colour rules remain scoped to their components.
+ */
+:root {
+  --anchon-font: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --anchon-font-xs: 0.6875rem;
+  --anchon-font-sm: 0.8125rem;
+  --anchon-font-base: 0.9375rem;
+  --anchon-font-lg: 1.125rem;
+  --anchon-font-xl: 1.375rem;
+  --anchon-font-2xl: 1.75rem;
+  --anchon-surface: #0b1014;
+  --anchon-surface-raised: #141b20;
+  --anchon-surface-card: #192126;
+  --anchon-border: rgba(190, 204, 213, 0.18);
+  --anchon-border-strong: rgba(205, 216, 223, 0.38);
+  --anchon-text: #edf2f5;
+  --anchon-text-muted: #a5b0b7;
+  --anchon-radius-sm: 5px;
+  --anchon-radius-md: 8px;
+  --anchon-radius-lg: 12px;
+}
+
+/* Apply the same typeface to every route, including legacy screens and portals. */
+html,
+body,
+#root,
+#root *,
+#root *::before,
+#root *::after {
+  font-family: var(--anchon-font) !important;
+}
+
+html {
+  font-size: 16px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--anchon-font);
+  font-size: var(--anchon-font-base);
+}
+
+/* Native controls inherit typography instead of keeping browser or component fonts. */
+button,
+input,
+textarea,
+select,
+option {
+  font-family: var(--anchon-font) !important;
+}
+
+button {
+  font-weight: 600;
+}
+
+input,
+textarea,
+select {
+  font-size: var(--anchon-font-sm);
+}
+
+/* Workspace chrome: navigation, sidebars, inspector and component library. */
+.app-shell,
+.app-shell .topbar,
+.app-shell .workspace,
+.app-shell .sidebar,
+.app-shell .requirements-panel,
+.app-shell .right-panel,
+.app-shell .canvas-toolbar,
+.app-shell .component-dock,
+.app-shell .component-dock-item,
+.app-shell .catalog-item,
+.app-shell .catalog-inspector,
+.app-shell .catalog-detail-block {
+  font-family: var(--anchon-font) !important;
+}
+
+.app-shell button,
+.app-shell input,
+.app-shell textarea,
+.app-shell select,
+.design-academy button,
+.design-academy input,
+.design-academy textarea,
+.design-academy select {
+  font-family: var(--anchon-font) !important;
+}
+
+/* Architecture canvas: node content, React Flow controls and edge labels. */
+.app-shell .bp-node,
+.app-shell .bp-node *,
+.design-academy .bp-node,
+.design-academy .bp-node *,
+.react-flow__edge-text,
+.react-flow__edge-text tspan,
+.react-flow__edge-label,
+.react-flow__controls,
+.react-flow__controls button,
+.react-flow__attribution {
+  font-family: var(--anchon-font) !important;
+}
+
+/* Shared control typography; retain each control's existing geometry and visual state. */
+button,
+input,
+textarea,
+select {
+  letter-spacing: normal;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline-offset: 3px;
+}
+
+/* Keep the landing page and all authenticated pages on exactly the same font. */
+.lp-root,
+.lp-root * {
+  font-family: var(--anchon-font) !important;
+}
