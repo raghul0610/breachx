@@ -35,7 +35,7 @@ function createNode(kind:ComponentKind,id:number,position:{x:number;y:number}):N
  return {id:`${kind}-${id}`,type:"default",position,data:{label:<div style={{display:"grid",gap:4}}><strong>{item.label}</strong><span style={{fontSize:9,color:"#9eafb7"}}>{item.description}</span></div>,kind},style:nodeStyle};
 }
 export function SystemDesignLab({levelIndex,onComplete,completed}:{levelIndex:number;onComplete:()=>void;completed:boolean}){
- const mission=missions[levelIndex]??missions[0];
+ const baseMission=missions[levelIndex%missions.length]??missions[0];\n const mission=levelIndex<10?baseMission:{...baseMission,title:`Advanced design: ${baseMission.title}`,brief:`Apply the same architecture pattern under stricter production constraints. Add the required nodes, connect the request and data paths, run the request, inject the dependency failure and explain the recovery behaviour.`};
  const [nodes,setNodes,onNodesChange]=useNodesState<Node>([]);
  const [edges,setEdges,onEdgesChange]=useEdgesState<Edge>([]);
  const [instance,setInstance]=useState<ReactFlowInstance|null>(null);
@@ -71,7 +71,7 @@ export function SystemDesignLab({levelIndex,onComplete,completed}:{levelIndex:nu
    setRequestResult({state:"success",message:"200 OK — request path completed. Required components and directed connections are present. Now inspect the failure scenario and consider retries, timeouts, idempotency and observability."});
  };
  return <section className="academy-lab">
-  <header className="academy-lab-header"><div><span className="academy-lab-kicker">HANDS-ON SYSTEM DESIGN · CHALLENGE {String(levelIndex+1).padStart(2,"0")}/10</span><h3>{mission.title}</h3><p>{mission.brief}</p></div><span className={`academy-lab-status ${completed?"complete":""}`}>{completed?<><Check size={12}/> CLEARED</>:"DESIGN CHALLENGE"}</span></header>
+  <header className="academy-lab-header"><div><span className="academy-lab-kicker">HANDS-ON SYSTEM DESIGN · CHALLENGE {String(levelIndex+1).padStart(2,"0")}/20</span><h3>{mission.title}</h3><p>{mission.brief}</p></div><span className={`academy-lab-status ${completed?"complete":""}`}>{completed?<><Check size={12}/> CLEARED</>:"DESIGN CHALLENGE"}</span></header>
   <div className="academy-lab-constraints"><strong>DESIGN CONSTRAINTS</strong>{mission.constraints.map(item=><span key={item}><Check size={12}/>{item}</span>)}</div>
   <div className="academy-lab-workspace">
    <aside className="academy-lab-palette"><div><span>COMPONENT LIBRARY</span><small>Drag onto canvas</small></div>{palette.filter(item=>mission.required.includes(item.kind)).map(item=><button type="button" key={item.kind} draggable onDragStart={event=>onDragStart(event,item.kind)} className={usedKinds.has(item.kind)?"used":""}><span>{item.label}</span><small>{item.description}</small></button>)}</aside>
