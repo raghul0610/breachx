@@ -66,7 +66,7 @@ export function AcademyPage() {
   const [nodes,setNodes,onNodesChange]=useNodesState<Node>([]); const [edges,setEdges,onEdgesChange]=useEdgesState<Edge>([]);
   const [instance,setInstance]=useState<ReactFlowInstance|null>(null);
   const [revealed,setRevealed]=useState(false); const [judge,setJudge]=useState<any>(null); const [judging,setJudging]=useState(false);
-  const [assistantOpen,setAssistantOpen]=useState(false); const [question,setQuestion]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
+  const [assistantOpen,setAssistantOpen]=useState(false); const [paletteOpen,setPaletteOpen]=useState(false); const [question,setQuestion]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
   const scenario=useMemo(()=>buildScenario(level,challenge),[level,challenge]);
   const [completed,setCompleted]=useState<string[]>([]);
   const key=`${level}-${challenge}`; const done=completed.includes(key);
@@ -111,18 +111,46 @@ export function AcademyPage() {
   };
   const reveal=()=>{setRevealed(true);const positions=scenario.reference.map((_,i)=>({x:70+(i%4)*210,y:90+Math.floor(i/4)*130}));const refNodes=scenario.reference.map((type,i)=>makeNode(`ref-${i}`,type,positions[i].x,positions[i].y));const refEdges=scenario.flow.map(([source,target],i)=>({id:`ref-edge-${i}`,source:`ref-${scenario.reference.indexOf(source)}`,target:`ref-${scenario.reference.indexOf(target)}`,animated:true,label:"request / data"}));setNodes(refNodes);setEdges(refEdges);};
   return <main className="design-academy">
-    <header className="da-heading"><div><span className="da-eyebrow">ANCHON / PRACTICE ARENA</span><h1>Design systems. <em>Prove your decisions.</em></h1><p>Real-world architecture briefs, explicit constraints and engineering-grade feedback.</p></div><div className="da-progress"><strong>{completed.length}</strong><span>CHALLENGES CLEARED</span></div></header>
-    <section className="da-levels" aria-label="Difficulty levels">{levels.map((item,i)=><button key={item.name} className={level===i?"active":""} onClick={()=>{setLevel(i);setChallenge(0);reset();}}><span>LEVEL 0{i+1}</span><strong>{item.name}</strong><small>{item.detail}</small><i>{completed.filter(k=>k.startsWith(i+"-")).length}/50 completed</i></button>)}</section>
-    <div className="da-layout">
-      <aside className="da-challenge-list"><div className="da-list-title"><strong>{levels[level].name}</strong><span>50 SYSTEMS</span></div>{systems.map((name,i)=><button key={name} className={challenge===i?"active":""} onClick={()=>{setChallenge(i);reset();}}><span>{String(i+1).padStart(2,"0")}</span><strong>{name}</strong>{completed.includes(`${level}-${i}`)?<Check size={14}/>:null}</button>)}</aside>
-      <section className="da-workspace">
-        <article className="da-brief"><div className="da-brief-top"><span>LEVEL 0{level+1} / CHALLENGE {String(challenge+1).padStart(2,"0")}</span><span>{done?"COMPLETED":"DESIGN BRIEF"}</span></div><h2>{scenario.title}</h2><p>{scenario.brief}</p><div className="da-requirements"><section><h3>FUNCTIONAL REQUIREMENTS</h3>{scenario.functional.map((item,i)=><p key={i}><Check size={13}/>{item}</p>)}</section><section><h3>NON-NEGOTIABLE CONSTRAINTS</h3>{scenario.constraints.map((item,i)=><p key={i}><ShieldCheck size={13}/>{item}</p>)}</section></div></article>
-        <div className="da-canvas-toolbar"><div><strong>YOUR ARCHITECTURE</strong><span>Drag components in · Connect the handles</span></div><div><button onClick={reset}><RotateCcw size={13}/> Reset</button><button onClick={reveal}><Eye size={13}/> Reveal reference</button></div></div>
-        <div className="da-builder"><aside className="da-palette"><strong>COMPONENTS</strong>{palette.map(item=><div key={item[0]} draggable onDragStart={e=>e.dataTransfer.setData("application/anchon-component",item[0])}><b>{item[1]}</b><small>{item[2]}</small></div>)}</aside><div className="da-flow" onDragOver={e=>e.preventDefault()} onDrop={onDrop}><ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} fitView fitViewOptions={{padding:.18}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty">Drop your first component here</div>}</div></div>
-        <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Sparkles size={15}/> Submit for evaluation</>}</button></div>
-        {judge&&<section className="da-judge"><div className="da-judge-head"><div><span>ARCHITECTURE JUDGE</span><h3>{judge.error?"Review unavailable":`Evaluation · ${judge.score}/100`}</h3></div>{!judge.error&&<strong>{judge.score>=80?"STRONG":judge.score>=55?"NEEDS WORK":"REVISE DESIGN"}</strong>}</div><p>{judge.error||judge.summary}</p>{judge.localFindings?.map((f:string,i:number)=><p className="da-finding" key={i}><AlertCircle size={14}/>{f}</p>)}{judge.strengths?.map((f:string,i:number)=><p className="da-strength" key={i}><Check size={14}/>{f}</p>)}{judge.findings?.map((f:any,i:number)=><article className="da-finding-card" key={f.id||i}><span>{String(f.severity||"finding").toUpperCase()} · {f.category}</span><strong>{f.title}</strong><p>{f.description}</p><small>WHY IT MATTERS: {f.requirement}</small><p className="da-recommendation">NEXT STEP: {f.recommendation}</p></article>)}</section>}
-        <div className="da-coach"><button onClick={()=>setAssistantOpen(v=>!v)}><Bot size={16}/> Ask the AI design coach <ChevronDown size={14}/><span>Hints, not spoilers</span></button>{assistantOpen&&<div className="da-coach-body"><p>Ask about a requirement, trade-off or component choice. The coach will guide your reasoning without revealing the reference design.</p><div><input value={question} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")askAssistant();}} placeholder="e.g. How should I handle payment timeouts?"/><button onClick={askAssistant} disabled={assistantBusy||!question.trim()}>{assistantBusy?<LoaderCircle size={14}/>:<Send size={14}/>}</button></div>{assistantReply&&<p className="da-coach-reply">{assistantReply}</p>}</div>}</div>
+    <header className="da-heading">
+      <div><span className="da-eyebrow">ANCHON / PRACTICE ARENA</span><h1>System design practice</h1><p>Work through real-world architecture problems and get feedback on your decisions.</p></div>
+      <div className="da-progress"><strong>{completed.length}<small> / 200</small></strong><span>CHALLENGES COMPLETED</span></div>
+    </header>
+
+    <section className="da-navigation" aria-label="Challenge selection">
+      <div className="da-level-picker">
+        {levels.map((item,i)=><button key={item.name} className={level===i?"active":""} onClick={()=>{setLevel(i);setChallenge(0);reset();}}><span>{item.name}</span><small>{completed.filter(k=>k.startsWith(i+"-")).length}/50</small></button>)}
+      </div>
+      <div className="da-challenge-picker">
+        <label htmlFor="da-challenge">CHOOSE A CHALLENGE</label>
+        <select id="da-challenge" value={challenge} onChange={e=>{setChallenge(Number(e.target.value));reset();}}>
+          {systems.map((name,i)=><option key={name} value={i}>{String(i+1).padStart(2,"0")} · {name}</option>)}
+        </select>
+        <span>{challenge+1} of 50</span>
+      </div>
+    </section>
+
+    <section className="da-workspace">
+      <article className="da-brief">
+        <div className="da-section-heading"><div><span className="da-eyebrow">{levels[level].name.toUpperCase()} · CHALLENGE {String(challenge+1).padStart(2,"0")}</span><h2>{scenario.title}</h2></div><span className={done?"da-status done":"da-status"}>{done?"COMPLETED":"NOT STARTED"}</span></div>
+        <p className="da-brief-copy">{scenario.brief}</p>
+        <div className="da-requirements">
+          <section><h3>What the system must do</h3><ul>{scenario.functional.map((item,i)=><li key={i}>{item}</li>)}</ul></section>
+          <section><h3>Constraints to respect</h3><ul>{scenario.constraints.map((item,i)=><li key={i}>{item}</li>)}</ul></section>
+        </div>
+      </article>
+
+      <section className="da-design-section">
+        <div className="da-section-heading da-canvas-heading"><div><span className="da-eyebrow">DESIGN WORKSPACE</span><h2>Your architecture</h2><p>Build the request and data flow by adding components and connecting them.</p></div><div className="da-canvas-actions"><button onClick={reset}><RotateCcw size={14}/> Reset</button><button onClick={reveal} disabled={revealed}><Eye size={14}/> {revealed?"Reference revealed":"Reveal solution"}</button></div></div>
+        <div className="da-builder">
+          <div className="da-flow" onDragOver={e=>e.preventDefault()} onDrop={onDrop}><ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} fitView fitViewOptions={{padding:.18}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Start with your client or entry point</strong><span>Add a component below, then connect it to the next step.</span></div>}</div>
+          <div className="da-palette-wrap"><button className="da-palette-toggle" onClick={()=>setPaletteOpen(v=>!v)}><span><strong>Add components</strong><small>Choose from 15 architecture building blocks</small></span><ChevronDown size={16} className={paletteOpen?"rotated":""}/></button>{paletteOpen&&<div className="da-palette">{palette.map(item=><div key={item[0]} draggable onDragStart={e=>e.dataTransfer.setData("application/anchon-component",item[0])}><b>{item[1]}</b><small>{item[2]}</small></div>)}</div>}</div>
+        </div>
+        <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Sparkles size={15}/> Evaluate my design</>}</button></div>
       </section>
-    </div>
+
+      {judge&&<section className="da-judge"><div className="da-section-heading da-judge-head"><div><span className="da-eyebrow">FEEDBACK</span><h2>{judge.error?"Evaluation unavailable":`Architecture review · ${judge.score}/100`}</h2></div>{!judge.error&&<strong>{judge.score>=80?"STRONG":judge.score>=55?"NEEDS IMPROVEMENT":"REWORK NEEDED"}</strong>}</div><p>{judge.error||judge.summary}</p>{judge.localFindings?.map((f:string,i:number)=><p className="da-finding" key={i}><AlertCircle size={14}/>{f}</p>)}{judge.strengths?.map((f:string,i:number)=><p className="da-strength" key={i}><Check size={14}/>{f}</p>)}{judge.findings?.map((f:any,i:number)=><article className="da-finding-card" key={f.id||i}><span>{String(f.severity||"finding").toUpperCase()} · {f.category}</span><strong>{f.title}</strong><p>{f.description}</p><small>WHY IT MATTERS: {f.requirement}</small><p className="da-recommendation">SUGGESTED CHANGE: {f.recommendation}</p></article>)}</section>}
+
+      <section className="da-coach"><button onClick={()=>setAssistantOpen(v=>!v)}><Bot size={16}/><span><strong>Need help?</strong><small>Ask the AI design coach for a hint</small></span><ChevronDown size={15} className={assistantOpen?"rotated":""}/></button>{assistantOpen&&<div className="da-coach-body"><p>Ask about a requirement, trade-off or component choice. The coach will guide your reasoning without revealing the complete solution.</p><div><input value={question} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")askAssistant();}} placeholder="e.g. How should I handle payment timeouts?"/><button onClick={askAssistant} disabled={assistantBusy||!question.trim()}>{assistantBusy?<LoaderCircle size={14}/>:<Send size={14}/>}</button></div>{assistantReply&&<p className="da-coach-reply">{assistantReply}</p>}</div>}</section>
+    </section>
   </main>;
 }
