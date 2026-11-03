@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Lock, RotateCcw, ShieldCheck, Target, Trophy } from "lucide-react";
 
 type Lesson = { id:string; title:string; summary:string; content:string; prompt:string; options:string[]; answer:number; explanation:string; takeaway:string };
