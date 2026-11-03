@@ -3177,3 +3177,6 @@ body, .app-shell, .home, .lp-root {
 
 /* One shared UI typeface across landing, dashboard, workspace and academy. */
 :root,body,button,input,textarea,select,.app-shell,.design-academy,.iad-root{font-family:"Manrope",ui-sans-serif,system-ui,sans-serif}
+
+/* Typography normalization: use the landing page's Manrope family throughout the product. */
+body *{font-family:"Manrope",ui-sans-serif,system-ui,sans-serif!important}
