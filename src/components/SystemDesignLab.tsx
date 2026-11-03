@@ -35,7 +35,8 @@ function createNode(kind:ComponentKind,id:number,position:{x:number;y:number}):N
  return {id:`${kind}-${id}`,type:"default",position,data:{label:<div style={{display:"grid",gap:4}}><strong>{item.label}</strong><span style={{fontSize:9,color:"#9eafb7"}}>{item.description}</span></div>,kind},style:nodeStyle};
 }
 export function SystemDesignLab({levelIndex,onComplete,completed}:{levelIndex:number;onComplete:()=>void;completed:boolean}){
- const baseMission=missions[levelIndex%missions.length]??missions[0];\n const mission=levelIndex<10?baseMission:{...baseMission,title:`Advanced design: ${baseMission.title}`,brief:`Apply the same architecture pattern under stricter production constraints. Add the required nodes, connect the request and data paths, run the request, inject the dependency failure and explain the recovery behaviour.`};
+ const baseMission=missions[levelIndex%missions.length]??missions[0];
+ const mission=levelIndex<10?baseMission:{...baseMission,title:`Advanced design: ${baseMission.title}`,brief:`Apply the same architecture pattern under stricter production constraints. Add the required nodes, connect the request and data paths, run the request, inject the dependency failure and explain the recovery behaviour.`};
  const [nodes,setNodes,onNodesChange]=useNodesState<Node>([]);
  const [edges,setEdges,onEdgesChange]=useEdgesState<Edge>([]);
  const [instance,setInstance]=useState<ReactFlowInstance|null>(null);
