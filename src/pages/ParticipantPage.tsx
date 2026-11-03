@@ -35,6 +35,7 @@ import { EdgeRevealSidebar } from "../components/EdgeRevealSidebar";
 import { ArchitectureAIChat } from "../components/ArchitectureAIChat";
 import { WorkspaceShare, WorkspaceSettings } from "../components/WorkspacePanels";
 import { evaluateSystemDesign, type EvaluationResult } from "../lib/evaluationEngine";
+import "../workspaceSimplification.css";
 
 
 
@@ -527,6 +528,8 @@ function ParticipantEditor({
           item,
           screenToFlowPosition({ x: event.clientX, y: event.clientY }),
         );
+        setComponentLibraryOpen(false);
+        setRightPanelOpen(true);
       }
     },
     [screenToFlowPosition, submitted],
@@ -751,6 +754,10 @@ function ParticipantEditor({
       if (target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
       const canvasHasFocus = Boolean(canvasRef.current?.contains(document.activeElement)) || target === document.body;
       if (event.key === "Escape") {
+        if (shortcutsOpen) { setShortcutsOpen(false); return; }
+        if (chatOpen) { setChatOpen(false); return; }
+        if (componentLibraryOpen) { setComponentLibraryOpen(false); return; }
+        if (rightPanelOpen) { setRightPanelOpen(false); setRequirementsInspectorOpen(false); }
         if (!hasGraphSelection && !selectedCatalogTypeKey) return;
         setSelectedId(null);
         setSelectedEdgeId(null);
@@ -802,7 +809,7 @@ function ParticipantEditor({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, duplicateSelected, fitView, pushHistory, setNodes, setEdges, save, runRequestTrace]);
+  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, duplicateSelected, fitView, pushHistory, setNodes, setEdges, save, runRequestTrace, shortcutsOpen, chatOpen, componentLibraryOpen, rightPanelOpen]);
 
   return (
     <div className="app-shell workspace-simplified">
