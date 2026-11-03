@@ -72,7 +72,7 @@ export function SystemDesignLab({levelIndex,onComplete,completed}:{levelIndex:nu
   {showHints&&<div className="academy-lab-hints">{mission.checks.map((check,index)=><p key={check.label}><strong>{index+1}. {check.label}</strong><span>{check.hint}</span></p>)}</div>}
   {validation==="error"&&<div className="academy-lab-result error" role="status"><AlertTriangle size={16}/><div><strong>Design needs revision</strong>{feedback.map(item=><p key={item}>{item}</p>)}</div></div>}
   {validation==="success"&&<div className="academy-lab-result success" role="status"><Check size={16}/><div><strong>Architecture checks passed</strong>{feedback.map(item=><p key={item}>{item}</p>)}</div></div>}
-  <button type="button" className="academy-lab-failure-toggle" onClick={()=>setFailureOpen(v=>!v)}><AlertTriangle size={13}/>{failureOpen?"Hide failure scenario":"Run the failure scenario"}</button>
+  <button type="button" className="academy-lab-failure-toggle" onClick={()=>setFailureOpen(v=>!v)}><AlertTriangle size={13}/>{failureOpen?"Hide failure scenario":"Inspect failure scenario"}</button>
   {failureOpen&&<div className="academy-lab-failure"><strong>WHAT IF SOMETHING FAILS?</strong><p>{mission.failure}</p></div>}
  </section>;
 }
