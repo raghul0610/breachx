@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Check, LoaderCircle, MessageSquare, Send, Sparkles, WandSparkles } from "lucide-react";
+import { Check, LoaderCircle, MessageSquare, Send, BrainCircuit, Bot } from "lucide-react";
 import { AnchonLogo } from "./AnchonLogo";
 import { MarkerType, Position, type Edge, type Node } from "@xyflow/react";
 import { supabase } from "../lib/supabase";
@@ -159,8 +159,8 @@ export function ArchitectureAIChat({
         <span className="ai-chat-live-dot" title="Assistant available" />
       </div>
       <div className="ai-chat-mode" role="group" aria-label="AI operating mode">
-        <button type="button" className={mode === "planning" ? "active" : ""} onClick={() => { setMode("planning"); setPending(null); }} aria-pressed={mode === "planning"}><Sparkles size={12} /> PLANNING</button>
-        <button type="button" className={mode === "agent" ? "active" : ""} onClick={() => { setMode("agent"); setPending(null); }} aria-pressed={mode === "agent"}><WandSparkles size={12} /> AGENT</button>
+        <button type="button" className={mode === "planning" ? "active" : ""} onClick={() => { setMode("planning"); setPending(null); }} aria-pressed={mode === "planning"}><BrainCircuit size={12} /> PLANNING</button>
+        <button type="button" className={mode === "agent" ? "active" : ""} onClick={() => { setMode("agent"); setPending(null); }} aria-pressed={mode === "agent"}><Bot size={12} /> AGENT</button>
       </div>
       <div className="ai-chat-mode-hint">{mode === "planning" ? "Propose changes first. You decide when to apply them." : "Generate and apply changes directly to the canvas."}</div>
       <div className="ai-chat-messages" aria-live="polite">
