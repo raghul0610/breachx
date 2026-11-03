@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { ReactFlow, Background, Controls, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type ReactFlowInstance } from "@xyflow/react";
-import { AlertCircle, Bot, Check, ChevronDown, Eye, EyeOff, Lightbulb, LoaderCircle, RotateCcw, Send, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertCircle, Bot, Check, ChevronDown, Eye, LoaderCircle, RotateCcw, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import "./SystemDesignAcademy.css";
 
@@ -9,7 +9,7 @@ type Scenario = { title: string; domain: string; brief: string; functional: stri
 const systems = [
   "Food delivery platform","Ride-hailing marketplace","Video streaming service","Real-time chat platform","Online ticket booking","E-commerce marketplace","Digital wallet","Bank transfer platform","Social media feed","Cloud file storage",
   "Online learning platform","Hotel booking engine","Flight reservation system","Grocery delivery service","Healthcare appointment platform","Food ordering kiosk network","Job marketplace","Real-time sports scores","Music streaming service","Photo sharing application",
-  "URL shortener","Notification delivery platform","Package tracking system","Inventory management platform","Restaurant table reservation","Online auction platform","Collaborative document editor","Code hosting platform","Ride-sharing dispatch","物流 shipment tracking",
+  "URL shortener","Notification delivery platform","Package tracking system","Inventory management platform","Restaurant table reservation","Online auction platform","Collaborative document editor","Code hosting platform","Ride-sharing dispatch","Global shipment tracking",
   "Smart home control platform","IoT telemetry ingestion","Customer support helpdesk","Subscription billing platform","Ad serving platform","Search engine","Product recommendation engine","Live video broadcasting","Online gaming leaderboard","Multi-tenant SaaS dashboard",
   "Identity and access platform","Fraud detection pipeline","Event registration platform","Public transport tracking","Parking reservation platform","Peer-to-peer payment app","Digital library","Podcast hosting platform","Appointment reminders service","Analytics event pipeline"
 ];
