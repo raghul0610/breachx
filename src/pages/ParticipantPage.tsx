@@ -8,6 +8,7 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
+  ConnectionMode,
   MarkerType,
   BaseEdge,
   EdgeLabelRenderer,
@@ -934,6 +935,7 @@ function ParticipantEditor({
             edges={renderedEdges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
+            connectionMode={ConnectionMode.Loose}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
             deleteKeyCode={null}
