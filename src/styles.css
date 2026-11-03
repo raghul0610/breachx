@@ -2758,3 +2758,576 @@ body, .app-shell, .home, .lp-root {
 .workspace-canvas-brief .brief-card{margin:0 0 12px!important}
 .workspace-canvas-brief .requirements-status{margin-top:12px!important}
 @media(max-width:700px){.workspace-canvas-brief{max-height:calc(100dvh - 210px)!important}}
+
+
+/* ANCHON graphite workspace refresh — silver surfaces, readable panels, right-edge assistant. */
+.app-shell:not(.lp-root) .workspace {
+  background: #090b0d !important;
+}
+.app-shell:not(.lp-root) .canvas-column,
+.app-shell:not(.lp-root) .canvas,
+.app-shell:not(.lp-root) .react-flow {
+  background-color: #090b0d !important;
+}
+.app-shell:not(.lp-root) .react-flow__background pattern circle {
+  fill: rgba(210, 216, 222, .2) !important;
+}
+
+/* The assistant launcher is an icon-only affordance: no pill, label, or badge. */
+.app-shell:not(.lp-root) .floating-ai-chat-trigger {
+  position: fixed !important;
+  left: auto !important;
+  right: 24px !important;
+  top: auto !important;
+  bottom: 24px !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 58px !important;
+  min-width: 58px !important;
+  height: 58px !important;
+  min-height: 58px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  color: #e8edf1 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 0 !important;
+  letter-spacing: 0 !important;
+  transform: none !important;
+  translate: none !important;
+  z-index: 120 !important;
+  cursor: pointer !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger::before,
+.app-shell:not(.lp-root) .floating-ai-chat-trigger::after {
+  content: none !important;
+  display: none !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger .anchon-bubble-mark {
+  display: grid !important;
+  place-items: center !important;
+  width: 54px !important;
+  height: 54px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger .anchon-bubble-mark svg {
+  width: 48px !important;
+  height: 48px !important;
+  filter: drop-shadow(0 3px 10px rgba(0,0,0,.6));
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger:hover {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  transform: scale(1.06) !important;
+}
+
+/* Assistant opens as a full-height, right-aligned drawer without covering the header. */
+.app-shell:not(.lp-root) .floating-ai-chat-panel {
+  position: fixed !important;
+  left: auto !important;
+  right: 18px !important;
+  top: 86px !important;
+  bottom: 18px !important;
+  width: min(390px, calc(100vw - 36px)) !important;
+  max-width: calc(100vw - 36px) !important;
+  max-height: none !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  border: 1px solid rgba(190, 199, 207, .2) !important;
+  border-radius: 18px !important;
+  color: #e8edf1 !important;
+  background: linear-gradient(155deg, rgba(26,30,34,.99), rgba(11,13,15,.99)) !important;
+  box-shadow: 0 24px 72px rgba(0,0,0,.58), inset 0 1px rgba(255,255,255,.045) !important;
+  backdrop-filter: blur(20px) !important;
+  transform: translateX(14px) !important;
+  transform-origin: right center !important;
+  transition: opacity .18s ease, transform .18s ease, visibility .18s ease !important;
+  z-index: 110 !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel.is-open {
+  transform: translateX(0) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading {
+  flex: 0 0 auto !important;
+  min-height: 62px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid rgba(190,199,207,.14) !important;
+  color: #f0f3f5 !important;
+  font: 700 15px/1.3 Inter, ui-sans-serif, system-ui, sans-serif !important;
+  letter-spacing: -.02em !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading::before {
+  content: "" !important;
+  display: block !important;
+  flex: 0 0 30px !important;
+  width: 30px !important;
+  height: 30px !important;
+  background: url("/anchon-mark.svg") center / contain no-repeat !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading > strong {
+  flex: 1 1 auto !important;
+  text-align: left !important;
+  color: #edf1f4 !important;
+  font-size: 15px !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading > .anchon-chat-close {
+  flex: 0 0 34px !important;
+  width: 34px !important;
+  height: 34px !important;
+  margin-left: auto !important;
+  border: 1px solid rgba(190,199,207,.2) !important;
+  border-radius: 10px !important;
+  color: #dce2e7 !important;
+  background: rgba(255,255,255,.045) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading > .anchon-chat-close svg {
+  stroke: currentColor !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 12px 14px 14px !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #dce2e7 !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat :is(.ai-chat-heading,.ai-chat-mode,.ai-chat-mode-hint) {
+  flex: 0 0 auto !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-heading {
+  display: none !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat :is(.ai-chat-title,.ai-chat-title strong,.ai-chat-title span,.ai-chat-mode-hint,.ai-chat-message-role,.ai-chat-message p) {
+  color: #dce2e7 !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-mode {
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  gap: 8px !important;
+  padding: 5px !important;
+  border: 1px solid rgba(190,199,207,.14) !important;
+  border-radius: 12px !important;
+  background: rgba(255,255,255,.035) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-mode button {
+  justify-content: center !important;
+  min-height: 38px !important;
+  border: 1px solid transparent !important;
+  border-radius: 9px !important;
+  color: #aeb8c0 !important;
+  background: transparent !important;
+  font-size: 11px !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-mode button.active {
+  border-color: rgba(207,215,222,.2) !important;
+  color: #f2f5f7 !important;
+  background: linear-gradient(145deg,#41484e,#292e33) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-mode-hint {
+  padding: 10px 3px !important;
+  color: #9ca7b0 !important;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-messages {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  padding: 6px 2px 14px !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-message {
+  margin: 8px 0 !important;
+  padding: 12px 13px !important;
+  border: 1px solid rgba(190,199,207,.13) !important;
+  border-radius: 12px !important;
+  background: rgba(255,255,255,.035) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-message-role {
+  color: #aeb8c0 !important;
+  font-size: 10px !important;
+  letter-spacing: .08em !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-message p {
+  margin: 7px 0 0 !important;
+  color: #e0e5e9 !important;
+  font-size: 13px !important;
+  line-height: 1.65 !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-composer {
+  flex: 0 0 auto !important;
+  padding: 12px !important;
+  border: 1px solid rgba(190,199,207,.28) !important;
+  border-radius: 13px !important;
+  background: rgba(255,255,255,.035) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-composer textarea {
+  width: 100% !important;
+  min-height: 82px !important;
+  border: 0 !important;
+  outline: 0 !important;
+  color: #f0f3f5 !important;
+  background: transparent !important;
+  font: 13px/1.6 Inter, ui-sans-serif, system-ui, sans-serif !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-composer-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid rgba(190,199,207,.12) !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-composer-footer > span {
+  color: #929da6 !important;
+  font-size: 10px !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-composer-footer button,
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat .ai-chat-apply {
+  min-height: 34px !important;
+  padding: 0 13px !important;
+  border: 1px solid rgba(215,222,228,.24) !important;
+  border-radius: 9px !important;
+  color: #111518 !important;
+  background: linear-gradient(135deg,#e3e7ea,#aeb7be) !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat :is(input,textarea,select):focus {
+  border-color: rgba(211,219,225,.55) !important;
+  box-shadow: 0 0 0 3px rgba(190,199,207,.1) !important;
+}
+@media(max-width:760px) {
+  .app-shell:not(.lp-root) .floating-ai-chat-trigger {
+    right: 14px !important;
+    bottom: 14px !important;
+  }
+  .app-shell:not(.lp-root) .floating-ai-chat-panel {
+    left: 8px !important;
+    right: 8px !important;
+    top: 66px !important;
+    bottom: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+    border-radius: 15px !important;
+  }
+}
+
+/* Inspector: graphite cards, neutral silver accents, larger body copy. */
+.app-shell:not(.lp-root) .workspace > .right-panel {
+  border: 1px solid rgba(190,199,207,.2) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(155deg,rgba(25,29,33,.98),rgba(11,13,15,.99)) !important;
+  color: #e5eaee !important;
+  box-shadow: 0 18px 56px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.035) !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .panel-heading-row {
+  padding-bottom: 14px !important;
+  border-bottom: 1px solid rgba(190,199,207,.14) !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .section-kicker,
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-detail-block > strong,
+.app-shell:not(.lp-root) .workspace > .right-panel .requirements-inspector-group h4 {
+  color: #c5cdd3 !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-inspector,
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-detail-block,
+.app-shell:not(.lp-root) .workspace > .right-panel .requirements-inspector-group {
+  border: 1px solid rgba(190,199,207,.14) !important;
+  border-radius: 12px !important;
+  background: linear-gradient(145deg,rgba(39,44,49,.82),rgba(20,23,26,.94)) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.025) !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-inspector {
+  padding: 15px !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-component-icon {
+  border: 1px solid rgba(202,210,216,.2) !important;
+  border-radius: 11px !important;
+  color: #e1e6ea !important;
+  background: linear-gradient(145deg,#41484e,#292e33) !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-inspector-title h3,
+.app-shell:not(.lp-root) .workspace > .right-panel h3 {
+  color: #f0f3f5 !important;
+  font-size: 19px !important;
+  line-height: 1.35 !important;
+  letter-spacing: -.025em !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-summary {
+  margin: 14px 0 !important;
+  color: #d1d8dd !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-detail-block {
+  margin: 10px 0 !important;
+  padding: 13px 14px !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-detail-block > strong {
+  display: block !important;
+  margin-bottom: 7px !important;
+  color: #cbd3d9 !important;
+  font-size: 11px !important;
+  letter-spacing: .07em !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-detail-block p,
+.app-shell:not(.lp-root) .workspace > .right-panel .requirements-inspector,
+.app-shell:not(.lp-root) .workspace > .right-panel .requirements-inspector li {
+  color: #cbd3d9 !important;
+  font-size: 13px !important;
+  line-height: 1.7 !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-learn-btn,
+.app-shell:not(.lp-root) .workspace > .right-panel .danger-btn {
+  min-height: 38px !important;
+  border: 1px solid rgba(190,199,207,.22) !important;
+  border-radius: 10px !important;
+  color: #e5eaee !important;
+  background: linear-gradient(145deg,#343b41,#22272b) !important;
+  font-size: 12px !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-learn-btn:hover,
+.app-shell:not(.lp-root) .workspace > .right-panel .danger-btn:hover {
+  border-color: rgba(220,227,232,.4) !important;
+  background: #3a4248 !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel :is(input,textarea) {
+  border: 1px solid rgba(190,199,207,.2) !important;
+  border-radius: 10px !important;
+  color: #eef1f3 !important;
+  background: rgba(8,10,12,.7) !important;
+  font-size: 13px !important;
+}
+.app-shell:not(.lp-root) .workspace > .right-panel .catalog-hint,
+.app-shell:not(.lp-root) .workspace > .right-panel .empty-inspector p {
+  color: #9faab2 !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+
+/* Component Library: match the inspector's graphite/silver visual language. */
+.app-shell:not(.lp-root) #component-library-popup.component-dock-open {
+  position: fixed !important;
+  left: 76px !important;
+  right: auto !important;
+  top: 86px !important;
+  bottom: 18px !important;
+  width: min(350px, calc(100vw - 100px)) !important;
+  height: auto !important;
+  max-height: none !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  border: 1px solid rgba(190,199,207,.2) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(155deg,rgba(25,29,33,.99),rgba(11,13,15,.99)) !important;
+  box-shadow: 0 22px 64px rgba(0,0,0,.52),inset 0 1px rgba(255,255,255,.035) !important;
+  z-index: 85 !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-dock-heading {
+  flex: 0 0 auto !important;
+  align-items: flex-start !important;
+  padding: 18px 17px 14px !important;
+  border-bottom: 1px solid rgba(190,199,207,.14) !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-dock-heading .section-kicker {
+  color: #d2d9de !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  letter-spacing: .06em !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-dock-heading p {
+  max-width: 275px !important;
+  margin: 8px 0 0 !important;
+  color: #9da8b0 !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .niche-library-tag {
+  display: inline-block !important;
+  margin: 6px 0 0 !important;
+  color: #aeb8bf !important;
+  font-size: 9px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) 112px !important;
+  gap: 9px !important;
+  padding: 13px 15px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-search {
+  min-height: 40px !important;
+  padding: 0 11px !important;
+  border: 1px solid rgba(190,199,207,.2) !important;
+  border-radius: 10px !important;
+  color: #bfc8ce !important;
+  background: rgba(255,255,255,.035) !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-search input {
+  min-width: 0 !important;
+  color: #eef1f3 !important;
+  background: transparent !important;
+  font-size: 12px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-controls select {
+  min-width: 0 !important;
+  border: 1px solid rgba(190,199,207,.18) !important;
+  border-radius: 9px !important;
+  color: #dce2e6 !important;
+  background: #1b2024 !important;
+  font-size: 10px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-browser {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  border-top: 0 !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-categories {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  flex: 0 0 auto !important;
+  max-height: 82px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 10px 14px !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid rgba(190,199,207,.12) !important;
+  background: transparent !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-categories button {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-height: 34px !important;
+  padding: 0 10px !important;
+  border: 1px solid rgba(190,199,207,.12) !important;
+  border-radius: 9px !important;
+  color: #aeb8c0 !important;
+  background: rgba(255,255,255,.025) !important;
+  font-size: 11px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-categories button.is-active {
+  border-color: rgba(215,222,228,.32) !important;
+  color: #f0f3f5 !important;
+  background: linear-gradient(145deg,#3a4248,#252b30) !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-category-icon {
+  color: #d2d9de !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-results {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  padding: 15px 15px 18px !important;
+  overflow-y: auto !important;
+  scrollbar-color: rgba(190,199,207,.38) transparent !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-results-heading {
+  margin-bottom: 13px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-results-heading .section-kicker {
+  color: #aeb8c0 !important;
+  font-size: 10px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-results-heading h3 {
+  margin: 5px 0 !important;
+  color: #f0f3f5 !important;
+  font-size: 18px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-results-heading p {
+  color: #9da8b0 !important;
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-results-count {
+  color: #aeb8c0 !important;
+  font-size: 10px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-node-grid {
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 8px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-node-grid .component-dock-item {
+  min-height: 62px !important;
+  padding: 12px 13px !important;
+  border: 1px solid rgba(190,199,207,.16) !important;
+  border-radius: 11px !important;
+  background: linear-gradient(145deg,rgba(48,54,59,.82),rgba(25,29,33,.96)) !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-node-grid .component-dock-item:hover,
+.app-shell:not(.lp-root) #component-library-popup .component-library-node-grid .component-dock-item.catalog-item-active {
+  border-color: rgba(220,227,232,.42) !important;
+  background: linear-gradient(145deg,#41494f,#292f34) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.28) !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-node-grid .catalog-item-title {
+  gap: 10px !important;
+  color: #eef1f3 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-node-grid .catalog-item-icon {
+  width: 32px !important;
+  height: 32px !important;
+  border: 1px solid rgba(205,213,219,.16) !important;
+  border-radius: 9px !important;
+  color: #e0e5e9 !important;
+  background: linear-gradient(145deg,#454d53,#2a3035) !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-node-grid .component-dock-item small {
+  margin: 5px 0 0 42px !important;
+  color: #9da8b0 !important;
+  font-size: 10px !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-empty {
+  color: #aeb8c0 !important;
+}
+.app-shell:not(.lp-root) #component-library-popup .component-library-empty strong {
+  color: #eef1f3 !important;
+  font-size: 14px !important;
+}
+@media(max-width:760px) {
+  .app-shell:not(.lp-root) #component-library-popup.component-dock-open {
+    left: 8px !important;
+    right: 8px !important;
+    top: 66px !important;
+    bottom: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+  .app-shell:not(.lp-root) #component-library-popup .component-library-categories {
+    max-height: 74px !important;
+  }
+  .app-shell:not(.lp-root) #component-library-popup .component-library-controls {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+}
+
+/* Neutralize legacy violet tokens in the workspace's explanation and helper surfaces. */
+.app-shell:not(.lp-root) .workspace :is(.catalog-summary,.catalog-detail-block p,.catalog-hint,.empty-inspector p,.requirements-inspector,.requirements-inspector p,.requirements-inspector li) {
+  color: #cbd3d9 !important;
+}
+.app-shell:not(.lp-root) .workspace :is(.catalog-detail-block,.catalog-inspector,.requirements-inspector-group) {
+  border-color: rgba(190,199,207,.15) !important;
+}
+.app-shell:not(.lp-root) .workspace :is(.catalog-learn-btn,.catalog-add-btn,.run-request-canvas) {
+  border-color: rgba(205,213,219,.3) !important;
+}
