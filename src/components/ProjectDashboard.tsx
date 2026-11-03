@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, BookOpen, FolderPlus, Github, Layers3, MoreVertical, Pencil, Play, Plus, Settings, Share2, Workflow, Trash2, Workflow } from "lucide-react";
+import { ArrowLeft, BookOpen, FolderPlus, Github, Layers3, MoreVertical, Pencil, Play, Plus, Settings, Share2, Workflow, Trash2 } from "lucide-react";
 import {
   createProject,
   deleteProject,
