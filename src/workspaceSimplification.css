@@ -269,3 +269,277 @@
 
 .workspace-simplified.workspace-section-canvas .canvas-column { grid-column:1!important; }
 .workspace-simplified.workspace-section-canvas .right-panel { grid-column:3!important; }
+
+
+/* Workspace visual refinement: neutral graphite/silver surfaces, readable inspector, and a focused assistant. */
+.workspace-simplified {
+  --workspace-accent:#c6d0d6;
+  --workspace-accent-soft:rgba(198,208,214,.12);
+  --workspace-accent-line:rgba(198,208,214,.32);
+}
+.workspace-simplified .component-dock,
+.workspace-simplified #component-library-popup {
+  color:#e8edf0!important;
+  border-color:#59656d!important;
+  background:linear-gradient(155deg,#1b2227 0%,#13191e 100%)!important;
+}
+.workspace-simplified .component-dock-heading {
+  border-bottom:1px solid rgba(190,202,211,.14)!important;
+}
+.workspace-simplified .component-dock-heading .section-kicker,
+.workspace-simplified .component-library-results-heading .section-kicker,
+.workspace-simplified .component-library-results-heading h3 {
+  color:#e0e6e9!important;
+}
+.workspace-simplified .component-dock-heading p,
+.workspace-simplified .component-library-results-heading p {
+  color:#aeb9c0!important;
+  font-size:12px!important;
+  line-height:1.65!important;
+}
+.workspace-simplified .niche-library-tag {
+  border-color:rgba(180,194,202,.3)!important;
+  background:rgba(180,194,202,.08)!important;
+  color:#c6d0d6!important;
+}
+.workspace-simplified .component-library-search,
+.workspace-simplified .component-library-controls select {
+  border-color:#46535c!important;
+  background:#10161a!important;
+  color:#e5eaed!important;
+}
+.workspace-simplified .component-library-search input {
+  color:#edf1f3!important;
+  font-size:14px!important;
+}
+.workspace-simplified .component-library-search input::placeholder {color:#89969e!important}
+.workspace-simplified .component-library-controls select {font-size:13px!important}
+.workspace-simplified #component-library-popup .component-library-categories button {
+  min-height:42px!important;
+  color:#aeb9c0!important;
+  font-size:12px!important;
+  border-color:transparent!important;
+}
+.workspace-simplified #component-library-popup .component-library-categories button:hover {
+  background:#242d33!important;color:#f0f3f5!important;
+}
+.workspace-simplified #component-library-popup .component-library-categories button.is-active {
+  border-color:#65727a!important;
+  background:linear-gradient(110deg,rgba(190,202,211,.17),rgba(190,202,211,.06))!important;
+  color:#f1f4f6!important;
+  box-shadow:inset 2px 0 #c5cfd5!important;
+}
+.workspace-simplified #component-library-popup .component-category-icon,
+.workspace-simplified #component-library-popup .component-results-count {
+  color:#c1cbd1!important;
+}
+.workspace-simplified #component-library-popup .component-library-results-heading h3 {font-size:17px!important}
+.workspace-simplified #component-library-popup .component-results-count {font-size:10px!important}
+.workspace-simplified #component-library-popup .component-library-node-grid {gap:11px!important}
+.workspace-simplified #component-library-popup .component-library-node-grid .component-dock-item {
+  min-height:78px!important;
+  padding:13px!important;
+  border-color:#3c484f!important;
+  border-radius:10px!important;
+  background:linear-gradient(145deg,#252d32,#1a2126)!important;
+  color:#e5eaed!important;
+}
+.workspace-simplified #component-library-popup .component-library-node-grid .component-dock-item:hover {
+  border-color:#aeb9c1!important;background:linear-gradient(145deg,#303a40,#20282d)!important;
+}
+.workspace-simplified #component-library-popup .component-library-node-grid .catalog-item-active {
+  border-color:#c3cdd3!important;
+  background:linear-gradient(145deg,#303a40,#20282d)!important;
+  box-shadow:inset 2px 0 #d7dfe3!important;
+}
+.workspace-simplified #component-library-popup .component-library-node-grid .catalog-item-title,
+.workspace-simplified #component-library-popup .component-library-node-grid .catalog-item-title svg {
+  color:#e5eaed!important;
+}
+.workspace-simplified #component-library-popup .component-library-node-grid .component-dock-item small {
+  color:#9da9b0!important;font-size:10px!important;
+}
+.workspace-simplified #component-library-popup .component-library-categories,
+.workspace-simplified #component-library-popup .component-library-results {
+  scrollbar-color:#697780 transparent!important;
+}
+.workspace-simplified #component-library-popup .component-library-categories::-webkit-scrollbar-thumb,
+.workspace-simplified #component-library-popup .component-library-results::-webkit-scrollbar-thumb {
+  background:#697780!important;
+}
+
+/* Replace category-specific violet/cyan badges with a consistent neutral icon treatment. */
+.workspace-simplified .catalog-component-icon,
+.workspace-simplified .catalog-component-icon[class*="--"],
+.workspace-simplified .component-category-icon,
+.workspace-simplified .catalog-item[class*="catalog-item--"] .catalog-item-title svg {
+  color:#d1d9de!important;
+  border-color:#58656d!important;
+  background:linear-gradient(145deg,#303a40,#1b2227)!important;
+}
+.workspace-simplified .catalog-item[class*="catalog-item--"] {border-color:#3b474e!important}
+.workspace-simplified .catalog-item[class*="catalog-item--"].catalog-item-active {
+  border-color:#c2ccd2!important;background:#252e34!important;
+}
+
+/* Inspector becomes a readable detail surface instead of a compressed sidebar. */
+.workspace-simplified .workspace .right-panel {
+  width:380px!important;min-width:340px!important;max-width:420px!important;
+  padding:22px!important;
+  background:linear-gradient(160deg,#1c2429,#12191e)!important;
+  border-color:#46535b!important;
+}
+.workspace-simplified .workspace .right-panel .panel-heading-row {
+  min-height:42px!important;margin-bottom:18px!important;
+}
+.workspace-simplified .workspace .right-panel .section-kicker {
+  color:#c8d1d6!important;font-size:11px!important;letter-spacing:.1em!important;
+}
+.workspace-simplified .workspace .right-panel .catalog-inspector-title {
+  align-items:center!important;gap:13px!important;margin:18px 0!important;
+}
+.workspace-simplified .workspace .right-panel .catalog-inspector-title h3 {
+  color:#f0f3f5!important;font-size:17px!important;line-height:1.4!important;
+}
+.workspace-simplified .workspace .right-panel .catalog-summary {
+  color:#d0d8dd!important;font-size:14px!important;line-height:1.75!important;
+}
+.workspace-simplified .workspace .right-panel .catalog-detail-block {
+  margin-top:18px!important;padding:15px 0!important;
+  border-top:1px solid rgba(190,202,211,.18)!important;
+}
+.workspace-simplified .workspace .right-panel .catalog-detail-block strong {
+  color:#d5dde1!important;font-size:11px!important;letter-spacing:.09em!important;
+}
+.workspace-simplified .workspace .right-panel .catalog-detail-block p {
+  color:#bdc7cd!important;font-size:13px!important;line-height:1.75!important;
+}
+.workspace-simplified .workspace .right-panel .catalog-learn-btn {
+  min-height:42px!important;border-color:#53616a!important;
+  background:#1b242a!important;color:#e2e8eb!important;font-size:12px!important;
+}
+.workspace-simplified .workspace .right-panel .field {gap:8px!important;margin-top:20px!important}
+.workspace-simplified .workspace .right-panel .field label {
+  color:#c2ccd2!important;font-size:11px!important;letter-spacing:.04em!important;
+}
+.workspace-simplified .workspace .right-panel .field textarea,
+.workspace-simplified .workspace .right-panel .field input {
+  min-height:92px!important;padding:12px!important;
+  color:#edf1f3!important;font:13px/1.65 Inter,ui-sans-serif,system-ui,sans-serif!important;
+}
+.workspace-simplified .workspace .right-panel .field textarea::placeholder,
+.workspace-simplified .workspace .right-panel .field input::placeholder {color:#829099!important}
+.workspace-simplified .workspace .right-panel .catalog-add-project {
+  min-height:44px!important;font-size:12px!important;
+}
+.workspace-simplified .workspace .right-panel .catalog-hint {
+  color:#9eabb2!important;font-size:11px!important;line-height:1.6!important;
+}
+
+/* Ask ANCHON: consistent typography, clear message hierarchy, and a usable composer. */
+.workspace-simplified .floating-ai-chat-panel {
+  width:min(460px,calc(100vw - 32px))!important;
+  max-height:min(78dvh,760px)!important;
+  display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;
+  border:1px solid #59666e!important;
+  border-radius:14px!important;
+  background:linear-gradient(160deg,#1c2429,#11181d)!important;
+}
+.workspace-simplified .floating-ai-chat-panel-heading {
+  min-height:54px!important;padding:13px 16px!important;
+  background:rgba(255,255,255,.025)!important;
+}
+.workspace-simplified .floating-ai-chat-panel-heading strong {
+  color:#f0f3f5!important;font-size:12px!important;letter-spacing:.08em!important;
+}
+.workspace-simplified .floating-ai-chat-panel .architecture-ai-chat {
+  min-height:0!important;gap:13px!important;margin:0!important;padding:14px!important;
+  border:0!important;overflow-y:auto!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-heading {gap:11px!important}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-title-icon {
+  width:38px!important;height:38px!important;flex-basis:38px!important;
+  border-color:#5a6871!important;background:linear-gradient(145deg,#303a40,#1b2328)!important;
+  color:#e1e7ea!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-title strong {
+  color:#edf1f3!important;font-size:11px!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-title span {
+  color:#a4b0b7!important;font-size:11px!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-mode {
+  border-color:#46535b!important;background:#10171b!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-mode button {
+  min-height:38px!important;color:#aab6bd!important;font:600 11px Inter,ui-sans-serif,system-ui,sans-serif!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-mode button.active {
+  border-color:#89969e!important;background:#303a40!important;color:#f2f5f6!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-mode-hint {
+  color:#aeb9c0!important;font-size:12px!important;line-height:1.6!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-messages {
+  max-height:none!important;min-height:150px!important;gap:11px!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-message {
+  padding:12px 13px!important;border-color:#3e4a51!important;
+  border-radius:10px!important;background:#171f24!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-message-user {
+  border-color:#697780!important;background:#252f35!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-message-role {
+  color:#c3cdd2!important;font-size:10px!important;letter-spacing:.08em!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-message p {
+  color:#e0e6e9!important;font-size:13px!important;line-height:1.7!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-loading {
+  color:#c0cbd1!important;font-size:12px!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-plan {
+  border-color:#65727a!important;background:#20292e!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-plan strong,
+.workspace-simplified .floating-ai-chat-panel .ai-chat-plan span,
+.workspace-simplified .floating-ai-chat-panel .ai-chat-plan p {
+  color:#d7dfe3!important;font-size:12px!important;line-height:1.6!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-apply {
+  min-height:40px!important;border-color:#c7d1d6!important;
+  background:linear-gradient(115deg,#e8edf0,#aeb9c1)!important;color:#11171b!important;
+  font-size:11px!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-composer {
+  position:sticky!important;bottom:0!important;padding:10px!important;
+  border-color:#53616a!important;background:#10171b!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-composer textarea {
+  min-height:82px!important;padding:8px!important;
+  color:#edf1f3!important;font:13px/1.65 Inter,ui-sans-serif,system-ui,sans-serif!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-composer textarea::placeholder {color:#8c999f!important}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-composer-footer {
+  border-color:#354149!important;padding-top:9px!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-composer-footer>span {
+  color:#a4b0b7!important;font-size:10px!important;
+}
+.workspace-simplified .floating-ai-chat-panel .ai-chat-composer-footer button {
+  min-height:36px!important;padding:0 13px!important;border-color:#c5cfd5!important;
+  background:linear-gradient(115deg,#e8edf0,#aeb9c1)!important;color:#11171b!important;
+  font:700 11px Inter,ui-sans-serif,system-ui,sans-serif!important;
+}
+@media(max-width:760px) {
+  .workspace-simplified .workspace .right-panel {
+    width:min(390px,calc(100vw - 52px))!important;min-width:0!important;
+    max-width:none!important;padding:16px!important;
+  }
+  .workspace-simplified .floating-ai-chat-panel {
+    right:12px!important;left:12px!important;bottom:72px!important;
+    width:auto!important;max-height:75dvh!important;
+  }
+}
