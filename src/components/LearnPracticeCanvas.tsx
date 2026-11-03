@@ -17,7 +17,7 @@ export function LearnPracticeCanvas({levelId,onComplete,completed}:Props) {
  const mission=missions[levelId]??missions.foundations;
  const initialNodes=useMemo(()=>makeNodes(levelId),[levelId]);
  const [nodes,setNodes,onNodesChange]=useNodesState(initialNodes);
- const [edges,setEdges,onEdgesChange]=useEdgesState<Edge[]>([]);
+ const [edges,setEdges,onEdgesChange]=useEdgesState<Edge>([]);
  const [result,setResult]=useState<"idle"|"success"|"error">(completed?"success":"idle");
  const [message,setMessage]=useState("");
  const connect=(connection:Connection)=>{
