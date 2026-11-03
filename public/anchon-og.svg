@@ -1,52 +1,66 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
 <defs>
- <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#090c0f"/><stop offset=".58" stop-color="#14191e"/><stop offset="1" stop-color="#090c0f"/></linearGradient>
- <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".25" stop-color="#dce2e6"/><stop offset=".55" stop-color="#7e8992"/><stop offset=".78" stop-color="#f4f6f7"/><stop offset="1" stop-color="#7a858e"/></linearGradient>
- <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#aeb8c0" stroke-opacity=".09"/></pattern>
- <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="12"/></filter>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080b0e"/><stop offset=".55" stop-color="#11171b"/><stop offset="1" stop-color="#080b0e"/></linearGradient>
+  <linearGradient id="silver" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#f7f9fa"/><stop offset=".5" stop-color="#aeb8c0"/><stop offset="1" stop-color="#eef2f4"/></linearGradient>
+  <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#273138" stop-opacity=".94"/><stop offset="1" stop-color="#171e23" stop-opacity=".96"/></linearGradient>
+  <radialGradient id="glow"><stop stop-color="#aab8c2" stop-opacity=".12"/><stop offset="1" stop-color="#aab8c2" stop-opacity="0"/></radialGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="30"/></filter>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur in="SourceAlpha" stdDeviation="8"/><feOffset dy="8"/><feComponentTransfer><feFuncA type="linear" slope=".32"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
 <rect width="1200" height="630" fill="url(#bg)"/>
-<ellipse cx="930" cy="260" rx="350" ry="270" fill="#9aa6af" opacity=".06" filter="url(#shadow)"/>
-<rect x="650" y="78" width="500" height="470" fill="url(#grid)" opacity=".85"/>
-<!-- Repository ANCHON mark, reproduced from public/anchon-mark.svg -->
-<g transform="translate(76 54) scale(.76)">
+<ellipse cx="930" cy="300" rx="420" ry="280" fill="url(#glow)" filter="url(#soft)"/>
+<path d="M690 -20C850 65 960 8 1220 145M-30 560C210 480 350 700 660 650" fill="none" stroke="#dce3e8" stroke-opacity=".16" stroke-width="2"/>
+<path d="M0 0H1200V630H0Z" fill="none" stroke="#fff" stroke-opacity=".035"/>
+<!-- Brand -->
+<g transform="translate(55 40) scale(.48)">
  <rect x="2" y="2" width="96" height="96" rx="22" fill="#171d22" stroke="#68747d" stroke-width="2"/>
  <path d="M8 91 40 12Q44 2 50 2t10 10l32 79-15-9-7-3-20-52-20 52-7 3Z" fill="url(#silver)" transform="translate(0 3) scale(1 .94)"/>
  <path d="M29 69 36 65Q50 50 64 65l7 4-5 8-5-3q-11-9-22 0l-5 3Z" fill="url(#silver)" stroke="#f8fafb" stroke-opacity=".45"/>
- <path d="M13 87 42 15" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".35"/>
 </g>
-<text x="165" y="103" fill="#f1f4f6" font-family="Inter,Arial,sans-serif" font-size="36" font-weight="750" letter-spacing="1">ANCHON</text>
-<text x="168" y="128" fill="#9aa5ad" font-family="'IBM Plex Mono',monospace" font-size="11" letter-spacing="2">SYSTEM ARCHITECTURE DESIGN</text>
-<text x="78" y="275" fill="#f4f6f7" font-family="Inter,Arial,sans-serif" font-size="55" font-weight="750">Design systems.</text>
-<text x="78" y="339" fill="#b9c2c9" font-family="Inter,Arial,sans-serif" font-size="55" font-weight="750">Map architecture.</text>
-<rect x="80" y="374" width="62" height="4" rx="2" fill="url(#silver)"/>
-<text x="80" y="425" fill="#d4dbe0" font-family="Inter,Arial,sans-serif" font-size="20">AI-powered system architecture designer</text>
-<text x="80" y="459" fill="#929ea7" font-family="Inter,Arial,sans-serif" font-size="15">Visualize components, connections and system flows.</text>
-<!-- Technical architecture illustration -->
-<rect x="660" y="116" width="475" height="400" rx="18" fill="#12171b" stroke="#626e77" stroke-width="1.5"/>
-<text x="694" y="153" fill="#aeb8c0" font-family="'IBM Plex Mono',monospace" font-size="12" letter-spacing="1.5">REFERENCE ARCHITECTURE</text>
-<path d="M694 174H1100" stroke="#46515a"/>
-<g fill="#242c32" stroke="#89959e" stroke-width="1.5">
- <rect x="700" y="235" width="130" height="72" rx="10"/>
- <rect x="878" y="235" width="130" height="72" rx="10"/>
- <rect x="878" y="365" width="130" height="72" rx="10"/>
- <rect x="1040" y="365" width="75" height="72" rx="10"/>
+<text x="112" y="83" fill="#f1f4f6" font-family="Inter,Arial,sans-serif" font-size="28" font-weight="700" letter-spacing="5">ANCHON</text>
+<text x="57" y="119" fill="#8e9ba4" font-family="Arial,sans-serif" font-size="10" letter-spacing="2.2">AI-POWERED SYSTEM ARCHITECTURE DESIGNER</text>
+<text x="57" y="181" fill="url(#silver)" font-family="Inter,Arial,sans-serif" font-size="37" font-weight="700" letter-spacing="-1.2">From click to data and back.</text>
+<text x="58" y="207" fill="#84939d" font-family="monospace" font-size="9" letter-spacing="1.7">REFERENCE ARCHITECTURE  /  WEB APPLICATION</text>
+<text x="1138" y="112" fill="#a5b0b8" font-family="monospace" font-size="9" text-anchor="end" letter-spacing="1.2">●  TRACE COMPLETE</text>
+<!-- Connection paths -->
+<g fill="none" stroke="#4bd7c6" stroke-width="2.1" stroke-dasharray="8 9" opacity=".92">
+ <path d="M205 370H315"/>
+ <path d="M455 370H550"/>
+ <path d="M690 370H1000"/>
+ <path d="M690 347C760 347 760 285 820 260"/>
+ <path d="M690 391C760 391 755 440 820 440"/>
 </g>
-<g fill="#9eabb4" font-family="'IBM Plex Mono',monospace" font-size="9">
- <text x="714" y="255">EDGE</text><text x="892" y="255">ROUTING</text><text x="892" y="385">COMPUTE</text><text x="1054" y="385">DATA</text>
+<g fill="#4bd7c6"><circle cx="205" cy="370" r="3.5"/><circle cx="315" cy="370" r="3.5"/><circle cx="455" cy="370" r="3.5"/><circle cx="550" cy="370" r="3.5"/><circle cx="690" cy="370" r="3.5"/><circle cx="820" cy="260" r="3.5"/><circle cx="820" cy="440" r="3.5"/><circle cx="1000" cy="370" r="3.5"/></g>
+<!-- Node cards -->
+<g filter="url(#shadow)">
+ <rect x="57" y="315" width="148" height="112" rx="12" fill="#151b1f" stroke="#dce3e8" stroke-width="1.2"/>
+ <rect x="315" y="315" width="140" height="112" rx="12" fill="url(#panel)" stroke="#64727c"/>
+ <rect x="550" y="315" width="140" height="112" rx="12" fill="url(#panel)" stroke="#64727c"/>
+ <rect x="820" y="205" width="160" height="112" rx="12" fill="url(#panel)" stroke="#64727c"/>
+ <rect x="1000" y="315" width="145" height="112" rx="12" fill="url(#panel)" stroke="#64727c"/>
 </g>
-<g fill="#edf1f3" font-family="Inter,Arial,sans-serif" font-size="14">
- <text x="714" y="282">Client</text><text x="892" y="282">API gateway</text><text x="892" y="412">Services</text><text x="1054" y="412">DB</text>
+<g font-family="monospace" font-size="8" font-weight="700" letter-spacing=".8" fill="#b9c3ca">
+ <text x="70" y="336">ENTRY POINT</text><text x="328" y="336">ROUTING</text><text x="563" y="336">COMPUTE</text><text x="833" y="226">PERSISTENCE</text><text x="1013" y="336">OUTPUT</text>
 </g>
-<g fill="none" stroke="#c0c9cf" stroke-width="2.5">
- <path d="M830 271H878l-9-6m9 6-9 6"/>
- <path d="M943 307V365l-6-9m6 9 6-9"/>
- <path d="M1008 401H1040l-9-6m9 6-9 6"/>
+<g fill="#6de1cf" font-family="Arial,sans-serif" font-size="13"><text x="184" y="338">✓</text><text x="434" y="338">✓</text><text x="669" y="338">✓</text><text x="954" y="228">✓</text><text x="1124" y="338">✓</text></g>
+<!-- Simple component glyphs -->
+<g fill="none" stroke="#d7e0e5" stroke-width="1.4">
+ <circle cx="91" cy="365" r="12"/><circle cx="91" cy="365" r="3"/>
+ <path d="M343 355v20m0-20 13 0m-13 20 13-8m0-12v12" stroke-linecap="round"/>
+ <rect x="579" y="354" width="23" height="9" rx="2"/><rect x="579" y="368" width="23" height="9" rx="2"/>
+ <ellipse cx="852" cy="251" rx="9" ry="4"/><path d="M843 251v15c0 5 18 5 18 0v-15M843 258c0 5 18 5 18 0"/>
+ <path d="M1030 357l9-5 9 5v10c0 7-9 11-9 11s-9-4-9-11z"/>
 </g>
-<g fill="#89959e" font-family="'IBM Plex Mono',monospace" font-size="10">
- <text x="700" y="475">01  CLIENT</text><text x="878" y="475">02  SERVICE LAYER</text><text x="1040" y="475">03</text>
+<g fill="#edf1f3" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="700">
+ <text x="70" y="397">CLIENT</text><text x="328" y="397">API GATEWAY</text><text x="563" y="397">APP SERVICE</text><text x="833" y="288">DATA STORE</text><text x="1013" y="397">RESPONSE</text>
 </g>
-<path d="M78 565H1125" stroke="#46515a"/>
-<text x="80" y="592" fill="#87939c" font-family="'IBM Plex Mono',monospace" font-size="10" letter-spacing="1.2">THINK IN SYSTEMS  /  BUILD WITH CLARITY</text>
-<text x="1000" y="592" fill="#b7c1c8" font-family="'IBM Plex Mono',monospace" font-size="10">ANCHON.DEV</text>
+<g fill="#aab5bd" font-family="monospace" font-size="9">
+ <text x="70" y="414">User interface</text><text x="328" y="414">Entry + routing</text><text x="563" y="414">Business logic</text><text x="833" y="305">Persistent state</text><text x="1013" y="414">Return payload</text>
+</g>
+<g fill="#9aa8b2" font-family="monospace" font-size="8" letter-spacing="1">
+ <text x="57" y="560">●  ACTIVE CONNECTION</text><text x="1145" y="560" text-anchor="end">5 NODES  ·  5 CONNECTIONS</text>
+</g>
+<path d="M57 535H1145" stroke="#8d9aa3" stroke-opacity=".2"/>
+<text x="57" y="590" fill="#687780" font-family="monospace" font-size="8" letter-spacing="1.4">DESIGN  /  MODEL  /  EVALUATE  /  SHARE</text>
+<text x="1145" y="590" fill="#aeb8c0" font-family="monospace" font-size="8" text-anchor="end" letter-spacing="1.4">ANCHON.DEV</text>
 </svg>
