@@ -579,3 +579,205 @@
  .workspace-simplified .academy-v3-main .academy-v3-learning{padding:6px!important}
  .workspace-simplified .academy-v3-main .academy-v3-lesson{padding:22px 18px!important}
 }
+
+
+/* Final workspace visual pass: logo-only launcher, right-anchored assistant,
+   and a readable graphite/silver component library + inspector. */
+.app-shell:not(.lp-root) .floating-ai-chat-trigger {
+  position:fixed!important;left:auto!important;right:22px!important;bottom:22px!important;
+  display:grid!important;place-items:center!important;gap:0!important;
+  width:64px!important;min-width:64px!important;height:64px!important;min-height:64px!important;
+  padding:0!important;border:0!important;border-radius:0!important;
+  background:transparent!important;color:#edf1f3!important;box-shadow:none!important;
+  cursor:grab!important;touch-action:none!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger:hover,
+.app-shell:not(.lp-root) .floating-ai-chat-trigger:focus-visible {
+  background:transparent!important;box-shadow:none!important;filter:drop-shadow(0 5px 14px rgba(210,220,226,.24))!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger::after {content:none!important;display:none!important}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger .anchon-bubble-mark {
+  display:grid!important;place-items:center!important;width:54px!important;height:54px!important;
+  flex:none!important;padding:0!important;border:0!important;border-radius:0!important;
+  background:transparent!important;color:#e8edf0!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger .anchon-bubble-mark svg {
+  display:block!important;width:50px!important;height:50px!important;filter:drop-shadow(0 3px 8px #0009)!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-trigger .anchon-trigger-label {display:none!important}
+
+.app-shell:not(.lp-root) .floating-ai-chat-panel {
+  position:fixed!important;left:auto!important;right:22px!important;
+  bottom:98px!important;top:auto!important;
+  width:min(540px,calc(100vw - 32px))!important;
+  max-width:540px!important;height:min(760px,calc(100dvh - 124px))!important;
+  min-height:min(520px,calc(100dvh - 124px))!important;max-height:calc(100dvh - 124px)!important;
+  box-sizing:border-box!important;padding:20px!important;
+  border:1px solid #59666e!important;border-radius:18px!important;
+  background:linear-gradient(155deg,#20292f 0%,#151c21 72%,#11171b 100%)!important;
+  color:#edf1f3!important;box-shadow:0 24px 72px rgba(0,0,0,.62),inset 0 1px rgba(255,255,255,.05)!important;
+  transform-origin:bottom right!important;z-index:160!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading {
+  min-height:48px!important;margin:0 0 14px!important;padding:0 0 13px!important;
+  border-bottom:1px solid #46535c!important;color:#f1f4f5!important;
+  font-size:14px!important;letter-spacing:.09em!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel-heading button {
+  border:1px solid #58656d!important;background:#263138!important;color:#e8edf0!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .architecture-ai-chat {
+  min-height:0!important;height:calc(100% - 62px)!important;overflow:auto!important;
+  gap:16px!important;padding:4px!important;
+}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .ai-chat-messages {min-height:240px!important;max-height:none!important}
+.app-shell:not(.lp-root) .floating-ai-chat-panel .ai-chat-composer textarea {
+  min-height:100px!important;padding:13px!important;font-size:15px!important;line-height:1.65!important;
+}
+@media(max-width:760px) {
+  .app-shell:not(.lp-root) .floating-ai-chat-trigger {right:14px!important;bottom:14px!important}
+  .app-shell:not(.lp-root) .floating-ai-chat-panel {
+    left:10px!important;right:10px!important;bottom:88px!important;top:10px!important;
+    width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;
+    padding:14px!important;
+  }
+}
+
+/* Inspector: neutral graphite surfaces, readable type, consistent spacing. */
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-inspector {
+  padding:20px!important;border:1px solid #46535b!important;border-radius:14px!important;
+  background:linear-gradient(155deg,#202a30,#151d22)!important;color:#e5ebee!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.035)!important;
+}
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-inspector-title {gap:14px!important;margin:0 0 18px!important}
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-component-icon,
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-inspector-title .catalog-component-icon {
+  width:48px!important;height:48px!important;border:1px solid #66747c!important;border-radius:12px!important;
+  background:#2a353c!important;color:#e2e8eb!important;
+}
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-inspector .section-kicker,
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-detail-block>strong {
+  color:#d0d9de!important;font-size:12px!important;font-weight:750!important;letter-spacing:.1em!important;
+}
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-inspector-title h3 {
+  color:#f1f4f5!important;font-size:19px!important;line-height:1.45!important;font-weight:750!important;
+}
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-summary {
+  margin:0 0 20px!important;padding:0 0 18px!important;border-bottom:1px solid #46535b!important;
+  color:#d0d9de!important;font-size:15px!important;line-height:1.8!important;
+}
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-detail-block {
+  margin:14px 0 0!important;padding:17px!important;border:1px solid #46535b!important;
+  border-radius:10px!important;background:#192228!important;
+}
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-detail-block p {
+  margin:9px 0 0!important;color:#c5d0d6!important;font-size:14px!important;line-height:1.8!important;
+}
+.app-shell:not(.lp-root) .workspace>.right-panel .catalog-learn-btn {
+  min-height:46px!important;margin:16px 0 4px!important;border:1px solid #65737b!important;
+  border-radius:9px!important;background:#28343a!important;color:#edf1f3!important;
+  font-size:13px!important;font-weight:750!important;
+}
+.app-shell:not(.lp-root) .workspace>.right-panel .field {gap:9px!important;margin-top:18px!important}
+.app-shell:not(.lp-root) .workspace>.right-panel .field label {color:#c4cfd5!important;font-size:12px!important;font-weight:700!important}
+.app-shell:not(.lp-root) .workspace>.right-panel .field textarea {
+  min-height:100px!important;padding:14px!important;border:1px solid #53616a!important;
+  border-radius:9px!important;background:#11191e!important;color:#edf1f3!important;
+  font:14px/1.7 Inter,ui-sans-serif,system-ui,sans-serif!important;
+}
+
+/* Component library: clearer hierarchy, larger controls, and neutral surfaces. */
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock.component-dock-open {
+  width:min(1120px,calc(100vw - 48px))!important;max-width:1120px!important;
+  border:1px solid #56646c!important;border-radius:16px!important;
+  background:linear-gradient(155deg,#1c252b,#12191e)!important;
+  box-shadow:0 26px 90px rgba(0,0,0,.72)!important;backdrop-filter:none!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-heading {
+  padding:22px 24px!important;gap:18px!important;border-bottom:1px solid #3e4b53!important;
+  background:#1b242a!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-heading .section-kicker {
+  color:#e0e6e9!important;font-size:13px!important;letter-spacing:.09em!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-heading p {
+  max-width:760px!important;margin-top:9px!important;color:#bdc8ce!important;
+  font-size:14px!important;line-height:1.7!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-controls {
+  gap:12px!important;padding:18px 22px!important;background:#171f24!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-search {
+  min-height:54px!important;padding:0 16px!important;border:1px solid #53616a!important;
+  border-radius:10px!important;background:#10171c!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-search input {
+  color:#f0f3f5!important;font-size:15px!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-search input::placeholder {color:#929fa7!important}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-controls select {
+  min-height:48px!important;padding:0 14px!important;border:1px solid #53616a!important;
+  border-radius:9px!important;background:#202a30!important;color:#e7ecef!important;font-size:14px!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-browser {
+  grid-template-columns:230px minmax(0,1fr)!important;min-height:420px!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-categories {
+  padding:16px 12px!important;background:#151d22!important;border-right:1px solid #39464e!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-categories button {
+  min-height:48px!important;padding:10px 12px!important;gap:10px!important;border-radius:8px!important;
+  color:#bdc8ce!important;font-size:13px!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-categories button.is-active {
+  border:1px solid #65737b!important;background:#2a353b!important;color:#f1f4f5!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-categories button small {
+  color:#aebbc2!important;font-size:11px!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-results {
+  padding:22px 24px!important;background:#1a2329!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-results-heading h3 {
+  color:#f0f3f5!important;font-size:20px!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-results-heading p {
+  color:#bdc8ce!important;font-size:14px!important;line-height:1.65!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-results-count {
+  color:#b8c4ca!important;font-size:11px!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-node-grid {
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important;gap:14px!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-item {
+  min-height:94px!important;padding:18px!important;border:1px solid #45535b!important;
+  border-radius:11px!important;background:linear-gradient(145deg,#222d33,#182126)!important;
+  color:#edf1f3!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-item strong,
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-dock-item span {
+  color:#e6ecef!important;font-size:14px!important;line-height:1.5!important;
+}
+.app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-close {
+  width:40px!important;height:40px!important;flex-basis:40px!important;
+  border:1px solid #58666e!important;border-radius:10px!important;background:#273239!important;color:#edf1f3!important;
+}
+@media(max-width:900px) {
+  .app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock.component-dock-open {
+    left:12px!important;right:12px!important;top:64px!important;bottom:12px!important;
+    width:auto!important;max-width:none!important;max-height:none!important;
+  }
+  .app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-browser {
+    grid-template-columns:170px minmax(0,1fr)!important;
+  }
+}
+@media(max-width:620px) {
+  .app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-browser {grid-template-columns:1fr!important}
+  .app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-categories {
+    display:flex!important;overflow-x:auto!important;gap:7px!important;padding:10px!important;border-right:0!important;border-bottom:1px solid #39464e!important;
+  }
+  .app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-categories button {flex:0 0 auto!important}
+  .app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-results {padding:16px!important}
+  .app-shell:not(.lp-root) .floating-ai-chat-panel {left:8px!important;right:8px!important;bottom:82px!important;top:8px!important;width:auto!important;height:auto!important}
+}
