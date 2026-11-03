@@ -5,8 +5,7 @@ import { FolderFloat } from "./FolderFloat";
 import { useEffect, useState } from "react";
 import {
   ArrowDownRight, ArrowRight, Check, CircleDot, Database, GitBranch,
-  Layers3, LockKeyhole, Play, RotateCcw, Server, ShieldCheck, Workflow,
-  Workflow, Zap,
+  Layers3, LockKeyhole, Play, RotateCcw, Server, ShieldCheck, Workflow, Zap,
 } from "lucide-react";
 import "./InteractiveArchitectureLanding.css";
 
