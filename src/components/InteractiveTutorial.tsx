@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { CircleHelp, X, ArrowUpRight } from "lucide-react";
-import "./InteractiveTutorial.css";
 
 const guides = {
   workspace: {
