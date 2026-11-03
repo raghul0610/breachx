@@ -1,5 +1,5 @@
 import { useMemo, useState, type DragEvent } from "react";
-import { ReactFlow, Background, Controls, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type ReactFlowInstance } from "@xyflow/react";
+import { ReactFlow, Background, Controls, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type ReactFlowInstance, MarkerType } from "@xyflow/react";
 import { AlertCircle, Bot, Check, ChevronDown, Circle, Eye, LoaderCircle, RotateCcw, Send, ShieldCheck } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import "./SystemDesignAcademy.css";
@@ -124,7 +124,7 @@ export function AcademyPage() {
     }catch(error){setAssistantReply(error instanceof Error?error.message:"Could not get a hint.");}
     finally{setAssistantBusy(false);}
   };
-  const reveal=()=>{setRevealed(true);const positions=scenario.reference.map((_,i)=>({x:90+(i%4)*220,y:95+Math.floor(i/4)*155}));const refNodes=scenario.reference.map((type,i)=>makeNode(`ref-${i}`,type,positions[i].x,positions[i].y));const refEdges=scenario.flow.map(([source,target],i)=>({id:`ref-edge-${i}`,source:`ref-${scenario.reference.indexOf(source)}`,target:`ref-${scenario.reference.indexOf(target)}`,animated:true,style:{stroke:"#c4d0d6",strokeWidth:1.7},label:"request / data",type:"smoothstep",markerEnd:{type:"arrowclosed",color:"#c4d0d6"}}));setNodes(refNodes);setEdges(refEdges);setJudge(null);};
+  const reveal=()=>{setRevealed(true);const positions=scenario.reference.map((_,i)=>({x:90+(i%4)*220,y:95+Math.floor(i/4)*155}));const refNodes=scenario.reference.map((type,i)=>makeNode(`ref-${i}`,type,positions[i].x,positions[i].y));const refEdges:Edge[]=scenario.flow.map(([source,target],i)=>({id:`ref-edge-${i}`,source:`ref-${scenario.reference.indexOf(source)}`,target:`ref-${scenario.reference.indexOf(target)}`,animated:true,style:{stroke:"#c4d0d6",strokeWidth:1.7},label:"request / data",type:"smoothstep",markerEnd:{type:MarkerType.ArrowClosed,color:"#c4d0d6"}}));setNodes(refNodes);setEdges(refEdges);setJudge(null);};
   return <main className="design-academy">
     <header className="da-heading">
       <div><span className="da-eyebrow">ANCHON / PRACTICE ARENA</span><h1>System design practice</h1><p>Work through real-world architecture problems and get feedback on your decisions.</p></div>
