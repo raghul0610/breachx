@@ -1,7 +1,9 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { ReactFlow, Background, Controls, Handle, Position, ConnectionMode, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type NodeProps, type ReactFlowInstance, MarkerType } from "@xyflow/react";
-import { AlertCircle, Bot, Check, ChevronDown, Circle, Eye, LoaderCircle, RotateCcw, Send, ShieldCheck, X, CircleHelp } from "lucide-react";
+import { AlertCircle, Bot, Check, ChevronDown, Circle, Eye, LoaderCircle, RotateCcw, Send, Search, ShieldCheck } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { evaluateSystemDesign } from "../lib/evaluationEngine";
+import { BlueprintNode } from "./BlueprintNode";
 import "./SystemDesignAcademy.css";
 
 type Component = { id: string; label: string; category: string; description: string };
@@ -71,56 +73,49 @@ function buildScenario(level:number,index:number):Scenario {
   ];
   return { title:domain,domain,brief:`Design the backend and supporting infrastructure for a ${domain.toLowerCase()}. Your architecture must satisfy the requirements below. Choose components only when they solve a stated need; justify important trade-offs.`,functional,constraints,reference,flow };
 }
-function AcademyNode({data,selected}:NodeProps) {
-  const item=data as {label:string;typeKey:string};
-  return <div className={"da-node"+(selected?" selected":"")}>
-    <Handle type="source" position={Position.Top} id="top"/>
-    <Handle type="source" position={Position.Right} id="right"/>
-    <Handle type="source" position={Position.Bottom} id="bottom"/>
-    <Handle type="source" position={Position.Left} id="left"/>
-    <span className="da-node-category">{palette.find(p=>p[0]===item.typeKey)?.[2]??"ARCHITECTURE"}</span>
-    <strong>{item.label}</strong>
-  </div>;
-}
-const academyNodeTypes={academyNode:AcademyNode};
+const academyNodeTypes={blueprintNode:BlueprintNode};
 function makeNode(id:string,type:string,x:number,y:number):Node {
   const item=palette.find(p=>p[0]===type);
   const catalogKeys:Record<string,string>={gateway:"api_gateway",service:"microservice",search:"search_engine",auth:"auth_service",monitoring:"metrics",payment:"payment_service",notification:"notification_service"};
-  return {id,type:"academyNode",position:{x,y},data:{label:item?.[1] ?? type,typeKey:catalogKeys[type]??type},style:{background:"#1c242a",color:"#e9eef1",border:"1px solid #65727a",borderRadius:9,padding:10,minWidth:135,fontSize:12}};
+  return {id,type:"blueprintNode",position:{x,y},data:{label:item?.[1] ?? type,typeKey:catalogKeys[type]??type,category:({client:"Applications",gateway:"Networking",service:"Compute",database:"Databases",cache:"Cache",queue:"Messaging",worker:"Compute",object_storage:"Storage",cdn:"Networking",search:"Data",auth:"Security",rate_limiter:"Security",monitoring:"Observability",payment:"Integrations",notification:"Messaging"} as Record<string,string>)[type]??"Infrastructure",notes:item?.[2]??""}};
 }
 export function AcademyPage() {
   const [level,setLevel]=useState(0); const [challenge,setChallenge]=useState(0);
   const [nodes,setNodes,onNodesChange]=useNodesState<Node>([]); const [edges,setEdges,onEdgesChange]=useEdgesState<Edge>([]);
   const [instance,setInstance]=useState<ReactFlowInstance|null>(null);
   const [revealed,setRevealed]=useState(false); const [judge,setJudge]=useState<any>(null); const [judging,setJudging]=useState(false);
-  const [assistantOpen,setAssistantOpen]=useState(false); const [tutorialOpen,setTutorialOpen]=useState(false); const [question,setQuestion]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
+  const [assistantOpen,setAssistantOpen]=useState(false); const [question,setQuestion]=useState(""); const [challengeMenuOpen,setChallengeMenuOpen]=useState(false); const [challengeSearch,setChallengeSearch]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
   const scenario=useMemo(()=>buildScenario(level,challenge),[level,challenge]);
+  const filteredChallenges=useMemo(()=>systems.map((name,index)=>({name,index})).filter(item=>item.name.toLowerCase().includes(challengeSearch.toLowerCase())),[challengeSearch]);
   const [completed,setCompleted]=useState<string[]>([]);
   const key=`${level}-${challenge}`; const done=completed.includes(key);
   const reset=()=>{setNodes([]);setEdges([]);setJudge(null);setRevealed(false);};
   const onDrop=(event:DragEvent<HTMLDivElement>)=>{event.preventDefault();const type=event.dataTransfer.getData("application/anchon-component");if(!type||!instance)return;const position=instance.screenToFlowPosition({x:event.clientX,y:event.clientY});setNodes(current=>[...current,makeNode(`${type}-${Date.now()}`,type,position.x,position.y)]);setJudge(null);};
-  const connect=(connection:Connection)=>{setEdges(current=>addEdge({...connection,animated:true,style:{stroke:"#c4d0d6"},label:"request / data"},current));setJudge(null);};
+  const connect=(connection:Connection)=>{setEdges(current=>addEdge({...connection,animated:true,style:{stroke:"#c4d0d6"},label:"request / data",labelBgStyle:{fill:"transparent",fillOpacity:0,stroke:"none"},labelStyle:{fill:"#d7e0e4",fontSize:10,fontWeight:600},type:"smoothstep"},current));setJudge(null);};
   const submit=async()=>{
     setJudging(true);setJudge(null);
     const localFindings:string[]=[];
     if(!nodes.length)localFindings.push("The canvas is empty. Add components and connect the primary request path.");
     if(nodes.length>0 && edges.length===0)localFindings.push("No directed connections are present. Explain how requests and data move between the selected responsibilities.");
+    const graphNodes=nodes.map(n=>({id:n.id,type:n.type,data:n.data as {label?:string;typeKey?:string;category?:string;notes?:string}}));
+    const graphEdges=edges.map(e=>({id:e.id,source:e.source,target:e.target}));
+    const deterministic=evaluateSystemDesign({application:{name:scenario.title,description:`${scenario.brief}\nFunctional requirements:\n${scenario.functional.join("\n")}\nConstraints:\n${scenario.constraints.join("\n")}`},nodes:graphNodes,edges:graphEdges,notes:"Evaluate this challenge against its explicit functional requirements and constraints."});
     try{
       const {data:{session}}=await supabase.auth.getSession();
       if(!session?.access_token)throw new Error("Sign in to run the AI architecture review.");
       const response=await fetch("/api/evaluate",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({
         application:{name:scenario.title,description:`${scenario.brief}\nFunctional requirements:\n${scenario.functional.join("\n")}\nConstraints:\n${scenario.constraints.join("\n")}`},
-        nodes:nodes.map(n=>({id:n.id,typeKey:String((n.data as any).typeKey || (n.data as any).label).toLowerCase().replace(/[^a-z0-9]+/g,"_"),label:String((n.data as any).label),category:"Practice component"})),
-        edges:edges.map(e=>({id:e.id,source:e.source,target:e.target})),
-        notes:"Evaluate this practice submission strictly against the listed functional requirements and constraints. Explain exactly which requirements are unmet, why the current graph fails, what evidence supports each finding, and the smallest corrective change. Do not require components unless justified by a stated constraint."
+        nodes:graphNodes.map(n=>({id:n.id,typeKey:String(n.data.typeKey || n.data.label || "").toLowerCase().replace(/[^a-z0-9]+/g,"_"),label:String(n.data.label||n.id),category:String(n.data.category||"Architecture"),notes:n.data.notes})),
+        edges:graphEdges,
+        notes:"This is a learning challenge. Evaluate the graph against every listed functional requirement and constraint. Explain the current request/data flow, identify exactly why a requirement is or is not satisfied, cite graph evidence, distinguish risks from unknowns, and recommend the smallest justified correction. Do not grade by component count."
       })});
       const payload=await response.json();if(!response.ok)throw new Error(payload.error||"AI review is unavailable.");
       const findings=Array.isArray(payload.findings)?payload.findings:[];
-      const score=Math.max(0,100-findings.reduce((sum:number,f:any)=>sum+(f.severity==="critical"?25:f.severity==="high"?15:f.severity==="medium"?8:3),0));
-      setJudge({score,summary:payload.summary||"Review completed.",strengths:payload.strengths||[],findings,localFindings});
-      if(!findings.some((f:any)=>f.severity==="critical"||f.severity==="high")&&localFindings.length===0)setCompleted(current=>current.includes(key)?current:[...current,key]);
-    }catch(error){setJudge({error:error instanceof Error?error.message:"Review failed.",localFindings});}
-    finally{setJudging(false);}
+      setJudge({score:deterministic.score,summary:payload.summary||deterministic.summary,strengths:[...deterministic.strengths,...(payload.strengths||[])],findings:[...deterministic.findings.map(f=>({...f,source:"rule"})),...findings.map((f:any)=>({...f,source:"ai"}))],assessments:payload.assessments||[],localFindings,overview:deterministic.overview,howItWorks:deterministic.howItWorks});
+      if(!deterministic.findings.some(f=>f.severity==="critical"||f.severity==="high")&&!findings.some((f:any)=>f.severity==="critical"||f.severity==="high")&&localFindings.length===0)setCompleted(current=>current.includes(key)?current:[...current,key]);
+    }catch(error){
+      setJudge({error:error instanceof Error?error.message:"AI review failed.",score:deterministic.score,summary:deterministic.summary,strengths:deterministic.strengths,findings:deterministic.findings,localFindings,assessments:deterministic.scores,offline:true});
+    }finally{setJudging(false);}
   };
   const askAssistant=async()=>{
     if(!question.trim()||assistantBusy)return;setAssistantBusy(true);setAssistantReply("");
@@ -136,7 +131,7 @@ export function AcademyPage() {
     }catch(error){setAssistantReply(error instanceof Error?error.message:"Could not get a hint.");}
     finally{setAssistantBusy(false);}
   };
-  const reveal=()=>{setRevealed(true);const positions=scenario.reference.map((_,i)=>({x:90+(i%4)*220,y:95+Math.floor(i/4)*155}));const refNodes=scenario.reference.map((type,i)=>makeNode(`ref-${i}`,type,positions[i].x,positions[i].y));const refEdges:Edge[]=scenario.flow.map(([source,target],i)=>({id:`ref-edge-${i}`,source:`ref-${scenario.reference.indexOf(source)}`,target:`ref-${scenario.reference.indexOf(target)}`,animated:true,style:{stroke:"#c4d0d6",strokeWidth:1.7},label:"request / data",type:"smoothstep",markerEnd:{type:MarkerType.ArrowClosed,color:"#c4d0d6"}}));setNodes(refNodes);setEdges(refEdges);setJudge(null);};
+  const reveal=()=>{setRevealed(true);const positions=scenario.reference.map((_,i)=>({x:90+(i%4)*220,y:95+Math.floor(i/4)*155}));const refNodes=scenario.reference.map((type,i)=>makeNode(`ref-${i}`,type,positions[i].x,positions[i].y));const refEdges:Edge[]=scenario.flow.map(([source,target],i)=>({id:`ref-edge-${i}`,source:`ref-${scenario.reference.indexOf(source)}`,target:`ref-${scenario.reference.indexOf(target)}`,animated:true,style:{stroke:"#c4d0d6",strokeWidth:1.7},label:"request / data",labelBgStyle:{fill:"transparent",fillOpacity:0,stroke:"none"},labelStyle:{fill:"#d7e0e4",fontSize:10,fontWeight:600},type:"smoothstep",markerEnd:{type:MarkerType.ArrowClosed,color:"#c4d0d6"}}));setNodes(refNodes);setEdges(refEdges);setJudge(null);};
   return <main className="design-academy">
     <header className="da-heading">
       <div><span className="da-eyebrow">ANCHON / PRACTICE ARENA</span><h1>System design practice</h1><p>Work through real-world architecture problems and get feedback on your decisions.</p></div>
@@ -149,9 +144,12 @@ export function AcademyPage() {
       </div>
       <div className="da-challenge-picker">
         <label htmlFor="da-challenge">CHOOSE A CHALLENGE</label>
-        <select id="da-challenge" value={challenge} onChange={e=>{setChallenge(Number(e.target.value));reset();}}>
-          {systems.map((name,i)=><option key={name} value={i}>{String(i+1).padStart(2,"0")} · {name}</option>)}
-        </select>
+        <div className="da-challenge-select">
+          <button type="button" className={"da-challenge-trigger"+(challengeMenuOpen?" open":"")} aria-haspopup="listbox" aria-expanded={challengeMenuOpen} onClick={()=>{setChallengeMenuOpen(v=>!v);setChallengeSearch("");}}>
+            <span><small>CHALLENGE {String(challenge+1).padStart(2,"0")}</small><strong>{scenario.title}</strong></span><ChevronDown size={16}/>
+          </button>
+          {challengeMenuOpen&&<div className="da-challenge-menu"><div className="da-challenge-search"><Search size={14}/><input autoFocus value={challengeSearch} onChange={e=>setChallengeSearch(e.target.value)} placeholder="Search challenges…"/></div><div className="da-challenge-options" role="listbox" aria-label="Challenges">{filteredChallenges.map(item=><button type="button" role="option" aria-selected={challenge===item.index} key={item.index} className={challenge===item.index?"selected":""} onClick={()=>{setChallenge(item.index);reset();setChallengeMenuOpen(false);}}><span>{String(item.index+1).padStart(2,"0")}</span>{item.name}{challenge===item.index&&<Check size={14}/>}</button>)}{filteredChallenges.length===0&&<p>No matching challenges.</p>}</div></div>}
+        </div>
         <span>{challenge+1} of 50</span>
       </div>
     </section>
@@ -167,7 +165,7 @@ export function AcademyPage() {
       </article>
 
       <section className="da-design-section">
-        <div className="da-section-heading da-canvas-heading"><div><span className="da-eyebrow">DESIGN WORKSPACE</span><h2>Your architecture</h2><p>Build the request and data flow by adding components and connecting them.</p></div><div className="da-canvas-actions"><button className="da-help-button" onClick={()=>setTutorialOpen(true)} aria-label="Open academy tutorial" title="How to use the academy"><CircleHelp size={15}/> Tutorial</button><button onClick={reset}><RotateCcw size={14}/> Reset</button><button onClick={reveal} disabled={revealed}><Eye size={14}/> {revealed?"Reference revealed":"Reveal solution"}</button></div></div>
+        <div className="da-section-heading da-canvas-heading"><div><span className="da-eyebrow">DESIGN WORKSPACE</span><h2>Your architecture</h2><p>Build the request and data flow by adding components and connecting them.</p></div><div className="da-canvas-actions"><button onClick={reset}><RotateCcw size={14}/> Reset</button><button onClick={reveal} disabled={revealed}><Eye size={14}/> {revealed?"Reference revealed":"Reveal solution"}</button></div></div>
         <div className="da-builder">
           <div className="da-builder-main"><div className="da-flow" onDragOver={(event)=>{event.preventDefault();event.dataTransfer.dropEffect="move";}} onDrop={onDrop}><ReactFlow nodes={nodes} edges={edges} nodeTypes={academyNodeTypes} connectionMode={ConnectionMode.Loose} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} fitView fitViewOptions={{padding:.2}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Drag a component onto this canvas</strong><span>Start with Client, then connect the request path.</span></div>}</div></div>
           <aside className="da-palette-wrap"><div className="da-palette-heading"><strong>Components</strong><small>Drag a building block into the canvas</small></div><div className="da-palette">{palette.map(item=><div key={item[0]} draggable onDragStart={e=>{e.dataTransfer.setData("application/anchon-component",item[0]);e.dataTransfer.effectAllowed="move";}}><b>{item[1]}</b><small>{item[2]}</small></div>)}</div></aside>
@@ -179,6 +177,6 @@ export function AcademyPage() {
 
       <section className="da-coach"><button onClick={()=>setAssistantOpen(v=>!v)}><Bot size={16}/><span><strong>Need help?</strong><small>Ask the AI design coach for a hint</small></span><ChevronDown size={15} className={assistantOpen?"rotated":""}/></button>{assistantOpen&&<div className="da-coach-body"><p>Ask about a requirement, trade-off or component choice. The coach will guide your reasoning without revealing the complete solution.</p><div><input value={question} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")askAssistant();}} placeholder="e.g. How should I handle payment timeouts?"/><button onClick={askAssistant} disabled={assistantBusy||!question.trim()}>{assistantBusy?<LoaderCircle size={14}/>:<Send size={14}/>}</button></div>{assistantReply&&<p className="da-coach-reply">{assistantReply}</p>}</div>}</section>
     </section>
-    {tutorialOpen&&<div className="da-tutorial-backdrop" role="presentation" onClick={()=>setTutorialOpen(false)}><section className="da-tutorial" role="dialog" aria-modal="true" aria-labelledby="da-tutorial-title" onClick={event=>event.stopPropagation()}><header><div><span className="da-eyebrow">QUICK START GUIDE</span><h2 id="da-tutorial-title">How to use the practice arena</h2></div><button onClick={()=>setTutorialOpen(false)} aria-label="Close tutorial"><X size={17}/></button></header><ol><li><strong>Read the brief</strong><span>Understand the functional requirements and constraints before choosing components.</span></li><li><strong>Choose your building blocks</strong><span>Drag components from the library on the right into the dotted canvas.</span></li><li><strong>Connect the architecture</strong><span>Drag from any of the four connection points on a node to another node. Choose the direction that matches the request or data flow.</span></li><li><strong>Evaluate your design</strong><span>Run the review to see which requirements your architecture satisfies and what needs improvement.</span></li><li><strong>Ask ANCHON AI</strong><span>Open the AI coach for hints. Planning suggests a graph; Agent applies a generated design to your canvas.</span></li><li><strong>Reveal the reference</strong><span>When ready to compare, reveal the solution. It replaces the canvas with the reference nodes and their connections.</span></li></ol><footer><span>Tip: Start with Client → API Gateway → Application Service.</span><button onClick={()=>setTutorialOpen(false)}>Got it</button></footer></section></div>}
+
   </main>;
 }
