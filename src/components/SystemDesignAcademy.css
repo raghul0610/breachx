@@ -107,3 +107,9 @@
 .app-shell .right-panel .catalog-learn-btn{background:#202a30!important;border-color:#56636b!important;color:#e0e7ea!important}
 .app-shell .right-panel .field input,
 .app-shell .right-panel .field textarea{background:#10171b!important;border-color:#46535b!important;color:#e6ecef!important}
+
+.da-request-trace{display:grid;gap:5px;margin-top:10px;padding:11px 13px;border:1px solid #56636b;border-radius:8px;background:linear-gradient(145deg,#202a30,#151d22)}
+.da-request-trace>span{font:650 8px "DM Mono",monospace;letter-spacing:.14em;color:#b5c1c7}
+.da-request-trace>strong{color:#e8eef1;font:650 11px/1.7 Manrope,sans-serif;overflow-wrap:anywhere}
+.da-request-trace>small{color:#8f9da5;font:500 9px/1.5 Manrope,sans-serif}
+.design-academy .react-flow__edge-textbg{fill:transparent!important;fill-opacity:0!important;stroke:none!important}
