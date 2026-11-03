@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { SystemDesignLab } from "./SystemDesignLab";
-import { ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Lock, RotateCcw, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Lock, RotateCcw, ShieldCheck, Trophy, Waypoints } from "lucide-react";
 
 type Puzzle = { id:string; title:string; prompt:string; options:string[]; answer:number; explanation:string; takeaway:string; lesson:string };
 type Level = { id:string; title:string; subtitle:string; outcome:string; intro:string; puzzles:Puzzle[] };
