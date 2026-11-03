@@ -784,6 +784,9 @@ function ParticipantEditor({
         event.preventDefault(); setComponentLibraryOpen(true); setRightPanelOpen(false);
         window.setTimeout(() => document.querySelector<HTMLInputElement>(".component-library-search input")?.focus(), 0); return;
       }
+      if (modifier && event.key.toLowerCase() === "s") { event.preventDefault(); void save(submitted ? "submitted" : "draft"); return; }
+      if (modifier && event.key === "/") { event.preventDefault(); setChatOpen((open) => !open); return; }
+      if (modifier && event.key === "Enter") { event.preventDefault(); runRequestTrace(); return; }
       if (modifier && event.key.toLowerCase() === "d" && hasGraphSelection) { event.preventDefault(); duplicateSelected(); return; }
       if (!modifier && event.key.toLowerCase() === "f") { event.preventDefault(); void fitView({ padding: 0.2, duration: 350 }); return; }
       if (!modifier && event.key.toLowerCase() === "l") {
@@ -799,10 +802,10 @@ function ParticipantEditor({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, duplicateSelected, fitView, pushHistory, setNodes, setEdges]);
+  }, [hasGraphSelection, selectedCatalogTypeKey, submitted, undo, redo, removeSelected, duplicateSelected, fitView, pushHistory, setNodes, setEdges, save, runRequestTrace]);
 
   return (
-    <div className="app-shell" onMouseMove={(event) => { if (event.clientX <= 24) setLeftPanelOpen(true); }}>
+    <div className="app-shell workspace-simplified">
       <header className="topbar">
         <button className="nav-btn" onClick={onBack}>
           <ArrowLeft size={14} /> HOME
@@ -811,28 +814,13 @@ function ParticipantEditor({
           <strong>ANCHON</strong>
           <span className="topbar-sub"> // SYSTEM DESIGN EVALUATOR</span>
         </div>
-        <div className="topbar-right"><div className="topbar-actions"><div className="toolbar-actions topbar-toolbar-actions">
-              <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { const nextOpen = !componentLibraryOpen; setComponentLibraryOpen(nextOpen); setRightPanelOpen(false); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={13} /> COMPONENT LIBRARY</button>
-              <label className="component-search-inline"><BookOpen size={13} /><input aria-label="Search architecture components" placeholder="Search components…" value={componentSearch} onChange={(event) => { setComponentSearch(event.target.value); setComponentLibraryOpen(true); }} onFocus={() => { setComponentLibraryOpen(true); setRightPanelOpen(true); }} /></label>
-              <button onClick={undo} disabled={pastRef.current.length === 0} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"><Undo2 size={13} /> UNDO</button>
-              <button onClick={redo} disabled={futureRef.current.length === 0} title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"><Redo2 size={13} /> REDO</button>
-              <button data-tutorial="export-pdf" onClick={handleExportPdf} disabled={nodes.length === 0}><FileDown size={13} /> EXPORT PDF</button>
-              <button
-                data-tutorial="save-draft"
-                onClick={() => save(submitted ? "submitted" : "draft")}
-                disabled={persisting}
-              >
-                <Save size={13} /> {persisting ? "SAVING…" : submitted ? "SAVE CHANGES" : "SAVE DRAFT"}
-              </button>
-              <button
-                className="primary-btn compact"
-                data-tutorial="run-request"
-                onClick={runRequestTrace}
-                title="Describe what you want ANCHON to design or change"
-              >
-                <Sparkles size={13} /> RUN REQUEST
-              </button>
-            </div></div><button type="button" className="primary-btn compact infer-requirements-action" onClick={() => { setRequirementsInspectorOpen(true); setRightPanelOpen(true); inferRequirementsFromArchitecture(); }} disabled={inferringRequirements || nodes.length === 0} title="Infer the functional capabilities and quality requirements represented by this architecture"><Sparkles size={13} /> {inferringRequirements ? "ANALYZING…" : "INFER REQUIREMENTS"}</button></div>
+        <div className="topbar-right workspace-quick-actions">
+          <button type="button" className={"topbar-library-button " + (componentLibraryOpen ? "is-active" : "")} onClick={() => { setComponentLibraryOpen((open) => !open); setRightPanelOpen(false); }} aria-expanded={componentLibraryOpen} aria-controls="component-library-popup" data-tutorial="component-library-trigger"><Layers size={15} /><span>Components</span><kbd>⌘K</kbd></button>
+          <button type="button" onClick={undo} disabled={pastRef.current.length === 0} title="Undo · Ctrl/Cmd+Z" aria-label="Undo"><Undo2 size={15} /></button>
+          <button type="button" onClick={redo} disabled={futureRef.current.length === 0} title="Redo · Ctrl/Cmd+Shift+Z" aria-label="Redo"><Redo2 size={15} /></button>
+          <button type="button" onClick={() => save(submitted ? "submitted" : "draft")} disabled={persisting} title="Save · Ctrl/Cmd+S" aria-label="Save"><Save size={15} /></button>
+          <button type="button" onClick={() => setShortcutsOpen(true)} title="Keyboard shortcuts · ?" aria-label="Keyboard shortcuts"><span className="workspace-help-mark">?</span></button>
+        </div>
       </header>
 
       <div className={`workspace workspace-section-${activeWorkspaceSection} ${leftPanelOpen ? "left-panel-open" : "left-panel-closed"} ${rightPanelOpen ? "right-panel-open" : "right-panel-closed"}`} style={{ "--left-panel-width": leftPanelOpen ? `${leftPanelWidth}px` : "36px", "--right-panel-width": rightPanelOpen ? `${rightPanelWidth}px` : "36px", "--left-resizer-width": leftPanelOpen ? "6px" : "0px", "--right-resizer-width": rightPanelOpen ? "6px" : "0px", "--dock-height": `${componentDockHeight}px` } as CSSProperties}>
@@ -911,7 +899,7 @@ function ParticipantEditor({
                 })}
               </nav>
               <div className="component-library-results">
-                <div className="component-library-results-heading"><div><span className="section-kicker">{componentSearch.trim() ? "SEARCH RESULTS" : "COMPONENT CATEGORY"}</span><h3>{componentSearch.trim() ? "Matching components" : libraryActiveCategory}</h3><p>{componentSearch.trim() ? "Results across every category" : "Select a component to inspect it. Double-click to add it to the canvas."}</p></div><span className="component-results-count">{CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length} ITEMS</span></div>
+                <div className="component-library-results-heading"><div><span className="section-kicker">{componentSearch.trim() ? "SEARCH RESULTS" : "COMPONENT CATEGORY"}</span><h3>{componentSearch.trim() ? "Matching components" : libraryActiveCategory}</h3><p>{componentSearch.trim() ? "Results across every category" : "Drag a component onto the canvas, or select it to inspect before adding."}</p></div><span className="component-results-count">{CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).length} ITEMS</span></div>
                 <div className="component-library-node-grid">
                   {CATALOG.filter((item) => (componentSearch.trim() ? true : item.category === libraryActiveCategory) && (!componentSearch.trim() || `${item.label} ${item.category} ${item.typeKey} ${"keywords" in item ? item.keywords.join(" ") : ""}`.toLowerCase().includes(componentSearch.trim().toLowerCase()))).sort((a, b) => componentSort === "name" ? a.label.localeCompare(b.label) : 0).map((item) => <button key={item.typeKey} className={`catalog-item catalog-item--${getCategoryVisual(item.category).tone} component-dock-item ${selectedCatalogTypeKey === item.typeKey ? "catalog-item-active" : ""}`} draggable onDragStart={(event) => { event.dataTransfer.setData("application/breachx-component", item.typeKey); event.dataTransfer.effectAllowed = "move"; }} onClick={() => { setSelectedCatalogTypeKey(item.typeKey); setSelectedId(null); setSelectedEdgeId(null); setRightPanelOpen(true); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); setEdges((current) => current.map((edge) => ({ ...edge, selected: false }))); setCatalogNotes(""); setShowFullExplanation(false); }} onDoubleClick={() => { addCatalogNode(item, pendingInsertPosition ?? undefined); setPendingInsertPosition(null); setComponentLibraryOpen(false); setRightPanelOpen(true); }} aria-pressed={selectedCatalogTypeKey === item.typeKey} title={`${item.label} · ${item.category}`}>
                     <span className="catalog-item-title"><span className="catalog-item-icon"><CategoryIcon category={item.category} size={15} /></span><span>{item.label}</span></span><small>{item.category}</small>
@@ -923,7 +911,7 @@ function ParticipantEditor({
           </section></>}
 
         <section className="canvas" ref={canvasRef} tabIndex={0} aria-label="Architecture canvas" data-tutorial="canvas" data-tutorial-connections="true" onDoubleClick={(event) => { if (!(event.target instanceof HTMLElement) || !event.target.closest(".react-flow__pane")) return; setPendingInsertPosition(screenToFlowPosition({ x: event.clientX, y: event.clientY })); setComponentSearch(""); setComponentLibraryOpen(true); setRightPanelOpen(false); }}>
-          <div className="canvas-toolbar">
+          <div className="canvas-toolbar workspace-canvas-toolbar">
             <div>
               <div className="section-kicker">
                 <Layers size={13} /> ARCHITECTURE WORKSPACE
@@ -931,12 +919,12 @@ function ParticipantEditor({
               <span className="counter">
                 {nodes.length} components · {edges.length} connections
               </span>
-              <span className="editor-shortcuts">Double-click canvas to add · Ctrl/Cmd K library · Ctrl/Cmd D duplicate · F fit · L layout · ? shortcuts</span>
+              <span className="editor-shortcuts">Drag components to build · Connect the handles · Press ? for shortcuts</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
             <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!nodes.length}>
-              {requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? <span className="request-trace-spinner" aria-hidden="true" /> : <Sparkles size={14} />}
-              {requestTraceStep >= requestTraceEdges.length && requestTraceEdges.length > 0 ? "REPLAY FLOW" : requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? "TRACING FLOW…" : "RUN REQUEST"}
+              {requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? <span className="request-trace-spinner" aria-hidden="true" /> : <Link2 size={14} />}
+              {requestTraceStep >= requestTraceEdges.length && requestTraceEdges.length > 0 ? "REPLAY FLOW" : requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? "TRACING FLOW…" : "Trace flow"}
               <span aria-hidden="true">↗</span>
             </button>
           </div>
@@ -1056,7 +1044,7 @@ function ParticipantEditor({
                   
                 />
               </div>
-              <div className="catalog-hint">Double-click this component in the library to add it to the canvas, or drag it directly onto the canvas.</div>
+              <button type="button" className="catalog-add-project" onClick={() => { addCatalogNode(selectedCatalogItem, pendingInsertPosition ?? undefined, catalogNotes); setPendingInsertPosition(null); setComponentLibraryOpen(false); setRightPanelOpen(false); setSelectedCatalogTypeKey(null); }}><PlusCircle size={15} /> Add to project</button><p className="catalog-hint">You can also drag this component directly onto the canvas.</p>
             </div>
           ) : selected ? (
             <>
@@ -1173,9 +1161,9 @@ function ParticipantEditor({
         <section className="workspace-shortcuts-dialog" role="dialog" aria-modal="true" aria-labelledby="workspace-shortcuts-title">
           <div className="workspace-shortcuts-heading"><div><span className="section-kicker">EDITOR REFERENCE</span><h2 id="workspace-shortcuts-title">Keyboard shortcuts</h2></div><button type="button" onClick={() => setShortcutsOpen(false)} aria-label="Close shortcuts"><X size={16}/></button></div>
           <div className="workspace-shortcuts-list">
-            {[["Open component library","Ctrl / ⌘","K"],["Duplicate selected components","Ctrl / ⌘","D"],["Undo","Ctrl / ⌘","Z"],["Redo","Ctrl / ⌘","Shift + Z"],["Select all components","Ctrl / ⌘","A"],["Delete selection","—","Delete"],["Fit architecture to view","—","F"],["Auto-arrange architecture","—","L"],["Clear selection / close","—","Esc"],["Show this reference","—","?"]].map(([label,modifier,key])=><div className="workspace-shortcut-row" key={label}><span>{label}</span><span className="workspace-shortcut-keys">{modifier !== "—" && <kbd>{modifier}</kbd>}<kbd>{key}</kbd></span></div>)}
+            {[["Open component library","Ctrl / ⌘","K"],["Toggle ANCHON AI","Ctrl / ⌘","/"],["Trace request flow","Ctrl / ⌘","Enter"],["Save project","Ctrl / ⌘","S"],["Duplicate selected components","Ctrl / ⌘","D"],["Undo","Ctrl / ⌘","Z"],["Redo","Ctrl / ⌘","Shift + Z"],["Select all components","Ctrl / ⌘","A"],["Delete selection","—","Delete"],["Fit architecture to view","—","F"],["Auto-arrange architecture","—","L"],["Clear selection / close","—","Esc"],["Show this reference","—","?"]].map(([label,modifier,key])=><div className="workspace-shortcut-row" key={label}><span>{label}</span><span className="workspace-shortcut-keys">{modifier !== "—" && <kbd>{modifier}</kbd>}<kbd>{key}</kbd></span></div>)}
           </div>
-          <p>Shortcuts are disabled while typing in an input or editor field.</p>
+          <p>Shortcuts are disabled while typing in an input or editor field. On Mac, use Command instead of Ctrl.</p>
         </section>
       </div>}
       <InteractiveTutorial page="workspace" onStepChange={handleTutorialStepChange} />
