@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
 import { ReactFlow, Background, Controls, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type ReactFlowInstance } from "@xyflow/react";
-import { AlertCircle, Bot, Check, ChevronDown, Eye, LoaderCircle, RotateCcw, Send, ShieldCheck, Sparkles } from "lucide-react";
+import { AlertCircle, Bot, Check, ChevronDown, Circle, Eye, LoaderCircle, RotateCcw, Send, ShieldCheck } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import "./SystemDesignAcademy.css";
 
@@ -53,7 +53,22 @@ function buildScenario(level:number,index:number):Scenario {
   if(level>=2) constraints.push("State which data may be stale and which operations require strong consistency.");
   if(level===3) constraints.push("Specify SLOs, RPO/RTO targets and the security boundary for sensitive data.");
   const reference=base.slice();
-  const flow: [string,string][] = reference.slice(0,-1).map((item,i)=>[item,reference[i+1]]);
+  const flowByDomain: Record<string,[string,string][]> = {
+    "Food delivery platform":[["client","gateway"],["gateway","service"],["service","database"],["service","cache"],["service","queue"],["queue","worker"],["worker","notification"],["service","payment"],["payment","service"],["service","client"]],
+    "Ride-hailing marketplace":[["client","gateway"],["gateway","service"],["service","cache"],["service","database"],["service","queue"],["queue","worker"],["worker","notification"],["service","client"]],
+    "Video streaming service":[["client","cdn"],["cdn","object_storage"],["client","gateway"],["gateway","service"],["service","database"],["service","cache"],["service","cdn"]],
+    "Real-time chat platform":[["client","gateway"],["gateway","service"],["service","cache"],["service","database"],["service","queue"],["queue","notification"],["service","client"]],
+    "E-commerce marketplace":[["client","gateway"],["gateway","service"],["service","database"],["service","cache"],["service","queue"],["queue","notification"],["service","payment"],["payment","service"],["service","client"]],
+    "Digital wallet":[["client","gateway"],["gateway","auth"],["auth","service"],["service","database"],["service","queue"],["service","monitoring"],["service","client"]]
+  };
+  const flow: [string,string][] = flowByDomain[domain] ?? [
+    ["client","gateway"],["gateway","service"],["service","database"],
+    ...(reference.includes("cache")?[["service","cache"] as [string,string]]:[]),
+    ...(reference.includes("queue")?[["service","queue"] as [string,string]]:[]),
+    ...(reference.includes("worker")&&reference.includes("queue")?[["queue","worker"] as [string,string]]:[]),
+    ...(reference.includes("notification")&&reference.includes("worker")?[["worker","notification"] as [string,string]]:[]),
+    ["service","client"]
+  ];
   return { title:domain,domain,brief:`Design the backend and supporting infrastructure for a ${domain.toLowerCase()}. Your architecture must satisfy the requirements below. Choose components only when they solve a stated need; justify important trade-offs.`,functional,constraints,reference,flow };
 }
 function makeNode(id:string,type:string,x:number,y:number):Node {
@@ -109,7 +124,7 @@ export function AcademyPage() {
     }catch(error){setAssistantReply(error instanceof Error?error.message:"Could not get a hint.");}
     finally{setAssistantBusy(false);}
   };
-  const reveal=()=>{setRevealed(true);const positions=scenario.reference.map((_,i)=>({x:70+(i%4)*210,y:90+Math.floor(i/4)*130}));const refNodes=scenario.reference.map((type,i)=>makeNode(`ref-${i}`,type,positions[i].x,positions[i].y));const refEdges=scenario.flow.map(([source,target],i)=>({id:`ref-edge-${i}`,source:`ref-${scenario.reference.indexOf(source)}`,target:`ref-${scenario.reference.indexOf(target)}`,animated:true,label:"request / data"}));setNodes(refNodes);setEdges(refEdges);};
+  const reveal=()=>{setRevealed(true);const positions=scenario.reference.map((_,i)=>({x:90+(i%4)*220,y:95+Math.floor(i/4)*155}));const refNodes=scenario.reference.map((type,i)=>makeNode(`ref-${i}`,type,positions[i].x,positions[i].y));const refEdges=scenario.flow.map(([source,target],i)=>({id:`ref-edge-${i}`,source:`ref-${scenario.reference.indexOf(source)}`,target:`ref-${scenario.reference.indexOf(target)}`,animated:true,style:{stroke:"#c4d0d6",strokeWidth:1.7},label:"request / data",type:"smoothstep",markerEnd:{type:"arrowclosed",color:"#c4d0d6"}}));setNodes(refNodes);setEdges(refEdges);setJudge(null);};
   return <main className="design-academy">
     <header className="da-heading">
       <div><span className="da-eyebrow">ANCHON / PRACTICE ARENA</span><h1>System design practice</h1><p>Work through real-world architecture problems and get feedback on your decisions.</p></div>
@@ -142,10 +157,10 @@ export function AcademyPage() {
       <section className="da-design-section">
         <div className="da-section-heading da-canvas-heading"><div><span className="da-eyebrow">DESIGN WORKSPACE</span><h2>Your architecture</h2><p>Build the request and data flow by adding components and connecting them.</p></div><div className="da-canvas-actions"><button onClick={reset}><RotateCcw size={14}/> Reset</button><button onClick={reveal} disabled={revealed}><Eye size={14}/> {revealed?"Reference revealed":"Reveal solution"}</button></div></div>
         <div className="da-builder">
-          <div className="da-flow" onDragOver={e=>e.preventDefault()} onDrop={onDrop}><ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} fitView fitViewOptions={{padding:.18}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Start with your client or entry point</strong><span>Add a component below, then connect it to the next step.</span></div>}</div>
-          <div className="da-palette-wrap"><button className="da-palette-toggle" onClick={()=>setPaletteOpen(v=>!v)}><span><strong>Add components</strong><small>Choose from 15 architecture building blocks</small></span><ChevronDown size={16} className={paletteOpen?"rotated":""}/></button>{paletteOpen&&<div className="da-palette">{palette.map(item=><div key={item[0]} draggable onDragStart={e=>e.dataTransfer.setData("application/anchon-component",item[0])}><b>{item[1]}</b><small>{item[2]}</small></div>)}</div>}</div>
+          <div className="da-builder-main"><div className="da-flow"><ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} onDragOver={(event)=>{event.preventDefault();event.dataTransfer.dropEffect="move";}} onDrop={onDrop} fitView fitViewOptions={{padding:.2}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Drag a component onto this canvas</strong><span>Start with Client, then connect the request path.</span></div>}</div></div>
+          <aside className="da-palette-wrap"><div className="da-palette-heading"><strong>Components</strong><small>Drag a building block into the canvas</small></div><div className="da-palette">{palette.map(item=><div key={item[0]} draggable onDragStart={e=>{e.dataTransfer.setData("application/anchon-component",item[0]);e.dataTransfer.effectAllowed="move";}}><b>{item[1]}</b><small>{item[2]}</small></div>)}</div></aside>
         </div>
-        <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Sparkles size={15}/> Evaluate my design</>}</button></div>
+        <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Circle size={15}/> Evaluate my design</>}</button></div>
       </section>
 
       {judge&&<section className="da-judge"><div className="da-section-heading da-judge-head"><div><span className="da-eyebrow">FEEDBACK</span><h2>{judge.error?"Evaluation unavailable":`Architecture review · ${judge.score}/100`}</h2></div>{!judge.error&&<strong>{judge.score>=80?"STRONG":judge.score>=55?"NEEDS IMPROVEMENT":"REWORK NEEDED"}</strong>}</div><p>{judge.error||judge.summary}</p>{judge.localFindings?.map((f:string,i:number)=><p className="da-finding" key={i}><AlertCircle size={14}/>{f}</p>)}{judge.strengths?.map((f:string,i:number)=><p className="da-strength" key={i}><Check size={14}/>{f}</p>)}{judge.findings?.map((f:any,i:number)=><article className="da-finding-card" key={f.id||i}><span>{String(f.severity||"finding").toUpperCase()} · {f.category}</span><strong>{f.title}</strong><p>{f.description}</p><small>WHY IT MATTERS: {f.requirement}</small><p className="da-recommendation">SUGGESTED CHANGE: {f.recommendation}</p></article>)}</section>}
