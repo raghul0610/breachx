@@ -3125,3 +3125,13 @@ body, .app-shell, .home, .lp-root {
 .academy-v3-takeaway-confirm input[type="checkbox"]:checked::before{transform:rotate(-45deg) scale(1)!important}
 .academy-v3-takeaway-confirm input[type="checkbox"]:focus-visible{outline:3px solid #9aa7ae!important;outline-offset:3px!important}
 .academy-v3-takeaway-confirm span{display:block;min-width:0;flex:1;font-size:14px!important}
+
+
+/* Academy lesson reading comfort: keep lesson copy inset from the panel edges. */
+.academy-v3 .academy-v3-lesson {
+  box-sizing:border-box!important;
+  padding:clamp(28px,3vw,46px)!important;
+}
+.academy-v3 .academy-v3-lesson-meta {padding:0 2px!important}
+@media(max-width:900px){.academy-v3 .academy-v3-lesson{padding:26px!important}}
+@media(max-width:600px){.academy-v3 .academy-v3-lesson{padding:18px!important}}
