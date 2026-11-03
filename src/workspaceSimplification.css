@@ -266,3 +266,6 @@
   .workspace-simplified.workspace-section-canvas .workspace-quick-actions button { width:34px!important;min-width:34px!important;height:34px!important; }
   .workspace-simplified.workspace-section-canvas .floating-ai-chat-trigger { right:12px!important;bottom:76px!important; }
 }
+
+.workspace-simplified.workspace-section-canvas .canvas-column { grid-column:1!important; }
+.workspace-simplified.workspace-section-canvas .right-panel { grid-column:3!important; }
