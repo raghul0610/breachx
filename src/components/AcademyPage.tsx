@@ -56,7 +56,7 @@ export function AcademyPage(){
  const levelDone=(level:Level)=>level.lessons.every(lesson=>completed.includes(lesson.id));
  const unlockedLevel=Math.min(curriculum.length-1,curriculum.filter(level=>levelDone(level)).length);
  const lessonDone=completed.includes(currentLesson.id);
- const lessonUnlocked=(levelIndex:number,lessonIndex:number)=>levelIndex<unlockedLevel||(levelIndex===unlockedLevel&&lessonIndex===0)||(levelIndex===activeLevel&&lessonIndex<=activeLesson);
+ const lessonUnlocked=(levelIndex:number,lessonIndex:number)=>levelIndex<unlockedLevel||(levelIndex===unlockedLevel&&curriculum[levelIndex].lessons.slice(0,lessonIndex).every(lesson=>completed.includes(lesson.id)));
  const progress=Math.round(completedCount/total*100);
  const selectLesson=(levelIndex:number,lessonIndex:number)=>{if(levelIndex>unlockedLevel||!lessonUnlocked(levelIndex,lessonIndex))return;setActiveLevel(levelIndex);setActiveLesson(lessonIndex);setSelected(null);setSubmitted(false);};
  const submitAnswer=()=>{if(selected===null)return;setSubmitted(true);if(selected===currentLesson.answer&&!completed.includes(currentLesson.id)){setCompleted(previous=>{const next=[...previous,currentLesson.id];try{localStorage.setItem(PROGRESS_KEY,JSON.stringify(next));}catch{/* Session progress remains available. */}return next;});}};
