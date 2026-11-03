@@ -3099,3 +3099,29 @@ body, .app-shell, .home, .lp-root {
  .academy-lab-workspace{grid-template-columns:1fr!important}
  .academy-lab-canvas{min-height:520px!important}
 }
+
+
+/* Academy polish: clear study acknowledgement and non-sticky curriculum label. */
+.academy-v3-sidebar-title{position:static!important;top:auto!important;z-index:auto!important;background:transparent!important}
+.academy-v3-takeaway-confirm{
+ display:flex!important;align-items:flex-start!important;gap:14px!important;
+ width:100%!important;min-height:64px!important;padding:18px 20px!important;
+ box-sizing:border-box!important;border:1px solid #56636b!important;border-radius:10px!important;
+ background:linear-gradient(145deg,#202a30,#182126)!important;color:#e5ebee!important;
+ line-height:1.55!important;cursor:pointer!important
+}
+.academy-v3-takeaway-confirm input[type="checkbox"]{
+ appearance:none!important;-webkit-appearance:none!important;flex:0 0 22px!important;
+ width:22px!important;height:22px!important;margin:1px 0 0!important;
+ display:grid!important;place-content:center!important;border:1.5px solid #9aa7ae!important;
+ border-radius:5px!important;background:#11181d!important;cursor:pointer!important
+}
+.academy-v3-takeaway-confirm input[type="checkbox"]::before{
+ content:""!important;width:10px!important;height:6px!important;
+ border-left:2px solid #11181d!important;border-bottom:2px solid #11181d!important;
+ transform:rotate(-45deg) scale(0)!important;transform-origin:center!important;transition:transform .12s ease-in-out!important
+}
+.academy-v3-takeaway-confirm input[type="checkbox"]:checked{background:#dce3e7!important;border-color:#dce3e7!important}
+.academy-v3-takeaway-confirm input[type="checkbox"]:checked::before{transform:rotate(-45deg) scale(1)!important}
+.academy-v3-takeaway-confirm input[type="checkbox"]:focus-visible{outline:3px solid #9aa7ae!important;outline-offset:3px!important}
+.academy-v3-takeaway-confirm span{display:block;min-width:0;flex:1;font-size:14px!important}
