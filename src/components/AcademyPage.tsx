@@ -85,14 +85,16 @@ export function AcademyPage(){
   <header className="academy-v3-hero">
    <div className="academy-v3-kicker">ANCHON ACADEMY / SYSTEM DESIGN STUDIO</div>
    <h1>Learn the system. <span>Build the architecture.</span></h1>
-   <p>Ten open curriculum sections, one hundred engineering topics, and ten project-scale architecture studios. Learn by modelling real systems, connecting components, running requests and diagnosing failures.</p>
+   <p>Twenty progressive levels and two hundred engineering topics. Work through the engineering concepts, then prove your understanding by connecting architecture nodes and validating a complete design.</p>
    <div className="academy-v3-progress"><div><span>LEARNING JOURNEY</span><strong>{learnedCount} / {totalTopics} topics studied</strong></div><strong>{progress}%</strong><div className="academy-v3-progress-track"><i style={{width:progress+"%"}}/></div></div>
-   <div className="academy-v3-stats"><span><b>20</b> LEVELS</span><span><b>200</b> ENGINEERING TOPICS</span><span><b>20</b> DESIGN STUDIOS</span><span><b>{completedLabs.length}</b> DESIGNS VALIDATED</span></div>
+   
   </header>
   <div className="academy-v3-shell">
    <aside className="academy-v3-sidebar">
     <div className="academy-v3-sidebar-title"><span>CURRICULUM</span><small>ALL SECTIONS OPEN</small></div>
     {curriculum.map((item,index)=>{const done=item.puzzles.filter(p=>learned.includes(p.id)).length;return <button type="button" key={item.id} className={activeLevel===index?"active":""} onClick={()=>chooseLevel(index)}><span className="academy-v3-index">{String(index+1).padStart(2,"0")}</span><span className="academy-v3-section-name"><small>{item.subtitle.split("·").slice(1).join("·").trim()}</small><strong>{item.title}</strong><i>{done}/10 topics studied</i></span><ChevronRight size={15}/></button>;})}
+    <div className="academy-v3-sidebar-topic-heading"><span>LEVEL {String(activeLevel+1).padStart(2,"0")} TOPICS</span><small>{level.puzzles.filter(p=>learned.includes(p.id)).length}/10 COMPLETE</small></div>
+    <nav className="academy-v3-sidebar-topics" aria-label="Topics in selected level">{level.puzzles.map((item,index)=><button type="button" key={item.id} className={activeTopic===index?"active":""} onClick={()=>chooseTopic(index)}><span>{learned.includes(item.id)?<Check size={13}/>:String(index+1).padStart(2,"0")}</span><strong>{item.title}</strong></button>)}</nav>
     <button type="button" className="academy-v3-reset" onClick={resetProgress}><RotateCcw size={13}/> Reset learning progress</button>
    </aside>
    <section className="academy-v3-main">
@@ -103,9 +105,8 @@ export function AcademyPage(){
      <button type="button" role="tab" aria-selected={activeTab==="build"} className={activeTab==="build"?"active":""} onClick={()=>setActiveTab("build")}><Waypoints size={15}/> SECTION DESIGN STUDIO <span>{completedLabs.includes(activeLevel)?"VALIDATED":"CANVAS"}</span></button>
     </div>
     {activeTab==="learn"?<div className="academy-v3-learning">
-     <nav className="academy-v3-topic-list" aria-label="Topics in this section">{level.puzzles.map((item,index)=><button type="button" key={item.id} className={activeTopic===index?"active":""} onClick={()=>chooseTopic(index)}><span>{learned.includes(item.id)?<Check size={13}/>:String(index+1).padStart(2,"0")}</span><strong>{item.title}</strong><ChevronRight size={13}/></button>)}</nav>
      <article className="academy-v3-lesson">
-      <div className="academy-v3-lesson-meta"><span>SECTION {String(activeLevel+1).padStart(2,"0")} / TOPIC {String(activeTopic+1).padStart(2,"0")}</span><span>{topicDone?"STUDIED":"LEARNING MODULE"}</span></div>
+      <div className="academy-v3-lesson-meta"><span>{topicDone?"TOPIC COMPLETED":"LEARNING MODULE"}</span><span>{topicSolved?"CONNECTION VERIFIED":"STUDY · CONNECT · VERIFY"}</span></div>
       <h3>{topic.title}</h3>
       <p className="academy-v3-lesson-lead">{topic.takeaway}</p>
       <section><h4>THE ENGINEERING CONCEPT</h4><p>{topic.explanation}</p><p>{topic.lesson}</p><h4>HOW IT WORKS IN A REAL SYSTEM</h4><p>Trace the lifecycle from the caller to the component that owns this responsibility. Identify the input contract, the state it reads or changes, the response returned to the caller, and the operational signal that proves the behavior is working.</p><h4>TRADE-OFFS AND FAILURE MODES</h4><p>{topic.takeaway} Consider overload, partial failure, retries, stale data, duplicate work and dependency outages where they apply. A production design must define what happens when the happy path is unavailable.</p></section>
