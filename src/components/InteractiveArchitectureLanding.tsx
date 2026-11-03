@@ -5,8 +5,7 @@ import { FolderFloat } from "./FolderFloat";
 import { useEffect, useState } from "react";
 import {
   ArrowDownRight, ArrowRight, Check, CircleDot, Database, GitBranch,
-  Layers3, LockKeyhole, Play, RotateCcw, Server, ShieldCheck, Sparkles,
-  Workflow, Zap,
+  Layers3, LockKeyhole, Play, RotateCcw, Server, ShieldCheck, Workflow, Zap,
 } from "lucide-react";
 import "./InteractiveArchitectureLanding.css";
 
@@ -194,7 +193,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         <div className="iad-inspector">
           <div className="iad-inspector-main">
             <div className="iad-inspector-icon" style={{ "--node-accent": current.color } as React.CSSProperties}><CurrentIcon size={19} /></div>
-            <div className="iad-inspector-copy"><div className="iad-inspector-kicker">COMPONENT INSPECTOR <span>/{current.kind}</span></div><h2>{current.title}</h2><p>{current.detail}</p><div className="iad-inspector-role"><Sparkles size={13} />{current.role}</div></div>
+            <div className="iad-inspector-copy"><div className="iad-inspector-kicker">COMPONENT INSPECTOR <span>/{current.kind}</span></div><h2>{current.title}</h2><p>{current.detail}</p><div className="iad-inspector-role"><Workflow size={13} />{current.role}</div></div>
           </div>
           <div className="iad-inspector-actions">
             <div className="iad-step-count"><span>{finished ? "TRACE FINISHED" : showMission ? `STEP ${Math.min(traceStep + 1, 5).toString().padStart(2, "0")} / 05` : "TRY THE FLOW"}</span><strong>{finished ? "Request delivered" : "Trace a request"}</strong></div>
