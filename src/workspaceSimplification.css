@@ -829,3 +829,34 @@
 @media(max-width:620px){
  .app-shell:not(.lp-root) .workspace>.canvas-column>.component-dock .component-library-node-grid{grid-template-columns:1fr!important}
 }
+
+
+/* ANCHON in-app tutorial: compact, readable, and consistent with the silver workspace. */
+.tutorial-help-button{display:inline-flex!important;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 11px;border:1px solid #69767e!important;border-radius:9px!important;background:#1b242a!important;color:#dce4e8!important;font:600 11px Manrope,sans-serif!important;cursor:pointer}
+.tutorial-help-button:hover{border-color:#cbd4d9!important;background:#263139!important}
+.anchon-tutorial-backdrop,.da-tutorial-backdrop{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:18px;background:rgba(3,7,9,.72);backdrop-filter:blur(8px)}
+.anchon-tutorial-dialog,.da-tutorial{width:min(680px,100%);max-height:min(84dvh,820px);overflow:auto;border:1px solid #59666e;border-radius:16px;background:linear-gradient(155deg,#20292f,#11181d);color:#e9eef1;box-shadow:0 26px 90px #000b;font-family:Manrope,sans-serif}
+.anchon-tutorial-dialog>header,.da-tutorial>header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:22px 24px;border-bottom:1px solid #3a464d}
+.anchon-tutorial-dialog>header h2,.da-tutorial>header h2{margin:6px 0;font-size:20px;line-height:1.25;font-weight:750}
+.anchon-tutorial-dialog>header p{margin:0;color:#aab6bd;font-size:12px;line-height:1.6}
+.tutorial-kicker{font:600 9px "DM Mono",monospace;letter-spacing:.13em;color:#c5d0d6}
+.anchon-tutorial-dialog>header button,.da-tutorial>header button{display:grid;place-items:center;flex:none;width:34px;height:34px;border:1px solid #56636b;border-radius:8px;background:#1a2227;color:#e5ecef;cursor:pointer}
+.anchon-tutorial-dialog ol,.da-tutorial ol{display:grid;gap:0;margin:0;padding:8px 24px;list-style:none}
+.anchon-tutorial-dialog li,.da-tutorial li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;padding:13px 0;border-bottom:1px solid #303b42}
+.tutorial-step-number{display:grid;place-items:center;width:27px;height:27px;border:1px solid #66747c;border-radius:8px;background:#263138;color:#e3eaed;font:700 11px "DM Mono",monospace}
+.anchon-tutorial-dialog li strong,.da-tutorial li strong{display:block;color:#e7edf0;font-size:12px;font-weight:750}
+.anchon-tutorial-dialog li p,.da-tutorial li span{display:block;margin:4px 0 0;color:#aab6bd;font-size:11px;line-height:1.65}
+.anchon-tutorial-dialog>footer,.da-tutorial>footer{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 24px}
+.anchon-tutorial-dialog>footer a{display:inline-flex;align-items:center;gap:5px;color:#c4d0d6;font-size:11px;text-decoration:none}
+.anchon-tutorial-dialog>footer button,.da-tutorial>footer button{padding:9px 15px;border:1px solid #d5dfe4;border-radius:8px;background:#d5dfe4;color:#12191d;font:750 11px Manrope,sans-serif;cursor:pointer}
+.da-tutorial{width:min(620px,100%)}
+.da-tutorial .da-eyebrow{color:#c5d0d6}
+.da-tutorial>footer span{color:#9eabb2;font-size:10px}
+@media(max-width:600px){.anchon-tutorial-dialog>header,.da-tutorial>header{padding:17px}.anchon-tutorial-dialog ol,.da-tutorial ol{padding:6px 17px}.anchon-tutorial-dialog>footer,.da-tutorial>footer{padding:13px 17px;align-items:flex-start;flex-direction:column}}
+
+/* Keep ANCHON AI as a right-side drawer and focus the workspace while it is active. */
+.app-shell:not(.lp-root) .floating-ai-chat-panel.is-open{position:fixed!important;left:auto!important;right:16px!important;top:16px!important;bottom:16px!important;width:min(500px,calc(100vw - 32px))!important;height:auto!important;min-height:0!important;max-height:none!important;z-index:220!important;border-radius:16px!important}
+.app-shell:not(.lp-root) .floating-ai-chat-panel:not(.is-open){pointer-events:none!important}
+.app-shell:not(.lp-root) .floating-ai-chat-panel.is-open .architecture-ai-chat{height:calc(100% - 52px)!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+.app-shell:not(.lp-root) .floating-ai-chat-panel.is-open .ai-chat-messages{flex:1 1 auto!important;min-height:120px!important;max-height:none!important;overflow:auto!important}
+@media(max-width:760px){.app-shell:not(.lp-root) .floating-ai-chat-panel.is-open{left:10px!important;right:10px!important;top:10px!important;bottom:10px!important;width:auto!important}}
