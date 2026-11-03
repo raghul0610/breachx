@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { SystemDesignLab } from "./SystemDesignLab";
 import { ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Lock, RotateCcw, ShieldCheck, Trophy } from "lucide-react";
 
 type Puzzle = { id:string; title:string; prompt:string; options:string[]; answer:number; explanation:string; takeaway:string; lesson:string };
@@ -14,28 +15,33 @@ const curriculum:Level[] = rawLevels.map((level:any, levelIndex:number)=>({
   }))
 }));
 const STORAGE_KEY="anchon.academy.mastery.v3";
+const LAB_STORAGE_KEY="anchon.academy.lab.v1";
 export function AcademyPage(){
  const [completed,setCompleted]=useState<string[]>([]);
  const [activeLevel,setActiveLevel]=useState(0);
  const [activePuzzle,setActivePuzzle]=useState(0);
  const [selected,setSelected]=useState<number|null>(null);
  const [submitted,setSubmitted]=useState(false);
- useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");if(Array.isArray(saved))setCompleted(saved.filter((id:any)=>typeof id==="string"));}catch{setCompleted([]);}},[]);
+ const [activeTab,setActiveTab]=useState<"learn"|"lab">("learn");
+ const [completedLabs,setCompletedLabs]=useState<number[]>([]);
+ useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");if(Array.isArray(saved))setCompleted(saved.filter((id:any)=>typeof id==="string"));const labs=JSON.parse(localStorage.getItem(LAB_STORAGE_KEY)||"[]");if(Array.isArray(labs))setCompletedLabs(labs.filter((id:any)=>Number.isInteger(id)&&id>=0&&id<10));}catch{setCompleted([]);setCompletedLabs([]);}},[]);
  const total=curriculum.reduce((sum,level)=>sum+level.puzzles.length,0);
  const completedCount=completed.length;
  const progress=Math.round(completedCount/total*100);
- const levelDone=(level:Level)=>level.puzzles.every(p=>completed.includes(p.id));
+ const puzzlesDone=(level:Level)=>level.puzzles.every(p=>completed.includes(p.id));
+ const levelDone=(level:Level)=>puzzlesDone(level)&&completedLabs.includes(curriculum.indexOf(level));
  const unlockedLevel=Math.min(curriculum.length-1,curriculum.findIndex(level=>!levelDone(level))===-1?curriculum.length-1:curriculum.findIndex(level=>!levelDone(level)));
  const currentLevel=curriculum[activeLevel];
  const currentPuzzle=currentLevel.puzzles[activePuzzle];
  const puzzleDone=completed.includes(currentPuzzle.id);
  const levelUnlocked=(index:number)=>index<=unlockedLevel;
  const puzzleUnlocked=(levelIndex:number,puzzleIndex:number)=>levelIndex<unlockedLevel||(levelIndex===unlockedLevel&&curriculum[levelIndex].puzzles.slice(0,puzzleIndex).every(p=>completed.includes(p.id)));
- const selectPuzzle=(levelIndex:number,puzzleIndex:number)=>{if(!puzzleUnlocked(levelIndex,puzzleIndex))return;setActiveLevel(levelIndex);setActivePuzzle(puzzleIndex);setSelected(null);setSubmitted(false);};
+ const selectPuzzle=(levelIndex:number,puzzleIndex:number)=>{if(!puzzleUnlocked(levelIndex,puzzleIndex))return;setActiveLevel(levelIndex);setActivePuzzle(puzzleIndex);setSelected(null);setSubmitted(false);setActiveTab("learn");};
+ const completeLab=(levelIndex:number)=>{if(completedLabs.includes(levelIndex))return;const next=[...completedLabs,levelIndex];setCompletedLabs(next);try{localStorage.setItem(LAB_STORAGE_KEY,JSON.stringify(next));}catch{/* progress remains in memory for this session */}};
  const persist=(next:string[])=>{setCompleted(next);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}catch{/* progress remains in memory for this session */}};
  const checkAnswer=()=>{if(selected===null)return;setSubmitted(true);if(selected===currentPuzzle.answer&&!completed.includes(currentPuzzle.id))persist([...completed,currentPuzzle.id]);};
  const nextPuzzle=()=>{if(activePuzzle<9)selectPuzzle(activeLevel,activePuzzle+1);else if(activeLevel<9&&levelDone(currentLevel))selectPuzzle(activeLevel+1,0);};
- const reset=()=>{persist([]);setActiveLevel(0);setActivePuzzle(0);setSelected(null);setSubmitted(false);};
+ const reset=()=>{persist([]);setCompletedLabs([]);try{localStorage.removeItem(LAB_STORAGE_KEY);}catch{/* ignore unavailable storage */}setActiveLevel(0);setActivePuzzle(0);setSelected(null);setSubmitted(false);setActiveTab("learn");};
  const refs=[{name:"Google SRE Book",url:"https://sre.google/sre-book/table-of-contents/"},{name:"Google SRE Workbook",url:"https://sre.google/workbook/table-of-contents/"},{name:"AWS Well-Architected Framework",url:"https://docs.aws.amazon.com/wellarchitected/latest/framework/"},{name:"Microsoft Azure Well-Architected Framework",url:"https://learn.microsoft.com/en-us/azure/well-architected/pillars"},{name:"Google Cloud Architecture Framework",url:"https://docs.cloud.google.com/architecture/framework"}];
  return <div className="academy-page academy-v2 academy-mastery">
   <header className="academy-hero">
@@ -51,13 +57,18 @@ export function AcademyPage(){
       <span className="academy-level-number">{done?<Check size={14}/>:locked?<Lock size={13}/>:String(index+1).padStart(2,"0")}</span>
       <span className="academy-level-copy"><small>{level.subtitle}</small><strong>{level.title}</strong><em>{done?"LEVEL CLEARED":locked?"LOCKED":`${level.puzzles.filter(p=>completed.includes(p.id)).length}/10 PUZZLES`}</em></span><ChevronRight size={15}/>
     </button>;})}
-    <div className="academy-level-note"><Trophy size={15}/><span>Solve all 10 puzzles in order to unlock the next level.</span></div>
+    <div className="academy-level-note"><Trophy size={15}/><span>Clear all 10 puzzles and the hands-on design challenge to unlock the next level.</span></div>
     <button type="button" className="academy-reset" onClick={reset}><RotateCcw size={13}/> Reset mastery progress</button>
    </aside>
    <section className="academy-mission">
     <div className="academy-mission-top"><span>{currentLevel.subtitle}</span><span>{levelDone(currentLevel)?"LEVEL CLEARED":"IN PROGRESS"}</span></div>
     <h2>{currentLevel.title}</h2><p className="academy-briefing">{currentLevel.outcome}</p>
     <div className="academy-level-intro">{currentLevel.intro}</div>
+    <div className="academy-phase-tabs" role="tablist" aria-label="Academy phases">
+     <button type="button" role="tab" aria-selected={activeTab==="learn"} className={activeTab==="learn"?"active":""} onClick={()=>setActiveTab("learn")}><BookOpen size={14}/> LEARN & SOLVE <span>{currentLevel.puzzles.filter(p=>completed.includes(p.id)).length}/10</span></button>
+     <button type="button" role="tab" aria-selected={activeTab==="lab"} className={activeTab==="lab"?"active":""} disabled={!puzzlesDone(currentLevel)} onClick={()=>setActiveTab("lab")}><ShieldCheck size={14}/> DESIGN LAB <span>{completedLabs.includes(activeLevel)?"CLEARED":puzzlesDone(currentLevel)?"UNLOCKED":"LOCKED"}</span></button>
+    </div>
+    {activeTab==="learn"?<>
     <div className="academy-lesson-tabs" aria-label="Puzzles in this level">{currentLevel.puzzles.map((puzzle,index)=>{const done=completed.includes(puzzle.id),locked=!puzzleUnlocked(activeLevel,index);return <button type="button" key={puzzle.id} disabled={locked} className={index===activePuzzle?"active":""} onClick={()=>selectPuzzle(activeLevel,index)} aria-label={`Puzzle ${index+1}: ${puzzle.title}`}><span>{done?<Check size={12}/>:index+1}</span><small>{puzzle.title}</small></button>;})}</div>
     <article className="academy-lesson">
      <div className="academy-lesson-meta"><span>PUZZLE {String(activePuzzle+1).padStart(2,"0")} / 10</span>{puzzleDone&&<span className="academy-complete-label"><Check size={12}/> SOLVED</span>}</div>
@@ -69,7 +80,8 @@ export function AcademyPage(){
       <div className="academy-check-actions">{!submitted?<button type="button" className="academy-validate" disabled={selected===null} onClick={checkAnswer}>Submit solution <ArrowRight size={14}/></button>:selected===currentPuzzle.answer?<button type="button" className="academy-validate" onClick={nextPuzzle}>{activePuzzle===9?(activeLevel===9?"Path completed":"Enter next level"):"Next puzzle"} <ArrowRight size={14}/></button>:<button type="button" className="academy-validate" onClick={()=>{setSelected(null);setSubmitted(false);}}>Retry puzzle <RotateCcw size={14}/></button>}</div>
      </div>
     </article>
-    <div className="academy-level-outcome"><ShieldCheck size={16}/><span><strong>MASTERY CHECKPOINT</strong>{currentLevel.outcome}</span></div>
+    </>:<SystemDesignLab levelIndex={activeLevel} completed={completedLabs.includes(activeLevel)} onComplete={()=>completeLab(activeLevel)}/>}
+    <div className="academy-level-outcome"><ShieldCheck size={16}/><span><strong>{levelDone(currentLevel)?"LEVEL MASTERED":"MASTERY CHECKPOINT"}</strong>{levelDone(currentLevel)?"You cleared the knowledge checks and practical architecture challenge. The next level is now available.":puzzlesDone(currentLevel)?"Knowledge checks complete. Clear the design lab to unlock the next level.":currentLevel.outcome}</span></div>
    </section>
   </div>
   <section className="academy-sources"><div><BookOpen size={17}/><div><strong>Engineering references</strong><p>Original explanations and scenario puzzles informed by public engineering guidance. These are learning assessments, not a guarantee of professional mastery; real mastery also requires designing, building and operating systems.</p></div></div><div className="academy-source-links">{refs.map(ref=><a key={ref.name} href={ref.url} target="_blank" rel="noreferrer">{ref.name}<ArrowRight size={12}/></a>)}</div></section>
