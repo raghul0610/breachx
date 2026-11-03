@@ -1389,3 +1389,78 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 @media(prefers-reduced-motion:reduce) {
   .app-shell .workspace > .left-panel.requirements-panel.workspace-navigation { transition:none!important; }
 }
+
+/* ANCHON identity pass: replace generic sparkle marks with the product's own monogram. */
+.workspace .workspace-canvas-toolbar button[aria-label="Toggle ANCHON AI"] { color:#e6ecef!important; }
+.workspace .workspace-canvas-toolbar button[aria-label="Toggle ANCHON AI"] svg { display:none!important; }
+.workspace .workspace-canvas-toolbar button[aria-label="Toggle ANCHON AI"]::before {
+  content:"A";display:grid;place-items:center;width:18px;height:18px;
+  border:1px solid #aebbc2;border-radius:5px;
+  color:#eef2f4;font:800 12px/1 ui-sans-serif,system-ui,sans-serif;
+  letter-spacing:-.08em;background:linear-gradient(145deg,#56636b,#20282e);
+}
+
+/* Project editor has no permanent left navigation rail; canvas owns the width. */
+.app-shell .workspace > .left-panel.requirements-panel.workspace-navigation,
+.app-shell .workspace > .panel-resizer-left,
+.app-shell .workspace > .collapsed-panel-strip-left,
+.app-shell .workspace-sidebar-reopen {display:none!important}
+.app-shell .workspace {
+  --left-panel-width:0px!important;
+  --left-resizer-width:0px!important;
+  grid-template-columns:minmax(0,1fr) var(--right-panel-width,36px)!important;
+}
+.app-shell .workspace > .canvas-column {grid-column:1!important;min-width:0!important}
+.app-shell .workspace > .workspace-page-content {left:0!important;width:100%!important}
+
+/* Larger draggable assistant launcher with the ANCHON monogram and a clear label. */
+.app-shell .floating-ai-chat-trigger {
+  display:flex!important;align-items:center!important;justify-content:center!important;gap:11px!important;
+  width:190px!important;min-width:190px!important;height:60px!important;min-height:60px!important;
+  padding:0 20px!important;border:1px solid #aebbc2!important;border-radius:15px!important;
+  color:#f3f6f7!important;background:linear-gradient(145deg,#414d55,#20282e)!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.16)!important;
+  font:700 13px/1 ui-sans-serif,system-ui,sans-serif!important;letter-spacing:.015em!important;
+  touch-action:none!important;user-select:none!important;cursor:grab!important;
+}
+.app-shell .floating-ai-chat-trigger:active {cursor:grabbing!important}
+.app-shell .floating-ai-chat-trigger .anchon-bubble-mark {
+  display:grid!important;place-items:center!important;width:34px!important;height:34px!important;
+  flex:0 0 34px!important;border:1px solid #7e8b93!important;border-radius:10px!important;
+  background:linear-gradient(145deg,#5b6870,#293238)!important;
+}
+.app-shell .floating-ai-chat-trigger .anchon-bubble-mark svg {width:25px!important;height:25px!important;filter:drop-shadow(0 1px 4px #0008)}
+.app-shell .floating-ai-chat-trigger .anchon-trigger-label {display:inline!important;color:#f2f5f6!important;font-size:13px!important;white-space:nowrap!important}
+
+/* Larger assistant panel opens immediately to the right of its draggable launcher. */
+.app-shell .floating-ai-chat-panel {
+  left:clamp(12px,calc(50% + var(--chat-offset-x,0px) + 190px),calc(100vw - 532px))!important;
+  right:auto!important;
+  bottom:clamp(80px,calc(18vh - var(--chat-offset-y,0px) + 72px),calc(100dvh - 520px))!important;
+  width:min(520px,calc(100vw - 24px))!important;
+  max-width:520px!important;min-height:min(620px,calc(100dvh - 100px))!important;
+  max-height:min(820px,calc(100dvh - 48px))!important;
+  padding:18px!important;border:1px solid #65737b!important;border-radius:16px!important;
+  background:linear-gradient(155deg,#1d262b,#11181d)!important;color:#edf1f3!important;
+  box-shadow:0 26px 80px rgba(0,0,0,.68),inset 0 1px rgba(255,255,255,.05)!important;
+  transform-origin:top left!important;
+}
+.app-shell .floating-ai-chat-panel.is-open {transform:translateY(0) scale(1)!important}
+.app-shell .floating-ai-chat-panel-heading {
+  min-height:48px!important;margin-bottom:12px!important;padding-bottom:12px!important;
+  border-bottom:1px solid #46535b!important;color:#f0f3f5!important;
+  font:800 12px ui-monospace,monospace!important;letter-spacing:.12em!important;
+}
+.app-shell .floating-ai-chat-panel .architecture-ai-chat {
+  display:flex!important;flex:1 1 auto!important;min-height:0!important;overflow:auto!important;
+  padding:8px 2px 2px!important;gap:14px!important;
+}
+.app-shell .floating-ai-chat-panel .ai-chat-messages {max-height:none!important;min-height:190px!important;flex:1 1 auto!important}
+.app-shell .floating-ai-chat-panel .ai-chat-composer textarea {min-height:104px!important;font-size:14px!important}
+@media(max-width:760px) {
+  .app-shell .floating-ai-chat-trigger {width:174px!important;min-width:174px!important;height:56px!important;min-height:56px!important}
+  .app-shell .floating-ai-chat-panel {
+    left:12px!important;right:12px!important;bottom:78px!important;top:auto!important;
+    width:auto!important;min-height:0!important;max-height:calc(100dvh - 100px)!important;
+  }
+}
