@@ -183,3 +183,86 @@
 
 /* Keep the modal library visually elevated without blocking drag-and-drop onto the canvas. */
 .workspace-simplified .component-library-scrim { pointer-events:none!important; }
+
+
+/* Canvas mode: remove the persistent left rail and use a compact Figma-style action dock. */
+.workspace-simplified.workspace-section-canvas .workspace-navigation {
+  display:none!important;
+}
+.workspace-simplified.workspace-section-canvas .workspace {
+  grid-template-columns:minmax(0,1fr) 0px var(--right-panel-width)!important;
+  padding:0 12px!important;
+}
+.workspace-simplified.workspace-section-canvas .workspace.right-panel-closed {
+  grid-template-columns:minmax(0,1fr) 0px 0px!important;
+}
+.workspace-simplified.workspace-section-canvas .workspace-quick-actions {
+  position:fixed!important;
+  z-index:120!important;
+  top:auto!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:22px!important;
+  transform:translateX(-50%)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  padding:7px!important;
+  border:1px solid rgba(205,216,223,.24)!important;
+  border-radius:999px!important;
+  background:rgba(20,27,32,.9)!important;
+  box-shadow:0 12px 40px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.07)!important;
+  backdrop-filter:blur(22px) saturate(140%)!important;
+}
+.workspace-simplified.workspace-section-canvas .workspace-quick-actions button {
+  width:38px!important;
+  min-width:38px!important;
+  height:38px!important;
+  padding:0!important;
+  border:1px solid transparent!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  color:#dce3e7!important;
+  transition:background .16s ease,border-color .16s ease,transform .16s ease!important;
+}
+.workspace-simplified.workspace-section-canvas .workspace-quick-actions button:hover:not(:disabled) {
+  background:rgba(220,230,236,.13)!important;
+  border-color:rgba(220,230,236,.2)!important;
+  transform:translateY(-2px)!important;
+}
+.workspace-simplified.workspace-section-canvas .workspace-quick-actions button:disabled { opacity:.3!important; }
+.workspace-simplified.workspace-section-canvas .workspace-quick-actions .topbar-library-button {
+  width:42px!important;min-width:42px!important;
+  background:linear-gradient(145deg,#e8edf0,#aeb9c1)!important;
+  color:#11171b!important;
+}
+.workspace-simplified.workspace-section-canvas .workspace-quick-actions .topbar-library-button:hover:not(:disabled) {
+  background:linear-gradient(145deg,#fff,#c7d0d6)!important;
+}
+.workspace-simplified.workspace-section-canvas .workspace-quick-actions .topbar-library-button span,
+.workspace-simplified.workspace-section-canvas .workspace-quick-actions kbd { display:none!important; }
+.workspace-simplified.workspace-section-canvas .workspace-quick-actions .workspace-help-mark {
+  width:17px;height:17px;border-color:#9aa7af;color:#dce3e7;
+}
+.workspace-simplified.workspace-section-canvas .canvas-toolbar .run-request-canvas { display:none!important; }
+.workspace-simplified.workspace-section-canvas .canvas-toolbar {
+  border:0!important;background:transparent!important;
+}
+.workspace-simplified.workspace-section-canvas .canvas-toolbar .editor-shortcuts { display:none!important; }
+.workspace-simplified.workspace-section-canvas .canvas-trace-status {
+  color:#aeb9c1;font-size:10px;letter-spacing:.04em;
+}
+.workspace-simplified.workspace-section-canvas .floating-ai-chat-trigger {
+  right:22px!important;left:auto!important;bottom:22px!important;
+  width:46px!important;min-width:46px!important;height:46px!important;
+  padding:0!important;border-radius:50%!important;
+}
+.workspace-simplified.workspace-section-canvas .floating-ai-chat-trigger::after { content:none!important; }
+.workspace-simplified.workspace-section-canvas .floating-ai-chat-trigger .anchon-bubble-mark { display:grid;place-items:center; }
+@media(max-width:760px) {
+  .workspace-simplified.workspace-section-canvas .workspace { grid-template-columns:minmax(0,1fr) 0px var(--right-panel-width)!important;padding:0 4px!important; }
+  .workspace-simplified.workspace-section-canvas .workspace-quick-actions { bottom:12px!important;gap:2px!important;padding:5px!important; }
+  .workspace-simplified.workspace-section-canvas .workspace-quick-actions button { width:34px!important;min-width:34px!important;height:34px!important; }
+  .workspace-simplified.workspace-section-canvas .floating-ai-chat-trigger { right:12px!important;bottom:76px!important; }
+}
