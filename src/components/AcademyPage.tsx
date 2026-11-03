@@ -58,7 +58,7 @@ function buildScenario(level:number,index:number):Scenario {
 }
 function makeNode(id:string,type:string,x:number,y:number):Node {
   const item=palette.find(p=>p[0]===type);
-  return {id,type:"default",position:{x,y},data:{label:item?.[1] ?? type},style:{background:"#1c242a",color:"#e9eef1",border:"1px solid #65727a",borderRadius:9,padding:10,minWidth:135,fontSize:12}};
+  return {id,type:"default",position:{x,y},data:{label:item?.[1] ?? type,typeKey:type},style:{background:"#1c242a",color:"#e9eef1",border:"1px solid #65727a",borderRadius:9,padding:10,minWidth:135,fontSize:12}};
 }
 export function AcademyPage() {
   const [level,setLevel]=useState(0); const [challenge,setChallenge]=useState(0);
@@ -82,7 +82,7 @@ export function AcademyPage() {
       if(!session?.access_token)throw new Error("Sign in to run the AI architecture review.");
       const response=await fetch("/api/evaluate",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({
         application:{name:scenario.title,description:`${scenario.brief}\nFunctional requirements:\n${scenario.functional.join("\n")}\nConstraints:\n${scenario.constraints.join("\n")}`},
-        nodes:nodes.map(n=>({id:n.id,typeKey:String((n.data as any).label).toLowerCase().replace(/[^a-z0-9]+/g,"_"),label:String((n.data as any).label),category:"Practice component"})),
+        nodes:nodes.map(n=>({id:n.id,typeKey:String((n.data as any).typeKey || (n.data as any).label).toLowerCase().replace(/[^a-z0-9]+/g,"_"),label:String((n.data as any).label),category:"Practice component"})),
         edges:edges.map(e=>({id:e.id,source:e.source,target:e.target})),
         notes:"Evaluate this practice submission strictly against the listed functional requirements and constraints. Explain exactly which requirements are unmet, why the current graph fails, what evidence supports each finding, and the smallest corrective change. Do not require components unless justified by a stated constraint."
       })});
@@ -100,7 +100,7 @@ export function AcademyPage() {
       const {data:{session}}=await supabase.auth.getSession();if(!session?.access_token)throw new Error("Sign in to use the AI coach.");
       const response=await fetch("/api/evaluate",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({
         application:{name:scenario.title,description:`${scenario.brief}\nRequirements: ${scenario.functional.join("; ")}\nConstraints: ${scenario.constraints.join("; ")}\nUser question: ${question}`},
-        nodes:(nodes.length?nodes:[{id:"coach-context",data:{label:"Design not started"}}] as any).map((n:any)=>({id:n.id,typeKey:"component",label:String(n.data.label),category:"Practice component"})),edges:edges.map(e=>({id:e.id,source:e.source,target:e.target})),
+        nodes:(nodes.length?nodes:[{id:"coach-context",data:{label:"Design not started"}}] as any).map((n:any)=>({id:n.id,typeKey:String(n.data.typeKey || "component"),label:String(n.data.label),category:"Practice component"})),edges:edges.map(e=>({id:e.id,source:e.source,target:e.target})),
         notes:"Act as a Socratic system-design coach. Answer the user's question with one practical hint at a time. Do not reveal the reference architecture or list the complete solution. Focus on reasoning about the stated constraints."
       })});
       const payload=await response.json();if(!response.ok)throw new Error(payload.error||"AI coach is unavailable.");
