@@ -669,3 +669,8 @@
   .iad-inspector { margin-inline:0!important;padding-top:18px!important; }
 }
 @media(prefers-reduced-motion:reduce) { .iad-root :is(h1,h2,h3),.iad-headline-wrap h1.iad-brand-title.is-auto-shining { animation:none!important; } }
+
+/* Persistent silver wordmark illumination. */
+.iad-headline-wrap h1.iad-brand-title.is-auto-shining{animation:iad-brand-shine 3s ease-in-out infinite!important}
+@keyframes iad-brand-shine{0%,100%{filter:brightness(1);text-shadow:0 0 12px rgba(220,226,230,.12),0 0 26px rgba(220,226,230,.05)}50%{filter:brightness(1.55);text-shadow:0 0 32px rgba(240,244,246,.52),0 0 76px rgba(220,226,230,.25),0 0 110px rgba(220,226,230,.1)}}
+@media(prefers-reduced-motion:reduce){.iad-headline-wrap h1.iad-brand-title.is-auto-shining{animation:none!important;filter:brightness(1.2);text-shadow:0 0 22px rgba(220,226,230,.25)!important}}

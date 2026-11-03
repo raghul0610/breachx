@@ -53,16 +53,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
   const [traceStep, setTraceStep] = useState(-1);
   const [completed, setCompleted] = useState<number[]>([]);
   const [showMission, setShowMission] = useState(false);
-  const [automaticShine, setAutomaticShine] = useState(false);
   const traceRunning = traceStep >= 0 && traceStep < 5;
-
-  useEffect(() => {
-    const shineTimer = window.setInterval(() => {
-      setAutomaticShine(true);
-      window.setTimeout(() => setAutomaticShine(false), 1050);
-    }, 3000);
-    return () => window.clearInterval(shineTimer);
-  }, []);
 
   useEffect(() => {
     setCompleted([]);
@@ -132,7 +123,7 @@ export function InteractiveArchitectureLanding({ onOpenDesigner }: { onOpenDesig
         <div className="iad-brandline"><span className="iad-brand-mark"><AnchonLogo size={28} /></span><span>SYSTEM DESIGN, MADE VISIBLE</span></div>
         <div className="iad-headline-wrap">
           <p className="iad-overline"><span className="iad-live-dot" /> SYSTEM ARCHITECTURE DESIGNER</p>
-          <h1 className={`iad-brand-title${automaticShine ? " is-auto-shining" : ""}`} onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--pointer-x", `${((event.clientX - bounds.left) / bounds.width) * 100}%`); }} onPointerLeave={(event) => event.currentTarget.style.setProperty("--pointer-x", "50%")}>ANCHON</h1>
+          <h1 className="iad-brand-title is-auto-shining" onPointerMove={(event) => { const bounds = event.currentTarget.getBoundingClientRect(); event.currentTarget.style.setProperty("--pointer-x", `${((event.clientX - bounds.left) / bounds.width) * 100}%`); }} onPointerLeave={(event) => event.currentTarget.style.setProperty("--pointer-x", "50%")}>ANCHON</h1>
           <p className="iad-hero-tagline">Think in systems. Design with clarity.</p>
           <p className="iad-intro">Turn an application idea into a living system blueprint. Explore the flow, understand every boundary, and build architecture that makes sense.</p>
           <button className="iad-hero-cta" onClick={onOpenDesigner}>Start designing <ArrowRight size={15} /></button>

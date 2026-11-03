@@ -6,6 +6,7 @@ import "./anchonProfessionalDesign.css";
 import "./anchonLandingFoundation.css";
 import "./anchonAquaDesign.css";
 import "./anchonSilverSystem.css";
+import "./anchonGlobalDesignSystem.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

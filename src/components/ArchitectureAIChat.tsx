@@ -156,7 +156,6 @@ export function ArchitectureAIChat({
       <div className="ai-chat-heading">
         <div className="ai-chat-title-icon"><AnchonLogo size={21} /></div>
         <div className="ai-chat-title"><strong>ARCHITECTURE AI</strong><span>CRUD assistant · OpenRouter</span></div>
-        <span className="ai-chat-live-dot" title="Assistant available" />
       </div>
       <div className="ai-chat-mode" role="group" aria-label="AI operating mode">
         <button type="button" className={mode === "planning" ? "active" : ""} onClick={() => { setMode("planning"); setPending(null); }} aria-pressed={mode === "planning"}><BrainCircuit size={12} /> PLANNING</button>
