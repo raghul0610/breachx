@@ -26,10 +26,9 @@
 /* Apply the same typeface to every route, including legacy screens and portals. */
 html,
 body,
-#root,
-#root *,
-#root *::before,
-#root *::after {
+body *,
+body *::before,
+body *::after {
   font-family: var(--anchon-font) !important;
 }
 
