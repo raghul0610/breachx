@@ -82,24 +82,27 @@ export function AcademyPage(){
   "Revise the graph and validate the architecture against every stated constraint."
  ];
  return <main className="academy-page academy-v3">
-  <header className="academy-v3-hero">
-   <div className="academy-v3-kicker">ANCHON ACADEMY / SYSTEM DESIGN STUDIO</div>
-   <h1>Learn the system. <span>Build the architecture.</span></h1>
-   <p>Twenty progressive levels and two hundred engineering topics. Work through the engineering concepts, then prove your understanding by connecting architecture nodes and validating a complete design.</p>
-   <div className="academy-v3-progress"><div><span>LEARNING JOURNEY</span><strong>{learnedCount} / {totalTopics} topics studied</strong></div><strong>{progress}%</strong><div className="academy-v3-progress-track"><i style={{width:progress+"%"}}/></div></div>
-   
-  </header>
   <div className="academy-v3-shell">
    <aside className="academy-v3-sidebar">
-    <div className="academy-v3-sidebar-title"><span>CURRICULUM</span><small>ALL SECTIONS OPEN</small></div>
+    <div className="academy-v3-sidebar-brand"><span>ANCHON ACADEMY</span><small>SYSTEM DESIGN PATH</small></div>
+    <section className="academy-v3-sidebar-progress" aria-label="Learning progress">
+     <div className="academy-v3-sidebar-progress-head"><span>YOUR PROGRESS</span><strong>{progress}%</strong></div>
+     <div className="academy-v3-progress-track"><i style={{width:progress+"%"}}/></div>
+     <p>{learnedCount} of {totalTopics} topics completed</p>
+    </section>
+    <section className="academy-v3-sidebar-current">
+     <span className="academy-v3-sidebar-label">CURRENT LEVEL · {String(activeLevel+1).padStart(2,"0")}</span>
+     <h2>{level.title}</h2>
+     <p>{level.outcome}</p>
+     <small>{level.puzzles.filter(p=>learned.includes(p.id)).length}/10 TOPICS COMPLETE</small>
+    </section>
+    <div className="academy-v3-sidebar-title"><span>20-LEVEL CURRICULUM</span><small>ALL OPEN</small></div>
     {curriculum.map((item,index)=>{const done=item.puzzles.filter(p=>learned.includes(p.id)).length;return <button type="button" key={item.id} className={activeLevel===index?"active":""} onClick={()=>chooseLevel(index)}><span className="academy-v3-index">{String(index+1).padStart(2,"0")}</span><span className="academy-v3-section-name"><small>{item.subtitle.split("·").slice(1).join("·").trim()}</small><strong>{item.title}</strong><i>{done}/10 topics studied</i></span><ChevronRight size={15}/></button>;})}
-    <div className="academy-v3-sidebar-topic-heading"><span>LEVEL {String(activeLevel+1).padStart(2,"0")} TOPICS</span><small>{level.puzzles.filter(p=>learned.includes(p.id)).length}/10 COMPLETE</small></div>
+    <div className="academy-v3-sidebar-topic-heading"><span>TOPICS IN THIS LEVEL</span><small>{level.puzzles.filter(p=>learned.includes(p.id)).length}/10 DONE</small></div>
     <nav className="academy-v3-sidebar-topics" aria-label="Topics in selected level">{level.puzzles.map((item,index)=><button type="button" key={item.id} className={activeTopic===index?"active":""} onClick={()=>chooseTopic(index)}><span>{learned.includes(item.id)?<Check size={13}/>:String(index+1).padStart(2,"0")}</span><strong>{item.title}</strong></button>)}</nav>
     <button type="button" className="academy-v3-reset" onClick={resetProgress}><RotateCcw size={13}/> Reset learning progress</button>
    </aside>
    <section className="academy-v3-main">
-    <div className="academy-v3-section-head"><div><span>{level.subtitle}</span><h2>{level.title}</h2><p>{level.outcome}</p></div><span className="academy-v3-open">OPEN CURRICULUM</span></div>
-    <div className="academy-v3-intro">{level.intro}</div>
     <div className="academy-v3-tabs" role="tablist" aria-label="Section workspace">
      <button type="button" role="tab" aria-selected={activeTab==="learn"} className={activeTab==="learn"?"active":""} onClick={()=>setActiveTab("learn")}><BookOpen size={15}/> LEARN THE TOPICS <span>{level.puzzles.filter(p=>learned.includes(p.id)).length}/10</span></button>
      <button type="button" role="tab" aria-selected={activeTab==="build"} className={activeTab==="build"?"active":""} onClick={()=>setActiveTab("build")}><Waypoints size={15}/> SECTION DESIGN STUDIO <span>{completedLabs.includes(activeLevel)?"VALIDATED":"CANVAS"}</span></button>
