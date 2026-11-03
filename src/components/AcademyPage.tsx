@@ -33,7 +33,7 @@ const requiredByDomain: Record<string,string[]> = {
   "Digital wallet":["client","gateway","auth","service","database","queue","monitoring"],
 };
 function buildScenario(level:number,index:number):Scenario {
-  const domain=systems[index];
+  const domain=systems[(index+level*13)%systems.length];
   const stageFocus=["Core product workflow","Peak traffic and asynchronous processing","Distributed consistency and failure recovery","Multi-region resilience and strict isolation"][level];
   const title=level===0?domain:`${domain} · ${stageFocus}`;
   const base=requiredByDomain[domain] ?? ["client","gateway","service","database","cache","queue","worker"];
@@ -82,7 +82,7 @@ const academyNodeTypes={blueprintNode:BlueprintNode};
 function makeNode(id:string,type:string,x:number,y:number):Node {
   const item=palette.find(p=>p[0]===type);
   const catalogKeys:Record<string,string>={gateway:"api_gateway",service:"microservice",search:"search_engine",auth:"auth_service",monitoring:"metrics",payment:"payment_service",notification:"notification_service"};
-  return {id,type:"blueprintNode",position:{x,y},data:{label:item?.[1] ?? type,typeKey:catalogKeys[type]??type,category:({client:"Applications",gateway:"Networking",service:"Compute",database:"Databases",cache:"Cache",queue:"Messaging",worker:"Compute",object_storage:"Storage",cdn:"Networking",search:"Data",auth:"Security",rate_limiter:"Security",monitoring:"Observability",payment:"Integrations",notification:"Messaging"} as Record<string,string>)[type]??"Infrastructure",notes:item?.[2]??""}};
+  return {id,type:"blueprintNode",position:{x,y},data:{label:item?.[1] ?? type,typeKey:catalogKeys[type]??type,category:({client:"Applications",gateway:"Network",service:"Compute",database:"Data",cache:"Data",queue:"Messaging",worker:"Compute",object_storage:"Storage",cdn:"Edge",search:"Search & Discovery",auth:"Security",rate_limiter:"Security",monitoring:"Observability",payment:"External",notification:"Messaging"} as Record<string,string>)[type]??"Infrastructure",notes:item?.[2]??""}};
 }
 export function AcademyPage() {
   const [level,setLevel]=useState(0); const [challenge,setChallenge]=useState(0);
@@ -91,7 +91,8 @@ export function AcademyPage() {
   const [revealed,setRevealed]=useState(false); const [judge,setJudge]=useState<any>(null); const [judging,setJudging]=useState(false);
   const [assistantOpen,setAssistantOpen]=useState(false); const [question,setQuestion]=useState(""); const [challengeMenuOpen,setChallengeMenuOpen]=useState(false); const [challengeSearch,setChallengeSearch]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
   const scenario=useMemo(()=>buildScenario(level,challenge),[level,challenge]);
-  const filteredChallenges=useMemo(()=>systems.map((name,index)=>({name,index})).filter(item=>item.name.toLowerCase().includes(challengeSearch.toLowerCase())),[challengeSearch]);
+  const levelSystems=useMemo(()=>systems.map((_,index)=>systems[(index+level*13)%systems.length]),[level]);
+  const filteredChallenges=useMemo(()=>levelSystems.map((name,index)=>({name,index})).filter(item=>item.name.toLowerCase().includes(challengeSearch.toLowerCase())),[levelSystems,challengeSearch]);
   const [completed,setCompleted]=useState<string[]>([]);
   const key=`${level}-${challenge}`; const done=completed.includes(key);
   const reset=()=>{setNodes([]);setEdges([]);setJudge(null);setRevealed(false);};
