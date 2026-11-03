@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Lock, RotateCcw, ShieldCheck, Trophy } from "lucide-react";
 
 type Puzzle = { id:string; title:string; prompt:string; options:string[]; answer:number; explanation:string; takeaway:string; lesson:string };
