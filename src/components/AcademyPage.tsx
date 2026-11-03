@@ -75,13 +75,8 @@ export function AcademyPage() {
   const submit=async()=>{
     setJudging(true);setJudge(null);
     const localFindings:string[]=[];
-    const kinds=new Set(nodes.map(n=>String((n.data as any).label).toLowerCase()));
-    const required= scenario.reference.map(k=>palette.find(p=>p[0]===k)?.[1].toLowerCase() ?? k);
-    const missing=required.filter(k=>![...kinds].some(label=>label.includes(k.toLowerCase())));
     if(!nodes.length)localFindings.push("The canvas is empty. Add components and connect the primary request path.");
-    if(missing.length)localFindings.push(`Missing likely responsibilities: ${missing.join(", ")}. Map each one to a requirement before deciding whether it belongs in the design.`);
-    if(edges.length<Math.max(1,scenario.reference.length-2))localFindings.push("The architecture has too few directed connections to demonstrate the end-to-end request and data flow.");
-    if(nodes.length>0 && edges.length===0)localFindings.push("Components are isolated. Connect the request path and any asynchronous hand-offs explicitly.");
+    if(nodes.length>0 && edges.length===0)localFindings.push("No directed connections are present. Explain how requests and data move between the selected responsibilities.");
     try{
       const {data:{session}}=await supabase.auth.getSession();
       if(!session?.access_token)throw new Error("Sign in to run the AI architecture review.");
@@ -105,7 +100,7 @@ export function AcademyPage() {
       const {data:{session}}=await supabase.auth.getSession();if(!session?.access_token)throw new Error("Sign in to use the AI coach.");
       const response=await fetch("/api/evaluate",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({
         application:{name:scenario.title,description:`${scenario.brief}\nRequirements: ${scenario.functional.join("; ")}\nConstraints: ${scenario.constraints.join("; ")}\nUser question: ${question}`},
-        nodes:nodes.map(n=>({id:n.id,typeKey:"component",label:String((n.data as any).label),category:"Practice component"})),edges:edges.map(e=>({id:e.id,source:e.source,target:e.target})),
+        nodes:(nodes.length?nodes:[{id:"coach-context",data:{label:"Design not started"}}] as any).map((n:any)=>({id:n.id,typeKey:"component",label:String(n.data.label),category:"Practice component"})),edges:edges.map(e=>({id:e.id,source:e.source,target:e.target})),
         notes:"Act as a Socratic system-design coach. Answer the user's question with one practical hint at a time. Do not reveal the reference architecture or list the complete solution. Focus on reasoning about the stated constraints."
       })});
       const payload=await response.json();if(!response.ok)throw new Error(payload.error||"AI coach is unavailable.");
