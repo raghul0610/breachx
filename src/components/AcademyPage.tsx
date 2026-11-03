@@ -88,14 +88,14 @@ export function AcademyPage() {
   const [level,setLevel]=useState(0); const [challenge,setChallenge]=useState(0);
   const [nodes,setNodes,onNodesChange]=useNodesState<Node>([]); const [edges,setEdges,onEdgesChange]=useEdgesState<Edge>([]);
   const [instance,setInstance]=useState<ReactFlowInstance|null>(null);
-  const [revealed,setRevealed]=useState(false); const [judge,setJudge]=useState<any>(null); const [judging,setJudging]=useState(false);
+  const [revealed,setRevealed]=useState(false); const [judge,setJudge]=useState<any>(null); const [judging,setJudging]=useState(false); const [requestTrace,setRequestTrace]=useState<string[]>([]);
   const [assistantOpen,setAssistantOpen]=useState(false); const [question,setQuestion]=useState(""); const [challengeMenuOpen,setChallengeMenuOpen]=useState(false); const [challengeSearch,setChallengeSearch]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
   const scenario=useMemo(()=>buildScenario(level,challenge),[level,challenge]);
   const levelSystems=useMemo(()=>systems.map((_,index)=>systems[(index+level*13)%systems.length]),[level]);
   const filteredChallenges=useMemo(()=>levelSystems.map((name,index)=>({name,index})).filter(item=>item.name.toLowerCase().includes(challengeSearch.toLowerCase())),[levelSystems,challengeSearch]);
   const [completed,setCompleted]=useState<string[]>([]);
   const key=`${level}-${challenge}`; const done=completed.includes(key);
-  const reset=()=>{setNodes([]);setEdges([]);setJudge(null);setRevealed(false);};
+  const reset=()=>{setNodes([]);setEdges([]);setJudge(null);setRevealed(false);setRequestTrace([]);};
   const onDrop=(event:DragEvent<HTMLDivElement>)=>{event.preventDefault();const type=event.dataTransfer.getData("application/anchon-component");if(!type||!instance)return;const position=instance.screenToFlowPosition({x:event.clientX,y:event.clientY});setNodes(current=>[...current,makeNode(`${type}-${Date.now()}`,type,position.x,position.y)]);setJudge(null);};
   const connect=(connection:Connection)=>{setEdges(current=>addEdge({...connection,animated:true,style:{stroke:"#c4d0d6"},label:"request / data",labelBgStyle:{fill:"transparent",fillOpacity:0,stroke:"none"},labelStyle:{fill:"#d7e0e4",fontSize:10,fontWeight:600},type:"smoothstep"},current));setJudge(null);};
   const submit=async()=>{
@@ -105,6 +105,18 @@ export function AcademyPage() {
     if(nodes.length>0 && edges.length===0)localFindings.push("No directed connections are present. Explain how requests and data move between the selected responsibilities.");
     const graphNodes=nodes.map(n=>({id:n.id,type:n.type,data:n.data as {label?:string;typeKey?:string;category?:string;notes?:string}}));
     const graphEdges=edges.map(e=>({id:e.id,source:e.source,target:e.target}));
+    // Trace a concrete path through the submitted graph before judging it.
+    const outgoing=new Map<string,string[]>();
+    graphNodes.forEach(node=>outgoing.set(node.id,[]));
+    graphEdges.forEach(edge=>outgoing.get(edge.source)?.push(edge.target));
+    const ingress=graphNodes.find(node=>["client","client_app","user_app","frontend"].includes(String(node.data.typeKey||"").toLowerCase()));
+    const traceIds:string[]=[];
+    if(ingress){
+      const seen=new Set<string>();const queue=[ingress.id];
+      while(queue.length&&traceIds.length<graphNodes.length){const current=queue.shift()!;if(seen.has(current))continue;seen.add(current);traceIds.push(current);for(const next of outgoing.get(current)??[])if(!seen.has(next))queue.push(next);}
+    }
+    setRequestTrace(traceIds.map(id=>String(graphNodes.find(node=>node.id===id)?.data.label||id)));
+    setEdges(current=>current.map(edge=>({...edge,animated:traceIds.includes(edge.source)&&traceIds.includes(edge.target),style:{stroke:traceIds.includes(edge.source)&&traceIds.includes(edge.target)?"#e2e9ee":"#66747c",strokeWidth:traceIds.includes(edge.source)&&traceIds.includes(edge.target)?2.4:1.3},labelBgStyle:{fill:"transparent",fillOpacity:0,stroke:"none"}})));
     const deterministic=evaluateSystemDesign({application:{name:scenario.title,description:`${scenario.brief}\nFunctional requirements:\n${scenario.functional.join("\n")}\nConstraints:\n${scenario.constraints.join("\n")}`},nodes:graphNodes,edges:graphEdges,notes:"Evaluate this challenge against its explicit functional requirements and constraints."});
     try{
       const {data:{session}}=await supabase.auth.getSession();
@@ -176,7 +188,7 @@ export function AcademyPage() {
           <div className="da-builder-main"><div className="da-flow" onDragOver={(event)=>{event.preventDefault();event.dataTransfer.dropEffect="move";}} onDrop={onDrop}><ReactFlow nodes={nodes} edges={edges} nodeTypes={academyNodeTypes} connectionMode={ConnectionMode.Loose} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} fitView fitViewOptions={{padding:.2}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Drag a component onto this canvas</strong><span>Start with Client, then connect the request path.</span></div>}</div></div>
           <aside className="da-palette-wrap"><div className="da-palette-heading"><strong>Components</strong><small>Drag a building block into the canvas</small></div><div className="da-palette">{palette.map(item=><div key={item[0]} draggable onDragStart={e=>{e.dataTransfer.setData("application/anchon-component",item[0]);e.dataTransfer.effectAllowed="move";}}><b>{item[1]}</b><small>{item[2]}</small></div>)}</div></aside>
         </div>
-        <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Play size={15}/> Run & evaluate design</>}</button></div>
+        <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Play size={15}/> Run & evaluate design</>}</button></div>{requestTrace.length>0&&<div className="da-request-trace"><span>REQUEST TRACE</span><strong>{requestTrace.join("  →  ")}</strong><small>Simulated traversal of the connected graph · not a live production request</small></div>}
       </section>
 
       {judge&&<section className="da-judge"><div className="da-section-heading da-judge-head"><div><span className="da-eyebrow">FEEDBACK</span><h2>{judge.error?"Evaluation unavailable":`Architecture review · ${judge.score}/100`}</h2></div>{!judge.error&&<strong>{judge.score>=80?"STRONG":judge.score>=55?"NEEDS IMPROVEMENT":"REWORK NEEDED"}</strong>}</div><p>{judge.error||judge.summary}</p>{judge.localFindings?.map((f:string,i:number)=><p className="da-finding" key={i}><AlertCircle size={14}/>{f}</p>)}{judge.strengths?.map((f:string,i:number)=><p className="da-strength" key={i}><Check size={14}/>{f}</p>)}{judge.findings?.map((f:any,i:number)=><article className="da-finding-card" key={f.id||i}><span>{String(f.severity||"finding").toUpperCase()} · {f.category}</span><strong>{f.title}</strong><p>{f.description}</p><small>WHY IT MATTERS: {f.requirement}</small><p className="da-recommendation">SUGGESTED CHANGE: {f.recommendation}</p></article>)}</section>}
