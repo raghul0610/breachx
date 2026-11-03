@@ -826,6 +826,8 @@ function ParticipantEditor({
           <button type="button" onClick={undo} disabled={pastRef.current.length === 0} title="Undo · Ctrl/Cmd+Z" aria-label="Undo"><Undo2 size={15} /></button>
           <button type="button" onClick={redo} disabled={futureRef.current.length === 0} title="Redo · Ctrl/Cmd+Shift+Z" aria-label="Redo"><Redo2 size={15} /></button>
           <button type="button" onClick={() => save(submitted ? "submitted" : "draft")} disabled={persisting} title="Save · Ctrl/Cmd+S" aria-label="Save"><Save size={15} /></button>
+          <button type="button" onClick={runRequestTrace} disabled={!nodes.length} title="Trace flow · Ctrl/Cmd+Enter" aria-label="Trace flow"><Link2 size={15} /></button>
+          <button type="button" onClick={() => setChatOpen((open) => !open)} title="ANCHON AI · Ctrl/Cmd+/" aria-label="Toggle ANCHON AI"><Sparkles size={15} /></button>
           <button type="button" onClick={() => setShortcutsOpen(true)} title="Keyboard shortcuts · ?" aria-label="Keyboard shortcuts"><span className="workspace-help-mark">?</span></button>
         </div>
       </header>
@@ -929,11 +931,7 @@ function ParticipantEditor({
               <span className="editor-shortcuts">Drag components to build · Connect the handles · Press ? for shortcuts</span>
               {saveError && <span className="autosave-error" role="status">{saveError}</span>}
             </div>
-            <button type="button" className="run-request-canvas" onClick={runRequestTrace} data-tutorial="canvas-run-request" title="Trace data through your connected architecture" disabled={!nodes.length}>
-              {requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? <span className="request-trace-spinner" aria-hidden="true" /> : <Link2 size={14} />}
-              {requestTraceStep >= requestTraceEdges.length && requestTraceEdges.length > 0 ? "REPLAY FLOW" : requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? "TRACING FLOW…" : "Trace flow"}
-              <span aria-hidden="true">↗</span>
-            </button>
+            <span className="canvas-trace-status" aria-live="polite">{requestTraceStep >= 0 && requestTraceStep < requestTraceEdges.length ? "Tracing request…" : requestTraceStep >= requestTraceEdges.length && requestTraceEdges.length > 0 ? "Trace complete" : ""}</span>
           </div>
 
           {activeEvaluationResult && <section className="architecture-evaluation-panel" aria-label="Architecture judge results" aria-live="polite">
