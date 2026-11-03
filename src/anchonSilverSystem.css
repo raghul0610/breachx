@@ -1479,3 +1479,59 @@ button,input,textarea,select { font-family:var(--anchon-font-ui)!important; }
 .academy-v3-takeaway-locked{padding:18px;border:1px dashed #56656d;border-radius:9px;background:#171f23;color:#d3dce0}
 .academy-v3-takeaway-locked strong{font-size:13px}.academy-v3-takeaway-locked p{margin:7px 0 0;color:#aebbc2;font-size:12px;line-height:1.7}
 @media(max-width:640px){.academy-v3-takeaway-columns{grid-template-columns:1fr}}
+
+/* Academy: full-width, readable learning workspace and large connection canvases. */
+.academy-page.academy-v3{width:100%;max-width:none!important;min-height:100dvh;padding:clamp(18px,2.4vw,42px) clamp(16px,3vw,52px)!important}
+.academy-v3-hero{width:100%;max-width:none!important;padding:clamp(24px,3vw,48px)!important}
+.academy-v3-shell{width:100%;max-width:none!important;grid-template-columns:minmax(280px,22vw) minmax(0,1fr)!important;gap:clamp(16px,1.5vw,26px)!important;align-items:start}
+.academy-v3-sidebar{position:sticky;top:18px;max-height:calc(100dvh - 36px);overflow:auto}
+.academy-v3-main{min-width:0;width:100%;max-width:none!important;padding:clamp(22px,2.6vw,44px)!important}
+.academy-v3-section-head h2{font-size:clamp(25px,2.1vw,36px)!important;line-height:1.25!important}
+.academy-v3-section-head p,.academy-v3-intro{font-size:clamp(15px,1.05vw,18px)!important;line-height:1.8!important}
+.academy-v3-learning{grid-template-columns:minmax(230px,25%) minmax(0,1fr)!important;gap:clamp(16px,2vw,30px)!important}
+.academy-v3-topic-list button{min-height:58px!important;padding:12px 14px!important}
+.academy-v3-topic-list button strong{font-size:14px!important;line-height:1.45!important}
+.academy-v3-lesson{min-width:0!important}
+.academy-v3-lesson h3{font-size:clamp(24px,2vw,34px)!important}
+.academy-v3-lesson p,.academy-v3-lesson li{font-size:clamp(15px,1.1vw,18px)!important;line-height:1.85!important}
+.academy-v3-lesson section{margin:22px 0!important}
+.academy-topic-puzzle{margin:24px 0;padding:clamp(18px,2vw,30px);border:1px solid #64737b;border-radius:14px;background:linear-gradient(145deg,#1d282e,#141c21)}
+.academy-topic-puzzle>header{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#dfe6e9;font:700 11px ui-monospace,monospace;letter-spacing:.1em}
+.academy-topic-puzzle>header span{display:flex;align-items:center;gap:9px}
+.academy-topic-puzzle>header small{color:#aebbc2;font-size:10px}
+.academy-topic-puzzle h4{margin:18px 0 8px;color:#f1f4f5;font-size:clamp(19px,1.4vw,24px)}
+.academy-topic-puzzle>p{font-size:clamp(14px,1vw,17px);line-height:1.8;color:#c8d2d7}
+.academy-topic-flow{height:clamp(380px,48vh,620px);min-height:380px;margin-top:18px;border:1px solid #53636b;border-radius:11px;overflow:hidden;background-color:#11191e;background-image:radial-gradient(#46545b 1px,transparent 1px);background-size:22px 22px}
+.academy-topic-flow .react-flow__node{cursor:grab}
+.academy-topic-flow .react-flow__handle{width:11px;height:11px;background:#d5dfe3;border:2px solid #182127}
+.academy-topic-flow .react-flow__edge-path{stroke:#d4dde1;stroke-width:2.5}
+.academy-topic-puzzle-actions{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:16px}
+.academy-topic-puzzle-actions>span{font-size:13px;color:#aebbc2;line-height:1.6}
+.academy-topic-puzzle-actions>div{display:flex;gap:10px;flex-wrap:wrap}
+.academy-topic-puzzle-actions button{display:flex;align-items:center;gap:8px;padding:11px 16px;border:1px solid #687780;border-radius:8px;background:#29343a;color:#edf2f4;font-size:13px;font-weight:700}
+.academy-topic-feedback,.academy-topic-explanation{padding:14px 16px;border-radius:8px;background:#2b2222;border:1px solid #805e5e}
+.academy-topic-feedback.success{background:#1e2b28;border-color:#5b8175}
+.academy-topic-explanation{display:grid;gap:7px;background:#202b30;border-color:#5a6a72}
+.academy-topic-explanation strong{font:700 10px ui-monospace,monospace;letter-spacing:.1em;color:#d4dfe3}
+.academy-v3-studio{width:100%}
+.academy-v3-studio header h3{font-size:clamp(23px,1.8vw,32px)!important}
+.academy-v3-studio header p,.academy-v3-brief-grid p,.academy-v3-brief-grid li{font-size:clamp(14px,1vw,17px)!important;line-height:1.8!important}
+.academy-lab-workspace{grid-template-columns:minmax(230px,20%) minmax(0,1fr)!important;min-height:clamp(620px,70vh,900px)!important}
+.academy-lab-canvas{min-height:clamp(620px,70vh,900px)!important}
+.academy-lab-palette button{min-height:76px!important;padding:14px!important}
+.academy-lab-palette button span{font-size:15px!important}
+.academy-lab-palette button small{font-size:12px!important;line-height:1.5!important}
+@media(max-width:900px){
+ .academy-v3-shell{grid-template-columns:1fr!important}
+ .academy-v3-sidebar{position:static;max-height:340px}
+ .academy-v3-learning{grid-template-columns:1fr!important}
+ .academy-v3-topic-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:280px;overflow:auto}
+}
+@media(max-width:640px){
+ .academy-page.academy-v3{padding:12px!important}
+ .academy-v3-main{padding:16px!important}
+ .academy-topic-flow{height:420px}
+ .academy-topic-puzzle-actions{align-items:flex-start;flex-direction:column}
+ .academy-lab-workspace{grid-template-columns:1fr!important}
+ .academy-lab-canvas{min-height:520px!important}
+}
