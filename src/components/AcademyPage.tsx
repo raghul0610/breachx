@@ -1,5 +1,5 @@
 import { useMemo, useState, type DragEvent } from "react";
-import { ReactFlow, Background, Controls, Handle, Position, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type NodeProps, type ReactFlowInstance, MarkerType } from "@xyflow/react";
+import { ReactFlow, Background, Controls, Handle, Position, ConnectionMode, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type NodeProps, type ReactFlowInstance, MarkerType } from "@xyflow/react";
 import { AlertCircle, Bot, Check, ChevronDown, Circle, Eye, LoaderCircle, RotateCcw, Send, ShieldCheck, X, CircleHelp } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import "./SystemDesignAcademy.css";
@@ -74,10 +74,10 @@ function buildScenario(level:number,index:number):Scenario {
 function AcademyNode({data,selected}:NodeProps) {
   const item=data as {label:string;typeKey:string};
   return <div className={"da-node"+(selected?" selected":"")}>
-    <Handle type="target" position={Position.Top}/><Handle type="source" position={Position.Top} id="top-out"/>
-    <Handle type="target" position={Position.Right}/><Handle type="source" position={Position.Right} id="right-out"/>
-    <Handle type="target" position={Position.Bottom}/><Handle type="source" position={Position.Bottom} id="bottom-out"/>
-    <Handle type="target" position={Position.Left}/><Handle type="source" position={Position.Left} id="left-out"/>
+    <Handle type="source" position={Position.Top} id="top"/>
+    <Handle type="source" position={Position.Right} id="right"/>
+    <Handle type="source" position={Position.Bottom} id="bottom"/>
+    <Handle type="source" position={Position.Left} id="left"/>
     <span className="da-node-category">{palette.find(p=>p[0]===item.typeKey)?.[2]??"ARCHITECTURE"}</span>
     <strong>{item.label}</strong>
   </div>;
@@ -169,7 +169,7 @@ export function AcademyPage() {
       <section className="da-design-section">
         <div className="da-section-heading da-canvas-heading"><div><span className="da-eyebrow">DESIGN WORKSPACE</span><h2>Your architecture</h2><p>Build the request and data flow by adding components and connecting them.</p></div><div className="da-canvas-actions"><button className="da-help-button" onClick={()=>setTutorialOpen(true)} aria-label="Open academy tutorial" title="How to use the academy"><CircleHelp size={15}/> Tutorial</button><button onClick={reset}><RotateCcw size={14}/> Reset</button><button onClick={reveal} disabled={revealed}><Eye size={14}/> {revealed?"Reference revealed":"Reveal solution"}</button></div></div>
         <div className="da-builder">
-          <div className="da-builder-main"><div className="da-flow" onDragOver={(event)=>{event.preventDefault();event.dataTransfer.dropEffect="move";}} onDrop={onDrop}><ReactFlow nodes={nodes} edges={edges} nodeTypes={academyNodeTypes} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} fitView fitViewOptions={{padding:.2}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Drag a component onto this canvas</strong><span>Start with Client, then connect the request path.</span></div>}</div></div>
+          <div className="da-builder-main"><div className="da-flow" onDragOver={(event)=>{event.preventDefault();event.dataTransfer.dropEffect="move";}} onDrop={onDrop}><ReactFlow nodes={nodes} edges={edges} nodeTypes={academyNodeTypes} connectionMode={ConnectionMode.Loose} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} fitView fitViewOptions={{padding:.2}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Drag a component onto this canvas</strong><span>Start with Client, then connect the request path.</span></div>}</div></div>
           <aside className="da-palette-wrap"><div className="da-palette-heading"><strong>Components</strong><small>Drag a building block into the canvas</small></div><div className="da-palette">{palette.map(item=><div key={item[0]} draggable onDragStart={e=>{e.dataTransfer.setData("application/anchon-component",item[0]);e.dataTransfer.effectAllowed="move";}}><b>{item[1]}</b><small>{item[2]}</small></div>)}</div></aside>
         </div>
         <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Circle size={15}/> Evaluate my design</>}</button></div>
