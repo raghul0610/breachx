@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
-import { ReactFlow, Background, Controls, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type ReactFlowInstance, MarkerType } from "@xyflow/react";
-import { AlertCircle, Bot, Check, ChevronDown, Circle, Eye, LoaderCircle, RotateCcw, Send, ShieldCheck } from "lucide-react";
+import { ReactFlow, Background, Controls, Handle, Position, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type NodeProps, type ReactFlowInstance, MarkerType } from "@xyflow/react";
+import { AlertCircle, Bot, Check, ChevronDown, Circle, Eye, LoaderCircle, RotateCcw, Send, ShieldCheck, X, CircleHelp } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import "./SystemDesignAcademy.css";
 
@@ -71,17 +71,29 @@ function buildScenario(level:number,index:number):Scenario {
   ];
   return { title:domain,domain,brief:`Design the backend and supporting infrastructure for a ${domain.toLowerCase()}. Your architecture must satisfy the requirements below. Choose components only when they solve a stated need; justify important trade-offs.`,functional,constraints,reference,flow };
 }
+function AcademyNode({data,selected}:NodeProps) {
+  const item=data as {label:string;typeKey:string};
+  return <div className={"da-node"+(selected?" selected":"")}>
+    <Handle type="target" position={Position.Top}/><Handle type="source" position={Position.Top} id="top-out"/>
+    <Handle type="target" position={Position.Right}/><Handle type="source" position={Position.Right} id="right-out"/>
+    <Handle type="target" position={Position.Bottom}/><Handle type="source" position={Position.Bottom} id="bottom-out"/>
+    <Handle type="target" position={Position.Left}/><Handle type="source" position={Position.Left} id="left-out"/>
+    <span className="da-node-category">{palette.find(p=>p[0]===item.typeKey)?.[2]??"ARCHITECTURE"}</span>
+    <strong>{item.label}</strong>
+  </div>;
+}
+const academyNodeTypes={academyNode:AcademyNode};
 function makeNode(id:string,type:string,x:number,y:number):Node {
   const item=palette.find(p=>p[0]===type);
   const catalogKeys:Record<string,string>={gateway:"api_gateway",service:"microservice",search:"search_engine",auth:"auth_service",monitoring:"metrics",payment:"payment_service",notification:"notification_service"};
-  return {id,type:"default",position:{x,y},data:{label:item?.[1] ?? type,typeKey:catalogKeys[type]??type},style:{background:"#1c242a",color:"#e9eef1",border:"1px solid #65727a",borderRadius:9,padding:10,minWidth:135,fontSize:12}};
+  return {id,type:"academyNode",position:{x,y},data:{label:item?.[1] ?? type,typeKey:catalogKeys[type]??type},style:{background:"#1c242a",color:"#e9eef1",border:"1px solid #65727a",borderRadius:9,padding:10,minWidth:135,fontSize:12}};
 }
 export function AcademyPage() {
   const [level,setLevel]=useState(0); const [challenge,setChallenge]=useState(0);
   const [nodes,setNodes,onNodesChange]=useNodesState<Node>([]); const [edges,setEdges,onEdgesChange]=useEdgesState<Edge>([]);
   const [instance,setInstance]=useState<ReactFlowInstance|null>(null);
   const [revealed,setRevealed]=useState(false); const [judge,setJudge]=useState<any>(null); const [judging,setJudging]=useState(false);
-  const [assistantOpen,setAssistantOpen]=useState(false); const [question,setQuestion]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
+  const [assistantOpen,setAssistantOpen]=useState(false); const [tutorialOpen,setTutorialOpen]=useState(false); const [question,setQuestion]=useState(""); const [assistantReply,setAssistantReply]=useState(""); const [assistantBusy,setAssistantBusy]=useState(false);
   const scenario=useMemo(()=>buildScenario(level,challenge),[level,challenge]);
   const [completed,setCompleted]=useState<string[]>([]);
   const key=`${level}-${challenge}`; const done=completed.includes(key);
@@ -155,9 +167,9 @@ export function AcademyPage() {
       </article>
 
       <section className="da-design-section">
-        <div className="da-section-heading da-canvas-heading"><div><span className="da-eyebrow">DESIGN WORKSPACE</span><h2>Your architecture</h2><p>Build the request and data flow by adding components and connecting them.</p></div><div className="da-canvas-actions"><button onClick={reset}><RotateCcw size={14}/> Reset</button><button onClick={reveal} disabled={revealed}><Eye size={14}/> {revealed?"Reference revealed":"Reveal solution"}</button></div></div>
+        <div className="da-section-heading da-canvas-heading"><div><span className="da-eyebrow">DESIGN WORKSPACE</span><h2>Your architecture</h2><p>Build the request and data flow by adding components and connecting them.</p></div><div className="da-canvas-actions"><button className="da-help-button" onClick={()=>setTutorialOpen(true)} aria-label="Open academy tutorial" title="How to use the academy"><CircleHelp size={15}/> Tutorial</button><button onClick={reset}><RotateCcw size={14}/> Reset</button><button onClick={reveal} disabled={revealed}><Eye size={14}/> {revealed?"Reference revealed":"Reveal solution"}</button></div></div>
         <div className="da-builder">
-          <div className="da-builder-main"><div className="da-flow"><ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} onDragOver={(event)=>{event.preventDefault();event.dataTransfer.dropEffect="move";}} onDrop={onDrop} fitView fitViewOptions={{padding:.2}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Drag a component onto this canvas</strong><span>Start with Client, then connect the request path.</span></div>}</div></div>
+          <div className="da-builder-main"><div className="da-flow" onDragOver={(event)=>{event.preventDefault();event.dataTransfer.dropEffect="move";}} onDrop={onDrop}><ReactFlow nodes={nodes} edges={edges} nodeTypes={academyNodeTypes} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} fitView fitViewOptions={{padding:.2}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Drag a component onto this canvas</strong><span>Start with Client, then connect the request path.</span></div>}</div></div>
           <aside className="da-palette-wrap"><div className="da-palette-heading"><strong>Components</strong><small>Drag a building block into the canvas</small></div><div className="da-palette">{palette.map(item=><div key={item[0]} draggable onDragStart={e=>{e.dataTransfer.setData("application/anchon-component",item[0]);e.dataTransfer.effectAllowed="move";}}><b>{item[1]}</b><small>{item[2]}</small></div>)}</div></aside>
         </div>
         <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Circle size={15}/> Evaluate my design</>}</button></div>
@@ -167,5 +179,6 @@ export function AcademyPage() {
 
       <section className="da-coach"><button onClick={()=>setAssistantOpen(v=>!v)}><Bot size={16}/><span><strong>Need help?</strong><small>Ask the AI design coach for a hint</small></span><ChevronDown size={15} className={assistantOpen?"rotated":""}/></button>{assistantOpen&&<div className="da-coach-body"><p>Ask about a requirement, trade-off or component choice. The coach will guide your reasoning without revealing the complete solution.</p><div><input value={question} onChange={e=>setQuestion(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")askAssistant();}} placeholder="e.g. How should I handle payment timeouts?"/><button onClick={askAssistant} disabled={assistantBusy||!question.trim()}>{assistantBusy?<LoaderCircle size={14}/>:<Send size={14}/>}</button></div>{assistantReply&&<p className="da-coach-reply">{assistantReply}</p>}</div>}</section>
     </section>
+    {tutorialOpen&&<div className="da-tutorial-backdrop" role="presentation" onClick={()=>setTutorialOpen(false)}><section className="da-tutorial" role="dialog" aria-modal="true" aria-labelledby="da-tutorial-title" onClick={event=>event.stopPropagation()}><header><div><span className="da-eyebrow">QUICK START GUIDE</span><h2 id="da-tutorial-title">How to use the practice arena</h2></div><button onClick={()=>setTutorialOpen(false)} aria-label="Close tutorial"><X size={17}/></button></header><ol><li><strong>Read the brief</strong><span>Understand the functional requirements and constraints before choosing components.</span></li><li><strong>Choose your building blocks</strong><span>Drag components from the library on the right into the dotted canvas.</span></li><li><strong>Connect the architecture</strong><span>Drag from any of the four connection points on a node to another node. Choose the direction that matches the request or data flow.</span></li><li><strong>Evaluate your design</strong><span>Run the review to see which requirements your architecture satisfies and what needs improvement.</span></li><li><strong>Ask ANCHON AI</strong><span>Open the AI coach for hints. Planning suggests a graph; Agent applies a generated design to your canvas.</span></li><li><strong>Reveal the reference</strong><span>When ready to compare, reveal the solution. It replaces the canvas with the reference nodes and their connections.</span></li></ol><footer><span>Tip: Start with Client → API Gateway → Application Service.</span><button onClick={()=>setTutorialOpen(false)}>Got it</button></footer></section></div>}
   </main>;
 }
