@@ -30,7 +30,7 @@ export function TopicConnectionPuzzle({topicId,title,prompt,explanation,onSolved
  const reset=()=>{setEdges([]);setFeedback("");};
  return <section className="academy-topic-puzzle">
   <header><span><Waypoints size={15}/> CONNECTION PUZZLE</span><small>{solved?"SOLVED":"ONE REQUIRED CONNECTION"}</small></header>
-  <h4>Build the missing relationship</h4>
+  <h4>{title}: connect the architecture</h4>
   <p>{prompt}</p>
   <div className="academy-topic-flow"><ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} fitView fitViewOptions={{padding:.18}} nodesDraggable nodesConnectable elementsSelectable deleteKeyCode={["Backspace","Delete"]}><Background gap={20} color="#43525a" size={1}/><Controls showInteractive={false}/></ReactFlow></div>
   <div className="academy-topic-puzzle-actions"><span>Drag from a node handle to the node that should receive its output.</span><div><button type="button" onClick={reset}><RotateCcw size={13}/> Reset</button><button type="button" onClick={check}><Check size={13}/> Check connection</button></div></div>
