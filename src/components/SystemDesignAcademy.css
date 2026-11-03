@@ -30,3 +30,17 @@
 .design-academy ::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#f0f3f5,#aab7bd)}
 @media(max-width:850px){.da-builder{grid-template-columns:minmax(0,1fr)}.da-palette-wrap{border-left:0;border-top:1px solid #303b42}.da-palette{grid-template-columns:repeat(2,minmax(0,1fr));max-height:250px}.da-flow{min-height:460px}}
 @media(max-width:560px){.da-flow{min-height:390px}.da-palette{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Academy nodes use the same graphite/silver visual language as the main canvas. */
+.da-node{position:relative;display:flex;flex-direction:column;justify-content:center;gap:12px;min-width:170px;min-height:92px;padding:15px 16px;border:1px solid #697780;border-radius:11px;background:linear-gradient(145deg,#252f35,#171f24);color:#e8eef1;box-shadow:0 12px 28px #0006,inset 0 1px #ffffff0a;font-family:Manrope,sans-serif;transition:border-color .15s,box-shadow .15s}
+.da-node.selected{border-color:#d9e1e5;box-shadow:0 0 0 2px #cbd5da22,0 14px 32px #0008}
+.da-node-category{font:600 9px "DM Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:#aebbc2}
+.da-node strong{font:750 13px/1.3 Manrope,sans-serif;color:#f0f3f5}
+.da-node .react-flow__handle{width:11px;height:11px;border:1px solid #d4dde2;background:#71818a;box-shadow:0 0 0 3px #aebbc21c;z-index:8;cursor:crosshair}
+.da-node .react-flow__handle:hover{width:14px;height:14px;background:#e5ecef;box-shadow:0 0 0 4px #dce5ea30}
+.da-node .react-flow__handle-top{top:-6px}
+.da-node .react-flow__handle-right{right:-6px}
+.da-node .react-flow__handle-bottom{bottom:-6px}
+.da-node .react-flow__handle-left{left:-6px}
+.da-help-button{white-space:nowrap}
+.da-tutorial-backdrop{z-index:1800}
