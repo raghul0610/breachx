@@ -152,8 +152,8 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
         <div className="dashboard-nav-label">WORKSPACE</div>
         <nav className="dashboard-nav">
           <button type="button" className="is-active" aria-current="page"><Layers3 size={17} /><span>Projects</span><span className="dashboard-nav-count">{projects.length}</span></button>
-          <button type="button" onClick={() => window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/system-design-learning-guide.md", "_blank", "noopener,noreferrer")}><BookOpen size={17} /><span>Learn</span></button>
-          <button type="button" onClick={() => window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/anchon-user-guide.md", "_blank", "noopener,noreferrer")}><Workflow size={17} /><span>Guide</span></button>
+          <button type="button" onClick={() => openWorkspaceSection("learn")}><BookOpen size={17} /><span>Academy</span></button>
+
         </nav>
         <div className="dashboard-sidebar-spacer" />
         <div className="dashboard-nav dashboard-nav-bottom"><button type="button" onClick={() => openWorkspaceSection("settings")}><Settings size={17} /><span>Settings</span></button></div>
