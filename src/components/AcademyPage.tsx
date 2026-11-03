@@ -1,6 +1,6 @@
 import { useMemo, useState, type DragEvent } from "react";
-import { ReactFlow, Background, Controls, Handle, Position, ConnectionMode, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type NodeProps, type ReactFlowInstance, MarkerType } from "@xyflow/react";
-import { AlertCircle, Bot, Check, ChevronDown, Circle, Eye, LoaderCircle, RotateCcw, Send, Search, ShieldCheck } from "lucide-react";
+import { ReactFlow, Background, Controls, ConnectionMode, addEdge, useEdgesState, useNodesState, type Connection, type Edge, type Node, type ReactFlowInstance, MarkerType } from "@xyflow/react";
+import { AlertCircle, Bot, Check, ChevronDown, Eye, LoaderCircle, Play, RotateCcw, Send, Search } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { evaluateSystemDesign } from "../lib/evaluationEngine";
 import { BlueprintNode } from "./BlueprintNode";
@@ -34,6 +34,8 @@ const requiredByDomain: Record<string,string[]> = {
 };
 function buildScenario(level:number,index:number):Scenario {
   const domain=systems[index];
+  const stageFocus=["Core product workflow","Peak traffic and asynchronous processing","Distributed consistency and failure recovery","Multi-region resilience and strict isolation"][level];
+  const title=level===0?domain:`${domain} · ${stageFocus}`;
   const base=requiredByDomain[domain] ?? ["client","gateway","service","database","cache","queue","worker"];
   const constraints=[...levels[level].constraints];
   const variants=[
@@ -47,6 +49,9 @@ function buildScenario(level:number,index:number):Scenario {
     "The system persists the authoritative state and exposes its current status.",
     "Users receive a clear outcome when an operation succeeds, fails or remains pending."
   ];
+  if(level===1)functional.push("The system absorbs traffic bursts and moves non-interactive work off the synchronous request path.");
+  if(level===2)functional.push("The system remains correct when requests are retried, services fail, or replicas observe updates at different times.");
+  if(level===3)functional.push("The system isolates tenants and continues critical workflows through a regional outage with defined recovery objectives.");
   if(domain.toLowerCase().includes("delivery") || domain.toLowerCase().includes("food")) functional.push("Customers place orders, restaurants confirm preparation, and couriers receive delivery assignments.");
   if(domain.toLowerCase().includes("payment") || domain.toLowerCase().includes("wallet") || domain.toLowerCase().includes("bank")) functional.push("Money movement must be recorded with an auditable transaction history.");
   if(domain.toLowerCase().includes("stream") || domain.toLowerCase().includes("video")) functional.push("Users discover content and retrieve media with low startup latency.");
@@ -71,7 +76,7 @@ function buildScenario(level:number,index:number):Scenario {
     ...(reference.includes("notification")&&reference.includes("worker")?[["worker","notification"] as [string,string]]:[]),
     ["service","client"]
   ];
-  return { title:domain,domain,brief:`Design the backend and supporting infrastructure for a ${domain.toLowerCase()}. Your architecture must satisfy the requirements below. Choose components only when they solve a stated need; justify important trade-offs.`,functional,constraints,reference,flow };
+  return { title,domain,brief:`Design the backend and supporting infrastructure for a ${domain.toLowerCase()} focused on ${stageFocus.toLowerCase()}. Your architecture must satisfy the requirements below. Choose components only when they solve a stated need; justify important trade-offs.`,functional,constraints,reference,flow };
 }
 const academyNodeTypes={blueprintNode:BlueprintNode};
 function makeNode(id:string,type:string,x:number,y:number):Node {
@@ -170,7 +175,7 @@ export function AcademyPage() {
           <div className="da-builder-main"><div className="da-flow" onDragOver={(event)=>{event.preventDefault();event.dataTransfer.dropEffect="move";}} onDrop={onDrop}><ReactFlow nodes={nodes} edges={edges} nodeTypes={academyNodeTypes} connectionMode={ConnectionMode.Loose} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onInit={setInstance} fitView fitViewOptions={{padding:.2}}><Background color="#3b454c" gap={22}/><Controls showInteractive={false}/></ReactFlow>{nodes.length===0&&<div className="da-empty"><strong>Drag a component onto this canvas</strong><span>Start with Client, then connect the request path.</span></div>}</div></div>
           <aside className="da-palette-wrap"><div className="da-palette-heading"><strong>Components</strong><small>Drag a building block into the canvas</small></div><div className="da-palette">{palette.map(item=><div key={item[0]} draggable onDragStart={e=>{e.dataTransfer.setData("application/anchon-component",item[0]);e.dataTransfer.effectAllowed="move";}}><b>{item[1]}</b><small>{item[2]}</small></div>)}</div></aside>
         </div>
-        <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Circle size={15}/> Evaluate my design</>}</button></div>
+        <div className="da-submit-row"><span>{nodes.length} components · {edges.length} connections</span><button className="da-submit" onClick={submit} disabled={judging||nodes.length===0}>{judging?<><LoaderCircle className="da-spin" size={15}/> Evaluating…</>:<><Play size={15}/> Run & evaluate design</>}</button></div>
       </section>
 
       {judge&&<section className="da-judge"><div className="da-section-heading da-judge-head"><div><span className="da-eyebrow">FEEDBACK</span><h2>{judge.error?"Evaluation unavailable":`Architecture review · ${judge.score}/100`}</h2></div>{!judge.error&&<strong>{judge.score>=80?"STRONG":judge.score>=55?"NEEDS IMPROVEMENT":"REWORK NEEDED"}</strong>}</div><p>{judge.error||judge.summary}</p>{judge.localFindings?.map((f:string,i:number)=><p className="da-finding" key={i}><AlertCircle size={14}/>{f}</p>)}{judge.strengths?.map((f:string,i:number)=><p className="da-strength" key={i}><Check size={14}/>{f}</p>)}{judge.findings?.map((f:any,i:number)=><article className="da-finding-card" key={f.id||i}><span>{String(f.severity||"finding").toUpperCase()} · {f.category}</span><strong>{f.title}</strong><p>{f.description}</p><small>WHY IT MATTERS: {f.requirement}</small><p className="da-recommendation">SUGGESTED CHANGE: {f.recommendation}</p></article>)}</section>}
