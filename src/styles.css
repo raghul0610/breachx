@@ -2760,3 +2760,63 @@ body, .app-shell, .home, .lp-root {
 .workspace-canvas-brief .brief-card{margin:0 0 12px!important}
 .workspace-canvas-brief .requirements-status{margin-top:12px!important}
 @media(max-width:700px){.workspace-canvas-brief{max-height:calc(100dvh - 210px)!important}}
+
+
+/* ANCHON Academy — progressive, mission-led learning surface. */
+.academy-page{width:min(100%,1120px)!important;margin:0 auto;padding:18px 0 56px;color:#e6ebee}
+.academy-hero{position:relative;padding:12px 0 26px;border-bottom:1px solid rgba(193,205,212,.13)}
+.academy-kicker,.academy-mission-top,.academy-concepts>strong,.academy-task strong,.academy-challenge-head>div>span{font:600 10px/1.4 ui-monospace,SFMono-Regular,monospace;letter-spacing:.16em;color:#aebbc2}
+.academy-hero h1{margin:13px 0 8px;font-size:clamp(32px,5vw,52px);line-height:1.05;letter-spacing:-.055em;color:#f1f4f5}
+.academy-hero h1 span{background:linear-gradient(100deg,#f7fafb 10%,#8999a3 55%,#e4eaed 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.academy-hero>p{max-width:620px;margin:0;color:#9daab1;font-size:14px;line-height:1.7}
+.academy-progress{display:grid;grid-template-columns:1fr auto;gap:8px 20px;align-items:end;max-width:470px;margin-top:24px}
+.academy-progress>div:first-child{display:grid;gap:4px}.academy-progress>div:first-child span{font:600 9px ui-monospace,monospace;letter-spacing:.13em;color:#7f9099}
+.academy-progress>div:first-child strong,.academy-progress>strong{font-size:12px;color:#d9e0e4}.academy-progress>strong{font-variant-numeric:tabular-nums}
+.academy-progress-track{grid-column:1/-1;height:4px;border-radius:99px;background:#29343a;overflow:hidden}.academy-progress-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#788991,#e2e9ec);transition:width .35s ease}
+.academy-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:26px;margin-top:25px;align-items:start}
+.academy-level-list{position:sticky;top:18px;display:grid;gap:8px}
+.academy-level-list>button{display:flex;align-items:center;gap:11px;width:100%;padding:13px 11px;border:1px solid rgba(178,193,201,.12);border-radius:12px;background:rgba(19,27,32,.72);color:#aeb9bf;text-align:left;cursor:pointer;transition:border-color .18s,background .18s}
+.academy-level-list>button.active{border-color:rgba(211,224,230,.42);background:linear-gradient(130deg,rgba(113,132,143,.19),rgba(19,27,32,.9));color:#f1f4f5}
+.academy-level-list>button:disabled{opacity:.42;cursor:not-allowed}
+.academy-level-number{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border:1px solid #3a484f;border-radius:9px;color:#dce4e8;font:600 10px ui-monospace,monospace}
+.academy-level-copy{display:grid;gap:3px;min-width:0;flex:1}
+.academy-level-copy small{font:9px ui-monospace,monospace;letter-spacing:.09em;color:#8999a1}
+.academy-level-copy strong{font-size:12px;font-weight:600;color:#dce3e7}
+.academy-level-copy em{font:normal 8px ui-monospace,monospace;letter-spacing:.1em;color:#81939c}
+.academy-level-note{display:flex;gap:9px;align-items:flex-start;padding:13px 11px;color:#89979e;font-size:10px;line-height:1.6}
+.academy-level-note svg{flex:0 0 auto;color:#c1cbd0}
+.academy-mission{min-width:0;padding:22px;border:1px solid rgba(178,193,201,.15);border-radius:16px;background:linear-gradient(145deg,rgba(25,34,40,.96),rgba(13,19,23,.96));box-shadow:0 18px 55px rgba(0,0,0,.18)}
+.academy-mission-top{display:flex;justify-content:space-between;gap:10px}
+.academy-mission-top span:last-child{color:#b8c5cb}
+.academy-mission h2{margin:12px 0 8px;font-size:clamp(23px,3vw,32px);letter-spacing:-.04em;color:#f0f4f5}
+.academy-briefing{max-width:720px;margin:0;color:#aab6bc;font-size:13px;line-height:1.75}
+.academy-concepts{display:grid;gap:9px;margin:20px 0;padding:15px;border:1px solid rgba(178,193,201,.11);border-radius:12px;background:rgba(7,12,15,.28)}
+.academy-concepts>strong{margin-bottom:2px}
+.academy-concepts>div{display:flex;gap:9px;align-items:flex-start}
+.academy-concepts>div>span{flex:0 0 5px;width:5px;height:5px;margin-top:7px;border-radius:50%;background:#c1cbd0}
+.academy-concepts p{margin:0;color:#aebac0;font-size:11px;line-height:1.65}
+.academy-task{display:flex;gap:11px;align-items:flex-start;padding:13px 14px;border:1px solid rgba(195,210,218,.22);border-radius:11px;background:rgba(133,153,164,.08);color:#dce5e9}
+.academy-task>svg{flex:0 0 auto;margin-top:2px}.academy-task strong{color:#c6d1d6}.academy-task p{margin:4px 0 0;color:#e1e7ea;font-size:12px;line-height:1.6}
+.academy-challenge{margin-top:16px;padding:14px;border:1px solid rgba(178,193,201,.13);border-radius:13px;background:rgba(6,11,14,.48)}
+.academy-challenge-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.academy-challenge-head>div{display:grid;gap:3px}.academy-challenge-head>div>strong{font-size:12px;color:#dce4e8}
+.academy-challenge-head button{display:flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid #34434a;border-radius:8px;background:#141d22;color:#b7c2c7;font-size:10px;cursor:pointer}
+.academy-flow{height:270px;overflow:hidden;border:1px solid #29373e;border-radius:10px;background-color:#0a1014;background-image:radial-gradient(rgba(205,220,227,.12) 1px,transparent 1px);background-size:18px 18px}
+.academy-flow .react-flow__node{min-width:132px;padding:12px 14px;border:1px solid #81929b;border-radius:10px;background:linear-gradient(145deg,#29363d,#172127);color:#e7edef;box-shadow:0 8px 22px #0006;font-size:12px;font-weight:650}
+.academy-flow .react-flow__node-input,.academy-flow .react-flow__node-output{border-color:#b5c1c7;background:linear-gradient(145deg,#3b484e,#202b30)}
+.academy-flow .react-flow__handle{width:9px;height:9px;border:1px solid #11191d;background:#d4dfe3}
+.academy-flow .react-flow__edge-path{stroke:#c0cdd3;stroke-width:2}.academy-flow .react-flow__edge-text{fill:#dce5e8;font-size:10px}
+.academy-flow .react-flow__controls{overflow:hidden;border:1px solid #34434a;border-radius:8px;background:#172127}
+.academy-flow .react-flow__controls-button{background:#172127;border-bottom:1px solid #34434a;fill:#d7e0e4}
+.academy-challenge-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}
+.academy-challenge-footer>span{display:flex;align-items:center;gap:6px;color:#89989f;font-size:10px}
+.academy-validate,.academy-next{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 12px;border:1px solid #c2cdd2;border-radius:9px;background:linear-gradient(145deg,#e2e8eb,#aebbc2);color:#10171b;font-size:11px;font-weight:700;cursor:pointer}
+.academy-validate:disabled{opacity:.55;cursor:default}
+.academy-feedback{margin:10px 0 0;padding:10px 12px;border-radius:8px;font-size:11px;line-height:1.6}
+.academy-feedback.error{border:1px solid #754b50;background:#26191b;color:#efb5b8}
+.academy-feedback.success{border:1px solid #42665a;background:#15231e;color:#b5dfca}
+.academy-success{display:flex;gap:9px;align-items:flex-start;margin-top:13px;padding:12px;border:1px solid #42665a;border-radius:9px;background:#15231e;color:#b5dfca;font-size:11px;line-height:1.6}
+.academy-success svg{flex:0 0 auto}.academy-next{margin-top:12px}
+@media(max-width:850px){.academy-layout{grid-template-columns:1fr;gap:16px}.academy-level-list{position:static;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.academy-level-list>button{padding:9px 7px;gap:7px}.academy-level-number{flex-basis:25px;width:25px;height:25px}.academy-level-copy small{font-size:7px}.academy-level-copy strong{font-size:10px}.academy-level-copy em{font-size:7px}.academy-level-list>button>svg{display:none}.academy-level-note{grid-column:1/-1;padding:4px 2px}}
+@media(max-width:560px){.academy-page{padding-top:4px}.academy-mission{padding:14px}.academy-level-list{grid-template-columns:1fr}.academy-level-list>button{padding:10px}.academy-level-copy small,.academy-level-copy em{font-size:8px}.academy-flow{height:250px}.academy-challenge-footer{align-items:flex-start;flex-direction:column}.academy-validate{width:100%}}
+@media(prefers-reduced-motion:reduce){.academy-progress-track span,.academy-level-list>button{transition:none}}
