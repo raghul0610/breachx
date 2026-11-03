@@ -46,7 +46,8 @@ export function AcademyPage(){
  const [activeTopic,setActiveTopic]=useState(0);
  const [activeTab,setActiveTab]=useState<"learn"|"build">("learn");
  const [learned,setLearned]=useState<string[]>([]);
- const [completedLabs,setCompletedLabs]=useState<number[]>([]);\n const [takeawayAcknowledged,setTakeawayAcknowledged]=useState<number[]>([]);
+ const [completedLabs,setCompletedLabs]=useState<number[]>([]);
+ const [takeawayAcknowledged,setTakeawayAcknowledged]=useState<number[]>([]);
  useEffect(()=>{try{const topics=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");if(Array.isArray(topics))setLearned(topics.filter((x:any)=>typeof x==="string"));const labs=JSON.parse(localStorage.getItem(LAB_STORAGE_KEY)||"[]");if(Array.isArray(labs))setCompletedLabs(labs.filter((x:any)=>Number.isInteger(x)&&x>=0&&x<10));}catch{/* local progress is optional */}},[]);
  const level=curriculum[activeLevel];
  const topic=level.puzzles[activeTopic];
