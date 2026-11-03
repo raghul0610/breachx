@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, BookOpen, FolderPlus, Github, Layers3, MoreVertical, Pencil, Play, Plus, Settings, Share2, Sparkles, Trash2, Workflow } from "lucide-react";
+import { ArrowLeft, BookOpen, FolderPlus, Github, Layers3, MoreVertical, Pencil, Play, Plus, Settings, Share2, Workflow, Trash2, Workflow } from "lucide-react";
 import {
   createProject,
   deleteProject,
@@ -153,7 +153,7 @@ export function ProjectDashboard({ onBack, onOpenProject, onOpenWorkspaceSection
         <nav className="dashboard-nav">
           <button type="button" className="is-active" aria-current="page"><Layers3 size={17} /><span>Projects</span><span className="dashboard-nav-count">{projects.length}</span></button>
           <button type="button" onClick={() => window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/system-design-learning-guide.md", "_blank", "noopener,noreferrer")}><BookOpen size={17} /><span>Learn</span></button>
-          <button type="button" onClick={() => window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/anchon-user-guide.md", "_blank", "noopener,noreferrer")}><Sparkles size={17} /><span>Guide</span></button>
+          <button type="button" onClick={() => window.open("https://github.com/raghul0610/breachx/blob/feat/anchon-assistant-floating-workspace/docs/anchon-user-guide.md", "_blank", "noopener,noreferrer")}><Workflow size={17} /><span>Guide</span></button>
         </nav>
         <div className="dashboard-sidebar-spacer" />
         <div className="dashboard-nav dashboard-nav-bottom"><button type="button" onClick={() => openWorkspaceSection("settings")}><Settings size={17} /><span>Settings</span></button></div>
