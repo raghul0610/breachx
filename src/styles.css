@@ -2881,3 +2881,27 @@ body, .app-shell, .home, .lp-root {
 .academy-source-links a:hover{border-color:#899ba4;color:#f0f4f6}
 @media(max-width:950px){.academy-v2 .academy-layout{grid-template-columns:1fr}.academy-v2 .academy-level-list{position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.academy-v2 .academy-level-note,.academy-v2 .academy-reset{grid-column:1/-1}}
 @media(max-width:600px){.academy-v2 .academy-level-list{grid-template-columns:1fr}.academy-v2 .academy-mission{padding:13px}.academy-v2 .academy-lesson-tabs{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}.academy-v2 .academy-lesson-tabs button{min-height:62px;padding:6px 5px}.academy-v2 .academy-lesson-tabs button small{font-size:8px}.academy-knowledge-check{padding:12px}.academy-lesson h3{font-size:20px}}
+
+
+/* Academy mastery path: balanced ten-level and ten-puzzle navigation. */
+.academy-mastery .academy-mastery-stats{display:flex;flex-wrap:wrap;gap:18px;margin-top:17px}
+.academy-mastery .academy-mastery-stats span{display:flex;align-items:center;gap:6px;color:#87969e;font:600 9px ui-monospace,monospace;letter-spacing:.12em}
+.academy-mastery .academy-mastery-stats strong{color:#e1e8eb;font-size:13px;letter-spacing:0}
+.academy-mastery .academy-level-list{grid-template-columns:1fr;max-height:calc(100dvh - 180px);overflow:auto;padding-right:3px;scrollbar-width:thin;scrollbar-color:#53616a transparent}
+.academy-mastery .academy-level-list>button{min-height:64px}
+.academy-mastery .academy-level-intro{margin:15px 0 2px;padding:12px 14px;border:1px solid rgba(178,193,201,.12);border-radius:10px;background:rgba(6,11,14,.28);color:#9eacb3;font-size:11px;line-height:1.75}
+.academy-mastery .academy-lesson-tabs{grid-template-columns:repeat(5,minmax(0,1fr));}
+.academy-mastery .academy-lesson-tabs button{min-height:72px}
+.academy-mastery .academy-lesson-tabs button small{font-size:9px;line-height:1.45}
+.academy-mastery .academy-lesson-content{max-width:760px;font-size:12px;line-height:1.8}
+@media(max-width:950px){
+ .academy-mastery .academy-layout{grid-template-columns:1fr}
+ .academy-mastery .academy-level-list{position:static;max-height:none;overflow:visible;grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+ .academy-mastery .academy-level-list{grid-template-columns:1fr}
+ .academy-mastery .academy-lesson-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .academy-mastery .academy-lesson-tabs button{min-height:58px}
+ .academy-mastery .academy-mastery-stats{gap:10px 14px}
+ .academy-mastery .academy-hero h1{font-size:32px}
+}
